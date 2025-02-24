@@ -1,0 +1,13 @@
+
+myenv/
+
+node_modules/
+
+# Python cache files
+__pycache__/
+*.pyc
+*.pyo
+
+# Other useful ignores
+*.DS_Store
+*.env

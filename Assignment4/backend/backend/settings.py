@@ -42,7 +42,6 @@ INSTALLED_APPS = [
     'corsheaders',
 
     'home',
-
 ]
 
 CORS_ALLOWED_ORIGINS = ['http://localhost:5173']
@@ -84,10 +83,15 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': '22CS30027',  # Your database name
+        'USER': '22CS30027',      # Your database user
+        'PASSWORD': '5243y6!J',  # Your database password
+        'HOST': '10.5.18.72',   # Change if using a remote server
+        'PORT': '5432',        # Default PostgreSQL port
     }
 }
+
 
 
 # Password validation

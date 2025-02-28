@@ -1,0 +1,166 @@
+{% extends 'base.html' %}
+
+{% block title %}Employee Profile - Gram Panchayat{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <h2>Employee Profile</h2>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+                <li class="breadcrumb-item active" aria-current="page">My Profile</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-5 mb-4">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Employee Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3 d-flex justify-content-center">
+                    <div class="avatar-circle">
+                        <span class="initials">{{ employee.name[0] }}</span>
+                    </div>
+                </div>
+                <table class="table table-striped">
+                    <tbody>
+                        <tr>
+                            <th scope="row">Employee ID</th>
+                            <td>{{ employee.employee_id }}</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Role</th>
+                            <td>{{ employee.role }}</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Joining Date</th>
+                            <td>{{ employee.joining_date }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-7 mb-4">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Personal Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <table class="table table-striped">
+                            <tbody>
+                                <tr>
+                                    <th scope="row">Citizen ID</th>
+                                    <td>{{ employee.citizen_id }}</td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">Name</th>
+                                    <td>{{ employee.name }}</td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">Gender</th>
+                                    <td>{{ employee.gender }}</td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">Date of Birth</th>
+                                    <td>{{ employee.dob }}</td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">Education</th>
+                                    <td>{{ employee.education }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <table class="table table-striped">
+                            <tbody>
+                                <tr>
+                                    <th scope="row">Household ID</th>
+                                    <td>{{ employee.household_id }}</td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">Address</th>
+                                    <td>{{ employee.address }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div class="d-grid gap-2 mt-3">
+                            <a href="#" class="btn btn-outline-primary">View Full Citizen Profile</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Access Permissions</h5>
+            </div>
+            <div class="card-body">
+                <p class="mb-3">As a Panchayat Employee, you have access to the following features:</p>
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <div class="card h-100">
+                            <div class="card-body text-center">
+                                <i class="bi bi-people fs-1"></i>
+                                <h6 class="mt-2">Citizen Records Management</h6>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="card h-100">
+                            <div class="card-body text-center">
+                                <i class="bi bi-file-earmark-text fs-1"></i>
+                                <h6 class="mt-2">Land Records Management</h6>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="card h-100">
+                            <div class="card-body text-center">
+                                <i class="bi bi-clipboard-check fs-1"></i>
+                                <h6 class="mt-2">Welfare Scheme Processing</h6>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .avatar-circle {
+        width: 100px;
+        height: 100px;
+        background-color: #007bff;
+        text-align: center;
+        border-radius: 50%;
+        -webkit-border-radius: 50%;
+        -moz-border-radius: 50%;
+        margin-bottom: 15px;
+    }
+    
+    .initials {
+        position: relative;
+        top: 25px;
+        font-size: 40px;
+        line-height: 50px;
+        color: #fff;
+        font-weight: bold;
+    }
+</style>
+{% endblock %}

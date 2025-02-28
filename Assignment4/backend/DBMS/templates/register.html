@@ -1,0 +1,316 @@
+{% extends 'base.html' %}
+
+{% block title %}Register - Gram Panchayat{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0">Register New Account</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('register') }}">
+                    <h5 class="mb-3">Account Information</h5>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="username" class="form-label">Username</label>
+                            <input type="text" class="form-control" id="username" name="username" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="email" name="email" required>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="password" class="form-label">Password</label>
+                            <input type="password" class="form-control" id="password" name="password" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="role_id" class="form-label">User Role</label>
+                            <select class="form-select" id="role_id" name="role_id" required>
+                                {% for role in roles %}
+                                <option value="{{ role[0] }}">{{ role[1]|title }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- Citizen Fields -->
+                    <div id="citizenFields" style="display: none;">
+                        <hr>
+                        <h5 class="mb-3">Citizen Information</h5>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="name" class="form-label">Full Name <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="name" name="name" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="gender" class="form-label">Gender <span class="text-danger">*</span></label>
+                                <select class="form-select" id="gender" name="gender" required>
+                                    <option value="">Select</option>
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="dob" class="form-label">Date of Birth <span class="text-danger">*</span></label>
+                                <input type="date" class="form-control" id="dob" name="dob" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="education" class="form-label">Educational Qualification</label>
+                                <select class="form-select" id="education" name="education">
+                                    <option value="">Select</option>
+                                    <option value="Illiterate">Illiterate</option>
+                                    <option value="Primary">Primary</option>
+                                    <option value="Secondary">Secondary</option>
+                                    <option value="10th">10th</option>
+                                    <option value="12th">12th</option>
+                                    <option value="Graduate">Graduate</option>
+                                    <option value="Post-Graduate">Post-Graduate</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <!-- Household Existence Check -->
+                        <div class="row mb-3">
+                            <div class="col-md-12">
+                                <label class="form-label">Do you already have a household registered?</label>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="household_exists" id="household_yes" value="yes">
+                                    <label class="form-check-label" for="household_yes">
+                                        Yes, I know my household ID
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="household_exists" id="household_no" value="no" checked>
+                                    <label class="form-check-label" for="household_no">
+                                        No, I need to register a new household
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Existing Household ID -->
+                        <div class="row mb-3" id="existingHouseholdField" style="display: none;">
+                            <div class="col-md-6">
+                                <label for="existing_household_id" class="form-label">Household ID <span class="text-danger">*</span></label>
+                                <input type="number" class="form-control" id="existing_household_id" name="existing_household_id">
+                                <div class="form-text">Enter the ID of your existing household</div>
+                            </div>
+                        </div>
+                        
+                        <!-- New Household Information -->
+                        <div id="newHouseholdFields">
+                            <div class="row mb-3">
+                                <div class="col-md-8">
+                                    <label for="address" class="form-label">Address <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="address" name="address">
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="income" class="form-label">Household Income (₹)</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">₹</span>
+                                        <input type="number" step="0.01" class="form-control" id="income" name="income" placeholder="0.00">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Employee Fields -->
+                    <div id="employeeFields" style="display: none;">
+                        <hr>
+                        <h5 class="mb-3">Employee Information</h5>
+                        
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle-fill me-2"></i>
+                            <strong>Note:</strong> Employees must have a Citizen ID. If you don't have one, please register as a citizen first.
+                        </div>
+                        
+                        <!-- Citizen ID Field (Required) -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="existing_citizen_id" class="form-label">Citizen ID <span class="text-danger">*</span></label>
+                                <input type="number" class="form-control" id="existing_citizen_id" name="existing_citizen_id" required>
+                                <div class="form-text">Please enter your existing Citizen ID</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Employee Role -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="employee_role" class="form-label">Employee Role</label>
+                                <select class="form-select" id="employee_role" name="employee_role" required>
+                                    <option value="">Select</option>
+                                    <option value="Clerk">Clerk</option>
+                                    <option value="Field Officer">Field Officer</option>
+                                    <option value="Secretary">Secretary</option>
+                                    <option value="Health Worker">Health Worker</option>
+                                    <option value="Agriculture Officer">Agriculture Officer</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary">Register</button>
+                    </div>
+                </form>
+            </div>
+            <div class="card-footer text-center">
+                <p class="mb-0">Already have an account? <a href="{{ url_for('login') }}">Login</a></p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Handle role selection
+document.getElementById('role_id').addEventListener('change', function() {
+    const citizenFields = document.getElementById('citizenFields');
+    const employeeFields = document.getElementById('employeeFields');
+    const roleId = this.value;
+    
+    // Hide all role-specific fields initially
+    citizenFields.style.display = 'none';
+    employeeFields.style.display = 'none';
+    
+    // Reset required attributes
+    // First, make employee fields not required when choosing citizen role
+    document.getElementById('existing_citizen_id').required = false;
+    document.getElementById('employee_role').required = false;
+    
+    // Reset citizen field requirements
+    document.getElementById('name').required = false;
+    document.getElementById('gender').required = false;
+    document.getElementById('dob').required = false;
+    document.getElementById('address').required = false;
+    document.getElementById('existing_household_id').required = false;
+    
+    // Show fields based on role selection
+    if (roleId === '3') { // Citizen role
+        citizenFields.style.display = 'block';
+        
+        // Set citizen fields as required
+        document.getElementById('name').required = true;
+        document.getElementById('gender').required = true;
+        document.getElementById('dob').required = true;
+        
+        // Trigger the household radio buttons to ensure proper display
+        const checkedRadio = document.querySelector('input[name="household_exists"]:checked');
+        if (checkedRadio) {
+            checkedRadio.dispatchEvent(new Event('change'));
+        } else {
+            // Default to "no" if nothing is checked
+            document.getElementById('household_no').checked = true;
+            document.getElementById('household_no').dispatchEvent(new Event('change'));
+        }
+    } else if (roleId === '2') { // Employee role
+        employeeFields.style.display = 'block';
+        
+        // Set employee fields as required
+        document.getElementById('existing_citizen_id').required = true;
+        document.getElementById('employee_role').required = true;
+    }
+});
+
+// Handle household existence selection
+document.querySelectorAll('input[name="household_exists"]').forEach(function(radio) {
+    radio.addEventListener('change', function() {
+        const existingHouseholdField = document.getElementById('existingHouseholdField');
+        const newHouseholdFields = document.getElementById('newHouseholdFields');
+        
+        if (this.value === 'yes') {
+            existingHouseholdField.style.display = 'block';
+            newHouseholdFields.style.display = 'none';
+            
+            // Update field requirements
+            document.getElementById('existing_household_id').required = true;
+            document.getElementById('address').required = false;
+        } else {
+            existingHouseholdField.style.display = 'none';
+            newHouseholdFields.style.display = 'block';
+            
+            // Update field requirements
+            document.getElementById('existing_household_id').required = false;
+            document.getElementById('address').required = true;
+        }
+    });
+});
+
+// Set up form submission validation
+document.querySelector('form').addEventListener('submit', function(event) {
+    const roleId = document.getElementById('role_id').value;
+    
+    if (roleId === '2') { // Employee role
+        const citizenId = document.getElementById('existing_citizen_id').value;
+        const employeeRole = document.getElementById('employee_role').value;
+        
+        if (!citizenId) {
+            event.preventDefault();
+            alert('Citizen ID is required for employee registration. Please register as a citizen first if you don\'t have one.');
+            return;
+        }
+        
+        if (!employeeRole) {
+            event.preventDefault();
+            alert('Please select an employee role.');
+            return;
+        }
+    } else if (roleId === '3') { // Citizen role
+        // Ensure form validation for citizen fields
+        const name = document.getElementById('name').value;
+        const gender = document.getElementById('gender').value;
+        const dob = document.getElementById('dob').value;
+        
+        if (!name || !gender || !dob) {
+            event.preventDefault();
+            alert('Please fill in all required citizen information fields (Name, Gender, and Date of Birth).');
+            return;
+        }
+        
+        // Validate household information
+        const householdExists = document.querySelector('input[name="household_exists"]:checked').value;
+        
+        if (householdExists === 'yes') {
+            const existingHouseholdId = document.getElementById('existing_household_id').value;
+            if (!existingHouseholdId) {
+                event.preventDefault();
+                alert('Please enter your household ID.');
+                return;
+            }
+        } else {
+            const address = document.getElementById('address').value;
+            if (!address) {
+                event.preventDefault();
+                alert('Please enter your address for the new household.');
+                return;
+            }
+        }
+        
+        // If everything is valid, let the form submit
+        console.log('Citizen form valid, submitting...');
+    }
+});
+
+// Initial form setup
+window.addEventListener('DOMContentLoaded', function() {
+    // Trigger the role selection change event to set up initial state
+    document.getElementById('role_id').dispatchEvent(new Event('change'));
+    
+    // Ensure household radio buttons are properly initialized
+    document.getElementById('household_no').checked = true;
+    document.getElementById('household_no').dispatchEvent(new Event('change'));
+    
+    // Debugging log
+    console.log('Form initialized');
+});
+</script>
+{% endblock %}

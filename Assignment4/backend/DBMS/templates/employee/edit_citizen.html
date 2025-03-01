@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Citizen - Gram Panchayat{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <h2>Edit Citizen</h2>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('manage_citizens') }}">Manage Citizens</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Edit Citizen</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Editing: {{ citizen.name }}</h5>
+                    <span class="badge bg-light text-dark">ID: {{ citizen.citizen_id }}</span>
+                </div>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('edit_citizen', citizen_id=citizen.citizen_id) }}">
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h6 class="form-section-title">Personal Information</h6>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="name" class="form-label">Full Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="name" name="name" value="{{ citizen.name }}" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="gender" class="form-label">Gender <span class="text-danger">*</span></label>
+                            <select class="form-select" id="gender" name="gender" required>
+                                <option value="">Select</option>
+                                <option value="Male" {% if citizen.gender == 'Male' %}selected{% endif %}>Male</option>
+                                <option value="Female" {% if citizen.gender == 'Female' %}selected{% endif %}>Female</option>
+                                <option value="Other" {% if citizen.gender == 'Other' %}selected{% endif %}>Other</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="dob" class="form-label">Date of Birth <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control" id="dob" name="dob" value="{{ citizen.dob }}" required>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <label for="education" class="form-label">Educational Qualification</label>
+                            <select class="form-select" id="education" name="education">
+                                <option value="">Select</option>
+                                <option value="Illiterate" {% if citizen.education == 'Illiterate' %}selected{% endif %}>Illiterate</option>
+                                <option value="Primary" {% if citizen.education == 'Primary' %}selected{% endif %}>Primary</option>
+                                <option value="Secondary" {% if citizen.education == 'Secondary' %}selected{% endif %}>Secondary</option>
+                                <option value="10th" {% if citizen.education == '10th' %}selected{% endif %}>10th</option>
+                                <option value="12th" {% if citizen.education == '12th' %}selected{% endif %}>12th</option>
+                                <option value="Graduate" {% if citizen.education == 'Graduate' %}selected{% endif %}>Graduate</option>
+                                <option value="Post-Graduate" {% if citizen.education == 'Post-Graduate' %}selected{% endif %}>Post-Graduate</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- Household Information -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h6 class="form-section-title">Household Information</h6>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="household_id" class="form-label">Household <span class="text-danger">*</span></label>
+                            <select class="form-select" id="household_id" name="household_id" required>
+                                <option value="">Select a household</option>
+                                {% for household in households %}
+                                <option value="{{ household[0] }}" {% if citizen.household_id == household[0] %}selected{% endif %}>
+                                    ID: {{ household[0] }} - {{ household[1] }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- User Account Information -->
+                    {% if citizen.user_id %}
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h6 class="form-section-title">User Account Information</h6>
+                            <input type="hidden" name="user_id" value="{{ citizen.user_id }}">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="username" class="form-label">Username</label>
+                            <input type="text" class="form-control" id="username" value="{{ citizen.username }}" readonly>
+                            <small class="form-text text-muted">Username cannot be changed</small>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="email" name="email" value="{{ citizen.email }}">
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('manage_citizens') }}" class="btn btn-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

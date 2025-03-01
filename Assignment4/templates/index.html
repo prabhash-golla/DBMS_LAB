@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block title %}Gram Panchayat Management System{% endblock %}
+
+{% block content %}
+<div class="jumbotron">
+    <h1 class="display-4">Welcome to Gram Panchayat Management System</h1>
+    <p class="lead">A comprehensive digital platform for managing village administration and services</p>
+    <hr class="my-4">
+    <p>The system helps citizens access information, panchayat employees manage village affairs, and government agencies monitor development.</p>
+    <div class="row mt-4">
+        <div class="col-md-4 mb-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">For Citizens</h5>
+                    <p class="card-text">Access information about village services, welfare schemes, and more.</p>
+                    <a href="{{ url_for('register') }}" class="btn btn-primary">Register as Citizen</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">For Panchayat Employees</h5>
+                    <p class="card-text">Manage village data, update records, and implement welfare schemes.</p>
+                    <a href="{{ url_for('login') }}" class="btn btn-primary">Employee Login</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">For Government Monitors</h5>
+                    <p class="card-text">Access reports and statistics about village development.</p>
+                    <a href="{{ url_for('login') }}" class="btn btn-primary">Monitor Login</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

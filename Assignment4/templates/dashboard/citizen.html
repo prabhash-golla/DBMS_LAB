@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block title %}Citizen Dashboard - Gram Panchayat{% endblock %}
+
+{% block content %}
+<h2>Citizen Dashboard</h2>
+<p>Welcome to the citizen portal. Here you can access various information and services.</p>
+
+<div class="row">
+    <div class="col-md-4 mb-3">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">My Profile</h5>
+                <p class="card-text">View and update your personal information</p>
+                <a href="{{ url_for('profile') }}" class="btn btn-primary">View Profile</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Welfare Schemes</h5>
+                <p class="card-text">Check available welfare schemes and your enrollments</p>
+                <a href="#" class="btn btn-primary">View Schemes</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">My Land Records</h5>
+                <p class="card-text">View your land ownership records</p>
+                <a href="#" class="btn btn-primary">View Records</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6 mb-3">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Vaccination Records</h5>
+                <p class="card-text">View your vaccination history</p>
+                <a href="#" class="btn btn-primary">View Vaccinations</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 mb-3">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Panchayat News & Announcements</h5>
+                <p class="card-text">Stay updated with the latest news from your panchayat</p>
+                <a href="#" class="btn btn-primary">View News</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

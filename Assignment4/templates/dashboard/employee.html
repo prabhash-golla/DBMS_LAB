@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+
+{% block title %}Employee Dashboard - Gram Panchayat{% endblock %}
+
+{% block content %}
+<h2>Panchayat Employee Dashboard</h2>
+<p>Welcome to the employee dashboard. Here you can manage various aspects of the Gram Panchayat.</p>
+
+<div class="row">
+    <div class="col-md-4 mb-3">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">My Profile</h5>
+                <p class="card-text">View your employee and personal information</p>
+                <a href="{{ url_for('profile') }}" class="btn btn-primary">View Profile</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Citizen Records</h5>
+                <p class="card-text">Manage citizen information</p>
+                <a href="#" class="btn btn-primary">Manage Citizens</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Land Records</h5>
+                <p class="card-text">View and update land ownership data</p>
+                <a href="#" class="btn btn-primary">Manage Land Records</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4 mb-3">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Welfare Scheme Enrollments</h5>
+                <p class="card-text">Process welfare scheme enrollments</p>
+                <a href="#" class="btn btn-primary">Manage Enrollments</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Census Data</h5>
+                <p class="card-text">Record and manage census information</p>
+                <a href="#" class="btn btn-primary">Census Records</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Assets Management</h5>
+                <p class="card-text">Manage panchayat assets and infrastructure</p>
+                <a href="#" class="btn btn-primary">Manage Assets</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12 mb-3">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Vaccination Records</h5>
+                <p class="card-text">Manage vaccination records for citizens</p>
+                <a href="#" class="btn btn-primary">Vaccination Data</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

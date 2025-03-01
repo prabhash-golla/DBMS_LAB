@@ -1,0 +1,228 @@
+{% extends 'base.html' %}
+
+{% block title %}My Profile - Gram Panchayat{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <h2>Citizen Profile</h2>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+                <li class="breadcrumb-item active" aria-current="page">My Profile</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4 mb-4">
+        <div class="card">
+            <div class="card-header text-white">
+                <h5 class="mb-0">Personal Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3 d-flex justify-content-center">
+                    <div class="avatar-circle">
+                        <span class="initials">{{ citizen.name[0] }}</span>
+                    </div>
+                </div>
+                <table class="table table-striped">
+                    <tbody>
+                        <tr>
+                            <th scope="row">Citizen ID</th>
+                            <td>{{ citizen.citizen_id }}</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Name</th>
+                            <td>{{ citizen.name }}</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Gender</th>
+                            <td>{{ citizen.gender }}</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Date of Birth</th>
+                            <td>{{ citizen.dob }}</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Education</th>
+                            <td>{{ citizen.education }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <a href="#" class="btn btn-outline-primary">Edit Profile</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-8 mb-4">
+        <div class="card">
+            <div class="card-header text-white">
+                <h5 class="mb-0">Household Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <table class="table table-striped">
+                            <tbody>
+                                <tr>
+                                    <th scope="row">Household ID</th>
+                                    <td>{{ citizen.household_id }}</td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">Address</th>
+                                    <td>{{ citizen.address }}</td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">Household Income</th>
+                                    <td>₹ {{ citizen.household_income }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Household Members</h6>
+                        {% if household_members %}
+                            <ul class="list-group">
+                                {% for member in household_members %}
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        {{ member.name }}
+                                        <span class="badge bg-primary rounded-pill">ID: {{ member.citizen_id }}</span>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <p>No other household members found.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header text-white">
+                <h5 class="mb-0">Enrolled Welfare Schemes</h5>
+            </div>
+            <div class="card-body">
+                {% if schemes %}
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Scheme Name</th>
+                                    <th>Enrollment Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for scheme in schemes %}
+                                    <tr>
+                                        <td>{{ scheme.name }}</td>
+                                        <td>{{ scheme.enrollment_date }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="alert alert-info">You are not enrolled in any welfare schemes.</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header text-white">
+                <h5 class="mb-0">Vaccination Records</h5>
+            </div>
+            <div class="card-body">
+                {% if vaccinations %}
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Vaccine Type</th>
+                                    <th>Date Administered</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for vax in vaccinations %}
+                                    <tr>
+                                        <td>{{ vax.vaccine_type }}</td>
+                                        <td>{{ vax.date }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="alert alert-info">No vaccination records found.</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <div class="card">
+            <div class="card-header text-white">
+                <h5 class="mb-0">Land Records</h5>
+            </div>
+            <div class="card-body">
+                {% if land_records %}
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Land ID</th>
+                                    <th>Area (acres)</th>
+                                    <th>Crop Type</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for record in land_records %}
+                                    <tr>
+                                        <td>{{ record.land_id }}</td>
+                                        <td>{{ record.area }}</td>
+                                        <td>{{ record.crop_type }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="alert alert-info">No land records found.</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .avatar-circle {
+        width: 100px;
+        height: 100px;
+        background-color: #02830fa8;
+        text-align: center;
+        border-radius: 50%;
+        -webkit-border-radius: 50%;
+        -moz-border-radius: 50%;
+        margin-bottom: 15px;
+    }
+    
+    .initials {
+        position: relative;
+        top: 25px;
+        font-size: 40px;
+        line-height: 50px;
+        color: #fff;
+        font-weight: bold;
+    }
+</style>
+{% endblock %}

@@ -7,14 +7,16 @@ from config import Config
 
 # Import the employee blueprint
 from employee_routes import employee_bp
-from citizen_routes import citizen_bp  
+from citizen_routes import citizen_bp
+from monitor_routes import monitor_bp  
 
 app = Flask(__name__)
 app.config.from_object(Config)
 
 # Register blueprint
 app.register_blueprint(employee_bp)
-app.register_blueprint(citizen_bp)  
+app.register_blueprint(citizen_bp) 
+app.register_blueprint(monitor_bp)   
 
 # Custom decorator for role-based access control
 def role_required(allowed_roles):

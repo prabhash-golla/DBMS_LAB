@@ -1,0 +1,375 @@
+{% extends 'base.html' %}
+
+{% block title %}Infrastructure Monitoring - Gram Panchayat{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <div class="d-flex justify-content-between align-items-center">
+            <h2><i class="fas fa-building"></i> Infrastructure Monitoring</h2>
+            <div>
+                <a href="{{ url_for('monitor.monitor_dashboard') }}" class="btn" style="background-color: #02830fa8;">
+                    <i class="fas fa-tachometer-alt"></i> Back to Dashboard
+                </a>
+            </div>
+        </div>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('monitor.monitor_dashboard') }}">Monitor Dashboard</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Infrastructure Monitoring</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card border-secondary h-100">
+            <div class="card-body text-center">
+                <div class="display-4 text-secondary">
+                    {% set total_assets = 0 %}
+                    {% for stat in statistics.asset_type_stats %}
+                        {% set total_assets = total_assets + stat.count %}
+                    {% endfor %}
+                    {{ total_assets }}
+                </div>
+                <h5 class="card-title">Total Assets</h5>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-info h-100">
+            <div class="card-body text-center">
+                <div class="display-4 text-info">{{ statistics.asset_type_stats|length }}</div>
+                <h5 class="card-title">Asset Types</h5>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-dark h-100">
+            <div class="card-body text-center">
+                <div class="display-4 text-dark">
+                    {% if statistics.yearly_stats|length > 0 %}
+                        {{ statistics.yearly_stats[0].year }}
+                    {% else %}
+                        N/A
+                    {% endif %}
+                </div>
+                <h5 class="card-title">Latest Installation Year</h5>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-7 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-secondary text-white">
+                <h5 class="mb-0"><i class="fas fa-chart-pie"></i> Assets by Type</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="assetTypeChart" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-5 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-secondary text-white">
+                <h5 class="mb-0"><i class="fas fa-list"></i> Asset Type Statistics</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm table-striped">
+                        <thead>
+                            <tr>
+                                <th>Asset Type</th>
+                                <th>Count</th>
+                                <th>Percentage</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% set total_assets = namespace(value=0) %}
+                            {% for stat in statistics.asset_type_stats %}
+                                {% set total_assets.value = total_assets.value + stat.count %}
+                            {% endfor %}
+                            
+                            {% for stat in statistics.asset_type_stats %}
+                                <tr>
+                                    <td>{{ stat.type }}</td>
+                                    <td>{{ stat.count }}</td>
+                                    <td>{{ ((stat.count / total_assets.value) * 100)|round(1) }}%</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="fas fa-chart-bar"></i> Assets by Installation Year</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="yearlyChart" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="fas fa-table"></i> Installation Timeline</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm table-striped">
+                        <thead>
+                            <tr>
+                                <th>Year</th>
+                                <th>Assets Installed</th>
+                                <th>Cumulative</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% set cumulative = namespace(value=0) %}
+                            {% for stat in statistics.yearly_stats %}
+                                {% set cumulative.value = cumulative.value + stat.count %}
+                                <tr>
+                                    <td>{{ stat.year }}</td>
+                                    <td>{{ stat.count }}</td>
+                                    <td>{{ cumulative.value }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-history"></i> Recent Assets</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Asset ID</th>
+                                <th>Type</th>
+                                <th>Location</th>
+                                <th>Installation Date</th>
+                                <th>Age</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for asset in statistics.recent_assets %}
+                                <tr>
+                                    <td>{{ asset.id }}</td>
+                                    <td>{{ asset.type }}</td>
+                                    <td>{{ asset.location }}</td>
+                                    <td>
+                                        {% if asset.date %}
+                                            {{ asset.date }}
+                                        {% else %}
+                                            <span class="text-muted">Not recorded</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if asset.date %}
+                                            {% set days = ((now - asset.date).days if now is defined else 0) %}
+                                            {% if days < 30 %}
+                                                <span class="badge bg-success">New</span>
+                                            {% elif days < 365 %}
+                                                <span class="badge bg-info">{{ (days / 30)|round }} months</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">{{ (days / 365)|round(1) }} years</span>
+                                            {% endif %}
+                                        {% else %}
+                                            <span class="text-muted">Unknown</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <div class="card">
+            <div class="card-header bg-dark text-white">
+                <h5 class="mb-0"><i class="fas fa-file-download"></i> Generate Reports</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <div class="card h-100">
+                            <div class="card-body text-center">
+                                <i class="fas fa-file-excel display-4 text-success"></i>
+                                <h5 class="mt-3">Asset Inventory</h5>
+                                <p class="text-muted">Export complete asset records</p>
+                                <a href="#" class="btn btn-outline-success btn-sm" onclick="generateFullReport('inventory')">
+                                    <i class="fas fa-download"></i> Export as Excel
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="card h-100">
+                            <div class="card-body text-center">
+                                <i class="fas fa-file-pdf display-4 text-danger"></i>
+                                <h5 class="mt-3">Infrastructure Report</h5>
+                                <p class="text-muted">Generate comprehensive analysis</p>
+                                <a href="#" class="btn btn-outline-danger btn-sm" onclick="generateFullReport('report')">
+                                    <i class="fas fa-download"></i> Generate PDF
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="card h-100">
+                            <div class="card-body text-center">
+                                <i class="fas fa-map-marked-alt display-4 text-primary"></i>
+                                <h5 class="mt-3">Asset Location Map</h5>
+                                <p class="text-muted">Spatial distribution of assets</p>
+                                <a href="#" class="btn btn-outline-primary btn-sm" onclick="generateFullReport('map')">
+                                    <i class="fas fa-download"></i> Generate Map
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="d-flex justify-content-between mb-4">
+    <a href="{{ url_for('monitor.monitor_dashboard') }}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Back to Dashboard
+    </a>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Asset Type Chart
+        const assetTypeCanvas = document.getElementById('assetTypeChart');
+        if (assetTypeCanvas) {
+            const assetTypes = [];
+            const assetCounts = [];
+            const backgroundColors = [
+                '#6c757d', '#17a2b8', '#007bff', '#28a745', '#ffc107', 
+                '#dc3545', '#6610f2', '#fd7e14', '#20c997', '#e83e8c'
+            ];
+            
+            {% for stat in statistics.asset_type_stats %}
+                assetTypes.push("{{ stat.type }}");
+                assetCounts.push({{ stat.count }});
+            {% endfor %}
+            
+            new Chart(assetTypeCanvas, {
+                type: 'doughnut',
+                data: {
+                    labels: assetTypes,
+                    datasets: [{
+                        data: assetCounts,
+                        backgroundColor: backgroundColors.slice(0, assetTypes.length),
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            labels: {
+                                boxWidth: 15
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Asset Distribution by Type'
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Yearly Installation Chart
+        const yearlyCanvas = document.getElementById('yearlyChart');
+        if (yearlyCanvas) {
+            const years = [];
+            const counts = [];
+            
+            {% for stat in statistics.yearly_stats %}
+                years.push("{{ stat.year }}");
+                counts.push({{ stat.count }});
+            {% endfor %}
+            
+            // Sort years in ascending order
+            const sortedData = years.map((year, i) => ({ year, count: counts[i] }))
+                .sort((a, b) => a.year - b.year);
+            
+            const sortedYears = sortedData.map(d => d.year);
+            const sortedCounts = sortedData.map(d => d.count);
+            
+            new Chart(yearlyCanvas, {
+                type: 'bar',
+                data: {
+                    labels: sortedYears,
+                    datasets: [{
+                        label: 'Assets Installed',
+                        data: sortedCounts,
+                        backgroundColor: '#17a2b8',
+                        borderColor: '#17a2b8',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            precision: 0
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        title: {
+                            display: true,
+                            text: 'Asset Installation Timeline'
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Generate full reports
+        window.generateFullReport = function(reportType) {
+            // In a real implementation, this would call a backend route
+            alert(`Generating ${reportType} report... In a real implementation, this would download the requested report.`);
+        };
+    });
+</script>
+{% endblock %}

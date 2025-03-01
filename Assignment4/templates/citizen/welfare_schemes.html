@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+
+{% block title %}Welfare Schemes - Gram Panchayat{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-12 mb-4">
+            <h2>Welfare Schemes</h2>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Welfare Schemes</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Your Enrolled Schemes -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">Your Enrolled Schemes</h5>
+                </div>
+                <div class="card-body">
+                    {% if enrolled_schemes %}
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Scheme Name</th>
+                                        <th>Description</th>
+                                        <th>Enrollment Date</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for scheme in enrolled_schemes %}
+                                        <tr>
+                                            <td>{{ scheme.name }}</td>
+                                            <td>{{ scheme.description }}</td>
+                                            <td>{{ scheme.enrollment_date }}</td>
+                                            <td><span class="badge bg-success">Active</span></td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            You are not currently enrolled in any welfare schemes.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Available Schemes -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Available Welfare Schemes</h5>
+                </div>
+                <div class="card-body">
+                    {% if all_schemes %}
+                        <div class="row">
+                            {% for scheme in all_schemes %}
+                                <div class="col-md-6 mb-4">
+                                    <div class="card h-100 {% if scheme.is_enrolled %}border-success{% endif %}">
+                                        <div class="card-header">
+                                            <h5 class="mb-0">{{ scheme.name }}</h5>
+                                            {% if scheme.is_enrolled %}
+                                                <span class="badge bg-success float-end">Enrolled</span>
+                                            {% endif %}
+                                        </div>
+                                        <div class="card-body">
+                                            <p>{{ scheme.description }}</p>
+                                            {% if not scheme.is_enrolled %}
+                                                <p class="text-muted">
+                                                    <i class="fas fa-info-circle me-2"></i>
+                                                    Contact your local Panchayat office to apply for this scheme.
+                                                </p>
+                                            {% endif %}
+                                        </div>
+                                        <div class="card-footer">
+                                            {% if scheme.is_enrolled %}
+                                                <button class="btn btn-outline-success" disabled>Already Enrolled</button>
+                                            {% else %}
+                                                <a href="#" class="btn btn-outline-primary" onclick="alert('Please visit the Gram Panchayat office with your ID proof to apply for this scheme.')">
+                                                    How to Apply
+                                                </a>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info">No welfare schemes are currently available.</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

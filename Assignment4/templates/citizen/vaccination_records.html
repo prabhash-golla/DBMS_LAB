@@ -1,0 +1,145 @@
+{% extends 'base.html' %}
+
+{% block title %}Vaccination Records - Gram Panchayat{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-12 mb-4">
+            <h2>Vaccination Records</h2>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Vaccination Records</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">Your Vaccination History</h5>
+                </div>
+                <div class="card-body">
+                    {% if vaccinations %}
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Vaccine Type</th>
+                                        <th>Date Administered</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for vax in vaccinations %}
+                                        <tr>
+                                            <td>{{ vax.vaccine_type }}</td>
+                                            <td>{{ vax.date }}</td>
+                                            <td><span class="badge bg-success">Completed</span></td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            No vaccination records found. Please visit your local health center to update your vaccination history.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Upcoming Vaccination Camps</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-0">General Health Camp</h6>
+                                <small class="text-muted">
+                                    <i class="fas fa-map-marker-alt me-1"></i> Panchayat Office Grounds
+                                </small>
+                            </div>
+                            <div class="text-end">
+                                <span class="badge bg-primary mb-1">15-Mar-2025</span><br>
+                                <small>9:00 AM - 4:00 PM</small>
+                            </div>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-0">Polio Vaccination Drive</h6>
+                                <small class="text-muted">
+                                    <i class="fas fa-map-marker-alt me-1"></i> Primary Health Center
+                                </small>
+                            </div>
+                            <div class="text-end">
+                                <span class="badge bg-primary mb-1">20-Mar-2025</span><br>
+                                <small>10:00 AM - 3:00 PM</small>
+                            </div>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-0">Children's Vaccination Camp</h6>
+                                <small class="text-muted">
+                                    <i class="fas fa-map-marker-alt me-1"></i> Primary School
+                                </small>
+                            </div>
+                            <div class="text-end">
+                                <span class="badge bg-primary mb-1">05-Apr-2025</span><br>
+                                <small>9:00 AM - 1:00 PM</small>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">Health Resources</h5>
+                </div>
+                <div class="card-body">
+                    <h6>Important Health Contacts</h6>
+                    <table class="table table-bordered">
+                        <tbody>
+                            <tr>
+                                <th>Primary Health Center</th>
+                                <td>0123-456789</td>
+                            </tr>
+                            <tr>
+                                <th>Ambulance Service</th>
+                                <td>108</td>
+                            </tr>
+                            <tr>
+                                <th>District Hospital</th>
+                                <td>0123-987654</td>
+                            </tr>
+                            <tr>
+                                <th>COVID-19 Helpline</th>
+                                <td>1075</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    
+                    <h6 class="mt-4">Download Vaccination Certificate</h6>
+                    <p>Visit the official government health portal to download your vaccination certificates.</p>
+                    <a href="#" class="btn btn-outline-primary">
+                        <i class="fas fa-external-link-alt me-2"></i> Health Portal
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -19,7 +19,7 @@
     <div class="row mb-4">
         <div class="col-md-12">
             <div class="card">
-                <div class="card-header bg-info text-white">
+                <div class="card-header  text-white">
                     <h5 class="mb-0">Your Land Holdings</h5>
                 </div>
                 <div class="card-body">
@@ -41,7 +41,7 @@
                                             <td>{{ record.area }}</td>
                                             <td>{{ record.crop_type }}</td>
                                             <td>
-                                                <button class="btn btn-sm btn-outline-primary" onclick="viewDetails('{{ record.land_id }}')">
+                                                <button class="btn btn-sm" onclick="viewDetails('{{ record.land_id }}')" style="background-color: #02830fa8;color:white;">
                                                     <i class="fas fa-eye"></i> View Details
                                                 </button>
                                             </td>
@@ -116,7 +116,7 @@
 <div class="modal fade" id="landDetailsModal" tabindex="-1" aria-labelledby="landDetailsModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
-            <div class="modal-header bg-info text-white">
+            <div class="modal-header text-white" style="background-color: #02830fa8;color:white;">
                 <h5 class="modal-title" id="landDetailsModalLabel">Land Details</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>

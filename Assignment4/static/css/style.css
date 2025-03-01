@@ -107,6 +107,12 @@ body {
     color: #fff;
     border: none;
 }
+
+::-webkit-scrollbar{
+    width: 5px;
+    color: #02830fa8;
+}
+
 .custom-navbar {
     background-color: #02830fa8;
 }

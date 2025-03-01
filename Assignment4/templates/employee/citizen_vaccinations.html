@@ -19,7 +19,7 @@
 <div class="row">
     <div class="col-md-4">
         <div class="card mb-4">
-            <div class="card-header bg-primary text-white">
+            <div class="card-header text-white">
                 <h5 class="mb-0"><i class="bi bi-person-circle"></i> Citizen Information</h5>
             </div>
             <div class="card-body">
@@ -47,7 +47,7 @@
                 </div>
                 
                 <div class="mt-3">
-                    <a href="{{ url_for('employee.add_vaccination') }}" class="btn btn-success btn-sm">
+                    <a href="{{ url_for('employee.add_vaccination') }}" class="btn btn-sm"  style="background-color: #02830fa8;color:white;">
                         <i class="bi bi-plus-circle"></i> Add New Vaccination
                     </a>
                 </div>
@@ -55,7 +55,7 @@
         </div>
         
         <div class="card">
-            <div class="card-header bg-info text-white">
+            <div class="card-header text-white">
                 <h5 class="mb-0"><i class="bi bi-clock-history"></i> Vaccination Summary</h5>
             </div>
             <div class="card-body">
@@ -96,10 +96,10 @@
                                 <td>{{ record.notes or '-' }}</td>
                                 <td>
                                     <div class="btn-group btn-group-sm">
-                                        <a href="{{ url_for('employee.edit_vaccination', vaccination_id=record.vaccination_id) }}" class="btn btn-outline-primary">
+                                        <a href="{{ url_for('employee.edit_vaccination', vaccination_id=record.vaccination_id) }}" class="btn" style="background-color: #02830fa8;color:white;">
                                             <i class="bi bi-pencil"></i>
                                         </a>
-                                        <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ record.vaccination_id }}">
+                                        <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ record.vaccination_id }}">
                                             <i class="bi bi-trash"></i>
                                         </button>
                                     </div>
@@ -139,7 +139,7 @@
         </div>
         
         <div class="card">
-            <div class="card-header bg-success text-white">
+            <div class="card-header text-white">
                 <h5 class="mb-0"><i class="bi bi-clipboard-check"></i> Recommended Vaccines</h5>
             </div>
             <div class="card-body">

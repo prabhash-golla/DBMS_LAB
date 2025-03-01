@@ -20,7 +20,7 @@
     <div class="row mb-4">
         <div class="col-md-12">
             <div class="card">
-                <div class="card-header bg-success text-white">
+                <div class="card-header text-white">
                     <h5 class="mb-0">Your Enrolled Schemes</h5>
                 </div>
                 <div class="card-body">
@@ -62,7 +62,7 @@
     <div class="row">
         <div class="col-md-12">
             <div class="card">
-                <div class="card-header bg-primary text-white">
+                <div class="card-header text-white">
                     <h5 class="mb-0">Available Welfare Schemes</h5>
                 </div>
                 <div class="card-body">
@@ -72,10 +72,10 @@
                                 <div class="col-md-6 mb-4">
                                     <div class="card h-100 {% if scheme.is_enrolled %}border-success{% endif %}">
                                         <div class="card-header">
-                                            <h5 class="mb-0">{{ scheme.name }}</h5>
-                                            {% if scheme.is_enrolled %}
+                                            <h5 class="mb-0">{{ scheme.name }}{% if scheme.is_enrolled %}
                                                 <span class="badge bg-success float-end">Enrolled</span>
-                                            {% endif %}
+                                            {% endif %}</h5>
+                                            
                                         </div>
                                         <div class="card-body">
                                             <p>{{ scheme.description }}</p>
@@ -88,9 +88,9 @@
                                         </div>
                                         <div class="card-footer">
                                             {% if scheme.is_enrolled %}
-                                                <button class="btn btn-outline-success" disabled>Already Enrolled</button>
+                                                <button class="btn" disabled style="background-color: #02830fa8;color:white;">Already Enrolled</button>
                                             {% else %}
-                                                <a href="#" class="btn btn-outline-primary" onclick="alert('Please visit the Gram Panchayat office with your ID proof to apply for this scheme.')">
+                                                <a href="#" class="btn" onclick="alert('Please visit the Gram Panchayat office with your ID proof to apply for this scheme.')" style="background-color: #02830fa8;color:white;">
                                                     How to Apply
                                                 </a>
                                             {% endif %}

@@ -7,7 +7,7 @@
     <div class="col-md-12 mb-4">
         <div class="d-flex justify-content-between align-items-center">
             <h2>Citizen Management</h2>
-            <a href="{{ url_for('employee.add_citizen') }}" class="btn"  style="background-color: #02830fa8;">
+            <a href="{{ url_for('employee.add_citizen') }}" class="btn"  style="background-color: #02830fa8;color:white;">
                 <i class="bi bi-person-plus"></i> Add New Citizen
             </a>
         </div>
@@ -74,7 +74,7 @@
                                 <a href="{{ url_for('employee.view_citizen', citizen_id=citizen.citizen_id) }}" class="btn btn-info" title="View Details">
                                     <i class="bi bi-eye"></i>
                                 </a>
-                                <a href="{{ url_for('employee.edit_citizen', citizen_id=citizen.citizen_id) }}" class="btn" title="Edit">
+                                <a href="{{ url_for('employee.edit_citizen', citizen_id=citizen.citizen_id) }}" class="btn" title="Edit" style="background-color: #02830fa8;color:white;">
                                     <i class="bi bi-pencil"></i>
                                 </a>
                                 <button type="button" class="btn btn-danger delete-btn" 

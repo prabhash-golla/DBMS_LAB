@@ -14,39 +14,39 @@
     <div class="row">
         <!-- Personal Information -->
         <div class="col-md-4 mb-3">
-            <div class="card h-100 border-primary">
-                <div class="card-header bg-primary text-white">
+            <div class="card h-100">
+                <div class="card-header text-white">
                     <h5 class="card-title mb-0"><i class="fas fa-user-circle me-2"></i>My Profile</h5>
                 </div>
                 <div class="card-body">
                     <p class="card-text">View your personal information and household details</p>
-                    <a href="{{ url_for('profile') }}" class="btn btn-outline-primary">View Profile</a>
+                    <a href="{{ url_for('profile') }}" class="btn" style="background-color: #02830fa8;color:white;" >View Profile</a>
                 </div>
             </div>
         </div>
         
         <!-- Welfare Schemes -->
         <div class="col-md-4 mb-3">
-            <div class="card h-100 border-success">
-                <div class="card-header bg-success text-white">
+            <div class="card h-100">
+                <div class="card-header text-white">
                     <h5 class="card-title mb-0"><i class="fas fa-hand-holding-heart me-2"></i>Welfare Schemes</h5>
                 </div>
                 <div class="card-body">
                     <p class="card-text">Check available welfare schemes and eligibility criteria</p>
-                    <a href="{{ url_for('citizen.welfare_schemes') }}" class="btn btn-outline-success">View Schemes</a>
+                    <a href="{{ url_for('citizen.welfare_schemes') }}" class="btn" style="background-color: #02830fa8;color:white;" >View Schemes</a>
                 </div>
             </div>
         </div>
         
         <!-- Land Records -->
         <div class="col-md-4 mb-3">
-            <div class="card h-100 border-info">
-                <div class="card-header bg-info text-white">
+            <div class="card h-100">
+                <div class="card-header text-white">
                     <h5 class="card-title mb-0"><i class="fas fa-map-marked-alt me-2"></i>Land Records</h5>
                 </div>
                 <div class="card-body">
                     <p class="card-text">View your land ownership records and details</p>
-                    <a href="{{ url_for('citizen.land_records') }}" class="btn btn-outline-info">View Records</a>
+                    <a href="{{ url_for('citizen.land_records') }}" class="btn" style="background-color: #02830fa8;color:white;">View Records</a>
                 </div>
             </div>
         </div>
@@ -55,26 +55,26 @@
     <div class="row">
         <!-- Health & Vaccination -->
         <div class="col-md-6 mb-3">
-            <div class="card h-100 border-danger">
-                <div class="card-header bg-danger text-white">
+            <div class="card h-100 ">
+                <div class="card-header text-white">
                     <h5 class="card-title mb-0"><i class="fas fa-syringe me-2"></i>Vaccination Records</h5>
                 </div>
                 <div class="card-body">
                     <p class="card-text">Access your vaccination history and health information</p>
-                    <a href="{{ url_for('citizen.vaccination_records') }}" class="btn btn-outline-danger">View Records</a>
+                    <a href="{{ url_for('citizen.vaccination_records') }}" class="btn" style="background-color: #02830fa8;color:white;">View Records</a>
                 </div>
             </div>
         </div>
         
         <!-- Village Information -->
         <div class="col-md-6 mb-3">
-            <div class="card h-100 border-warning">
-                <div class="card-header bg-warning text-dark">
-                    <h5 class="card-title mb-0"><i class="fas fa-home me-2"></i>Village Information</h5>
+            <div class="card h-100">
+                <div class="card-header text-dark">
+                    <h5 class="card-title mb-0" style="color:white"><i class="fas fa-home me-2"></i>Village Information</h5>
                 </div>
                 <div class="card-body">
                     <p class="card-text">Explore information about village demographics, facilities, and assets</p>
-                    <a href="{{ url_for('citizen.village_info') }}" class="btn btn-outline-warning">View Village Info</a>
+                    <a href="{{ url_for('citizen.village_info') }}" class="btn" style="background-color: #02830fa8;color:white;">View Village Info</a>
                 </div>
             </div>
         </div>
@@ -84,7 +84,7 @@
         <!-- Quick Stats -->
         <div class="col-md-12">
             <div class="card">
-                <div class="card-header bg-dark text-white">
+                <div class="card-header text-white">
                     <h5 class="mb-0">Village Quick Stats</h5>
                 </div>
                 <div class="card-body">

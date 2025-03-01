@@ -25,7 +25,7 @@
                         <a href="{{ url_for('employee.add_asset') }}" class="btn btn-primary">
                             <i class="fas fa-plus-circle"></i> Add New Asset
                         </a>
-                        <a href="{{ url_for('employee.asset_reports') }}" class="btn btn-info ms-2">
+                        <a href="{{ url_for('employee.asset_reports') }}" class="btn ms-2" style="background-color: #02830fa8;color:white;">
                             <i class="fas fa-chart-bar"></i> Asset Reports
                         </a>
                     </div>
@@ -51,16 +51,18 @@
                                 <td>{{ asset.location }}</td>
                                 <td>{{ asset.installation_date if asset.installation_date else 'Not recorded' }}</td>
                                 <td>
-                                    <a href="{{ url_for('employee.view_asset', asset_id=asset.asset_id) }}" class="btn btn-sm btn-info">
-                                        <i class="fas fa-eye"></i>
-                                    </a>
-                                    <a href="{{ url_for('employee.edit_asset', asset_id=asset.asset_id) }}" class="btn btn-sm btn-warning">
-                                        <i class="fas fa-edit"></i>
-                                    </a>
-                                    <button type="button" class="btn btn-sm btn-danger" 
-                                            onclick="confirmDelete({{ asset.asset_id }}, '{{ asset.type }}')">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="{{ url_for('employee.view_asset', asset_id=asset.asset_id) }}" class="btn btn-info">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <a href="{{ url_for('employee.edit_asset', asset_id=asset.asset_id) }}" class="btn" style="background-color: #02830fa8;color:white;">
+                                            <i class="bi bi-pencil"></i> 
+                                        </a>
+                                        <button type="button" class="btn btn-sm btn-danger" 
+                                                onclick="confirmDelete({{ asset.asset_id }}, '{{ asset.type }}')">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
                             {% endfor %}

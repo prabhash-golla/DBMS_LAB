@@ -8,7 +8,7 @@
         <div class="d-flex justify-content-between align-items-center">
             <h2><i class="fas fa-building"></i> Infrastructure Monitoring</h2>
             <div>
-                <a href="{{ url_for('monitor.monitor_dashboard') }}" class="btn" style="background-color: #02830fa8;">
+                <a href="{{ url_for('dashboard') }}" class="btn" style="background-color: #02830fa8;color:white">
                     <i class="fas fa-tachometer-alt"></i> Back to Dashboard
                 </a>
             </div>
@@ -16,7 +16,6 @@
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
-                <li class="breadcrumb-item"><a href="{{ url_for('monitor.monitor_dashboard') }}">Monitor Dashboard</a></li>
                 <li class="breadcrumb-item active" aria-current="page">Infrastructure Monitoring</li>
             </ol>
         </nav>
@@ -65,7 +64,7 @@
 <div class="row">
     <div class="col-md-7 mb-4">
         <div class="card h-100">
-            <div class="card-header bg-secondary text-white">
+            <div class="card-header text-white">
                 <h5 class="mb-0"><i class="fas fa-chart-pie"></i> Assets by Type</h5>
             </div>
             <div class="card-body">
@@ -76,7 +75,7 @@
     
     <div class="col-md-5 mb-4">
         <div class="card h-100">
-            <div class="card-header bg-secondary text-white">
+            <div class="card-header text-white">
                 <h5 class="mb-0"><i class="fas fa-list"></i> Asset Type Statistics</h5>
             </div>
             <div class="card-body">
@@ -113,7 +112,7 @@
 <div class="row">
     <div class="col-md-6 mb-4">
         <div class="card h-100">
-            <div class="card-header bg-info text-white">
+            <div class="card-header text-white">
                 <h5 class="mb-0"><i class="fas fa-chart-bar"></i> Assets by Installation Year</h5>
             </div>
             <div class="card-body">
@@ -124,7 +123,7 @@
     
     <div class="col-md-6 mb-4">
         <div class="card h-100">
-            <div class="card-header bg-info text-white">
+            <div class="card-header text-white">
                 <h5 class="mb-0"><i class="fas fa-table"></i> Installation Timeline</h5>
             </div>
             <div class="card-body">
@@ -158,7 +157,7 @@
 <div class="row">
     <div class="col-md-12 mb-4">
         <div class="card">
-            <div class="card-header bg-primary text-white">
+            <div class="card-header  text-white">
                 <h5 class="mb-0"><i class="fas fa-history"></i> Recent Assets</h5>
             </div>
             <div class="card-body">
@@ -213,7 +212,7 @@
 <div class="row">
     <div class="col-md-12 mb-4">
         <div class="card">
-            <div class="card-header bg-dark text-white">
+            <div class="card-header text-white">
                 <h5 class="mb-0"><i class="fas fa-file-download"></i> Generate Reports</h5>
             </div>
             <div class="card-body">
@@ -261,7 +260,7 @@
 </div>
 
 <div class="d-flex justify-content-between mb-4">
-    <a href="{{ url_for('monitor.monitor_dashboard') }}" class="btn btn-secondary">
+    <a href="{{ url_for('dashboard') }}" class="btn" style="background-color: #02830fa8;color:white">
         <i class="fas fa-arrow-left"></i> Back to Dashboard
     </a>
 </div>

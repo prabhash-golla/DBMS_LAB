@@ -7,7 +7,7 @@
     <div class="col-md-12 mb-4">
         <div class="d-flex justify-content-between align-items-center">
             <h2><i class="fas fa-chart-line"></i> Government Monitor Dashboard</h2>
-            <span class="badge text-white p-2" style="background-color: #007bff;">Role: Government Monitor</span>
+            <span class="badge text-white p-2" style="background-color: #02830fa8;color=white">Role: Government Monitor</span>
         </div>
         <p class="lead text-muted">
             Welcome to the government monitoring portal. Access reports and analytics about the panchayat.
@@ -29,7 +29,7 @@
                             </div>
                             <h5 class="mt-2">Population Overview</h5>
                             <p class="text-muted">Demographic and census data</p>
-                            <a href="{{ url_for('monitor.population_reports') }}" class="btn btn-primary">View Reports</a>
+                            <a href="{{ url_for('monitor.population_reports') }}" class="btn" style="background-color: #02830fa8;color:white">View Reports</a>
                         </div>
                     </div>
                     <div class="col-md-4 mb-3 mb-md-0">
@@ -39,7 +39,7 @@
                             </div>
                             <h5 class="mt-2">Agricultural Data</h5>
                             <p class="text-muted">Land usage and crop statistics</p>
-                            <a href="{{ url_for('monitor.agricultural_statistics') }}" class="btn btn-success">View Reports</a>
+                            <a href="{{ url_for('monitor.agricultural_statistics') }}" class="btn" style="background-color: #02830fa8;color:white">View Reports</a>
                         </div>
                     </div>
                     <div class="col-md-4">
@@ -49,7 +49,7 @@
                             </div>
                             <h5 class="mt-2">Welfare Programs</h5>
                             <p class="text-muted">Scheme enrollment and impact</p>
-                            <a href="{{ url_for('monitor.welfare_scheme_analytics') }}" class="btn btn-info">View Reports</a>
+                            <a href="{{ url_for('monitor.welfare_scheme_analytics') }}" class="btn" style="background-color: #02830fa8;color:white">View Reports</a>
                         </div>
                     </div>
                 </div>
@@ -62,7 +62,7 @@
     <!-- Health and Infrastructure -->
     <div class="col-md-6 mb-4">
         <div class="card h-100 border-0 shadow-sm">
-            <div class="card-header bg-warning text-white">
+            <div class="card-header text-white">
                 <h5 class="mb-0"><i class="fas fa-heartbeat"></i> Health Metrics</h5>
             </div>
             <div class="card-body">
@@ -76,7 +76,7 @@
                             <li>Healthcare facility utilization</li>
                         </ul>
                     </div>
-                    <a href="{{ url_for('monitor.health_metrics') }}" class="btn btn-warning">
+                    <a href="{{ url_for('monitor.health_metrics') }}" class="btn" style="background-color: #02830fa8;color:white">
                         <i class="fas fa-chart-bar"></i> View Health Data
                     </a>
                 </div>
@@ -86,7 +86,7 @@
 
     <div class="col-md-6 mb-4">
         <div class="card h-100 border-0 shadow-sm">
-            <div class="card-header bg-secondary text-white">
+            <div class="card-header text-white">
                 <h5 class="mb-0"><i class="fas fa-road"></i> Infrastructure Monitoring</h5>
             </div>
             <div class="card-body">
@@ -100,7 +100,7 @@
                             <li>Geographic distribution of assets</li>
                         </ul>
                     </div>
-                    <a href="{{ url_for('monitor.infrastructure_monitoring') }}" class="btn btn-secondary">
+                    <a href="{{ url_for('monitor.infrastructure_monitoring') }}" class="btn" style="background-color: #02830fa8;color:white">
                         <i class="fas fa-building"></i> View Infrastructure
                     </a>
                 </div>
@@ -113,7 +113,7 @@
     <!-- Reports and Analytics Section -->
     <div class="col-md-12 mb-4">
         <div class="card border-0 shadow-sm">
-            <div class="card-header bg-dark text-white">
+            <div class="card-header text-white">
                 <h5 class="mb-0"><i class="fas fa-file-alt"></i> Comprehensive Reports</h5>
             </div>
             <div class="card-body">
@@ -127,7 +127,7 @@
                                 </div>
                                 <h5>Population Reports</h5>
                                 <p class="small text-muted">Demographic data and census analytics</p>
-                                <a href="{{ url_for('monitor.population_reports') }}" class="btn btn-sm btn-outline-primary">View Reports</a>
+                                <a href="{{ url_for('monitor.population_reports') }}" class="btn btn-sm" style="background-color: #02830fa8;color:white">View Reports</a>
                             </div>
                         </div>
                     </div>
@@ -141,7 +141,7 @@
                                 </div>
                                 <h5>Agricultural Statistics</h5>
                                 <p class="small text-muted">Land usage and crop production data</p>
-                                <a href="{{ url_for('monitor.agricultural_statistics') }}" class="btn btn-sm btn-outline-success">View Reports</a>
+                                <a href="{{ url_for('monitor.agricultural_statistics') }}" class="btn btn-sm" style="background-color: #02830fa8;color:white">View Reports</a>
                             </div>
                         </div>
                     </div>
@@ -155,7 +155,7 @@
                                 </div>
                                 <h5>Welfare Scheme Analytics</h5>
                                 <p class="small text-muted">Scheme enrollment and impact metrics</p>
-                                <a href="{{ url_for('monitor.welfare_scheme_analytics') }}" class="btn btn-sm btn-outline-info">View Reports</a>
+                                <a href="{{ url_for('monitor.welfare_scheme_analytics') }}" class="btn btn-sm" style="background-color: #02830fa8;color:white">View Reports</a>
                             </div>
                         </div>
                     </div>
@@ -169,7 +169,7 @@
                                 </div>
                                 <h5>Health Metrics</h5>
                                 <p class="small text-muted">Public health and vaccination data</p>
-                                <a href="{{ url_for('monitor.health_metrics') }}" class="btn btn-sm btn-outline-danger">View Reports</a>
+                                <a href="{{ url_for('monitor.health_metrics') }}" class="btn btn-sm" style="background-color: #02830fa8;color:white">View Reports</a>
                             </div>
                         </div>
                     </div>

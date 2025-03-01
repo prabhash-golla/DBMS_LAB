@@ -1,0 +1,184 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Welfare Schemes - Gram Panchayat{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <div class="d-flex justify-content-between align-items-center">
+            <h2>Welfare Schemes Management</h2>
+            <a href="{{ url_for('employee.add_welfare_scheme') }}" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> Add New Scheme
+            </a>
+        </div>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Manage Welfare Schemes</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <div class="row align-items-center">
+            <div class="col">
+                <h5 class="mb-0">Welfare Schemes</h5>
+            </div>
+            <div class="col-auto">
+                <div class="input-group">
+                    <input type="text" id="searchInput" class="form-control" placeholder="Search schemes...">
+                    <button class="btn btn-outline-secondary" type="button" id="clearSearch">
+                        <i class="bi bi-x-circle"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover" id="schemesTable">
+                <thead class="table-primary">
+                    <tr>
+                        <th>ID</th>
+                        <th>Scheme Name</th>
+                        <th>Description</th>
+                        <th>Enrollments</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for scheme in welfare_schemes %}
+                    <tr>
+                        <td>{{ scheme.scheme_id }}</td>
+                        <td>{{ scheme.name }}</td>
+                        <td>{{ scheme.description|truncate(100) }}</td>
+                        <td>
+                            <span class="badge rounded-pill bg-primary">{{ scheme.enrollment_count }}</span>
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <a href="{{ url_for('employee.view_welfare_scheme', scheme_id=scheme.scheme_id) }}" class="btn btn-info" title="View Details">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                <a href="{{ url_for('employee.edit_welfare_scheme', scheme_id=scheme.scheme_id) }}" class="btn btn-primary" title="Edit">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <button type="button" class="btn btn-danger delete-btn" 
+                                        data-bs-toggle="modal" 
+                                        data-bs-target="#deleteConfirmModal" 
+                                        data-scheme-id="{{ scheme.scheme_id }}" 
+                                        data-scheme-name="{{ scheme.name }}"
+                                        data-enrollment-count="{{ scheme.enrollment_count }}"
+                                        title="Delete">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="card-footer">
+        <div class="d-flex justify-content-between align-items-center">
+            <span>Total Schemes: <strong>{{ welfare_schemes|length }}</strong></span>
+            <div>
+                <a href="{{ url_for('employee.manage_enrollments') }}" class="btn btn-outline-primary btn-sm me-2">
+                    <i class="bi bi-person-plus"></i> Manage Enrollments
+                </a>
+                <a href="{{ url_for('dashboard') }}" class="btn btn-secondary btn-sm">Back to Dashboard</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="deleteConfirmModalLabel">Confirm Deletion</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete welfare scheme <strong id="schemeNameSpan"></strong> (ID: <span id="schemeIdSpan"></span>)?</p>
+                <div class="alert alert-danger" id="enrollmentWarning" style="display: none;">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i> This scheme has <strong id="enrollmentCountSpan"></strong> enrollments. Deleting it will also remove all associated enrollments.
+                </div>
+                <div class="alert alert-warning">
+                    <i class="bi bi-info-circle-fill me-2"></i> This action cannot be undone.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form id="deleteForm" method="POST">
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Search functionality
+        const searchInput = document.getElementById('searchInput');
+        const clearSearchBtn = document.getElementById('clearSearch');
+        const table = document.getElementById('schemesTable');
+        const rows = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+        
+        searchInput.addEventListener('keyup', function() {
+            const searchTerm = searchInput.value.toLowerCase();
+            
+            for (let i = 0; i < rows.length; i++) {
+                const rowData = rows[i].textContent.toLowerCase();
+                if (rowData.includes(searchTerm)) {
+                    rows[i].style.display = '';
+                } else {
+                    rows[i].style.display = 'none';
+                }
+            }
+        });
+        
+        clearSearchBtn.addEventListener('click', function() {
+            searchInput.value = '';
+            for (let i = 0; i < rows.length; i++) {
+                rows[i].style.display = '';
+            }
+        });
+        
+        // Delete modal functionality
+        const deleteModal = document.getElementById('deleteConfirmModal');
+        const deleteButtons = document.querySelectorAll('.delete-btn');
+        const deleteForm = document.getElementById('deleteForm');
+        const schemeNameSpan = document.getElementById('schemeNameSpan');
+        const schemeIdSpan = document.getElementById('schemeIdSpan');
+        const enrollmentWarning = document.getElementById('enrollmentWarning');
+        const enrollmentCountSpan = document.getElementById('enrollmentCountSpan');
+        
+        deleteButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const schemeId = this.getAttribute('data-scheme-id');
+                const schemeName = this.getAttribute('data-scheme-name');
+                const enrollmentCount = parseInt(this.getAttribute('data-enrollment-count'));
+                
+                schemeNameSpan.textContent = schemeName;
+                schemeIdSpan.textContent = schemeId;
+                deleteForm.action = "{{ url_for('employee.delete_welfare_scheme', scheme_id=0) }}".replace('0', schemeId);
+                
+                if (enrollmentCount > 0) {
+                    enrollmentWarning.style.display = 'block';
+                    enrollmentCountSpan.textContent = enrollmentCount;
+                } else {
+                    enrollmentWarning.style.display = 'none';
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

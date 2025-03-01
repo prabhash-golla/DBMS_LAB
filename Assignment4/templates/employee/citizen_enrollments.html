@@ -1,0 +1,197 @@
+{% extends 'base.html' %}
+
+{% block title %}Citizen's Enrollments - Gram Panchayat{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <div class="d-flex justify-content-between align-items-center">
+            <h2>Welfare Schemes for {{ citizen.name }}</h2>
+            <a href="{{ url_for('employee.add_enrollment') }}?citizen_id={{ citizen.citizen_id }}" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> Add New Enrollment
+            </a>
+        </div>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('employee.manage_enrollments') }}">Manage Enrollments</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Citizen's Enrollments</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4 mb-4">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Citizen Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3 d-flex justify-content-center">
+                    <div class="avatar-circle">
+                        <span class="initials">{{ citizen.name[0] }}</span>
+                    </div>
+                </div>
+                <table class="table table-striped">
+                    <tbody>
+                        <tr>
+                            <th scope="row">Citizen ID</th>
+                            <td>{{ citizen.citizen_id }}</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Name</th>
+                            <td>{{ citizen.name }}</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Gender</th>
+                            <td>{{ citizen.gender }}</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Date of Birth</th>
+                            <td>{{ citizen.dob }}</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Address</th>
+                            <td>{{ citizen.address }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="text-center mt-3">
+                    <a href="{{ url_for('employee.view_citizen', citizen_id=citizen.citizen_id) }}" class="btn btn-outline-primary">
+                        <i class="bi bi-person-badge"></i> View Complete Profile
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-8 mb-4">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Enrolled Welfare Schemes</h5>
+            </div>
+            <div class="card-body">
+                {% if enrollments %}
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Scheme Name</th>
+                                    <th>Description</th>
+                                    <th>Enrollment Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for enrollment in enrollments %}
+                                    <tr>
+                                        <td>
+                                            <a href="{{ url_for('employee.view_welfare_scheme', scheme_id=enrollment.scheme_id) }}">
+                                                {{ enrollment.scheme_name }}
+                                            </a>
+                                        </td>
+                                        <td>{{ enrollment.scheme_description|truncate(50) }}</td>
+                                        <td>{{ enrollment.enrollment_date }}</td>
+                                        <td>
+                                            <button type="button" class="btn btn-danger btn-sm delete-btn" 
+                                                    data-bs-toggle="modal" 
+                                                    data-bs-target="#deleteConfirmModal" 
+                                                    data-enrollment-id="{{ enrollment.enrollment_id }}" 
+                                                    data-scheme-name="{{ enrollment.scheme_name }}"
+                                                    title="Remove">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle-fill me-2"></i> This citizen is not enrolled in any welfare schemes.
+                    </div>
+                    <div class="text-center mt-3">
+                        <a href="{{ url_for('employee.add_enrollment') }}?citizen_id={{ citizen.citizen_id }}" class="btn btn-primary">
+                            <i class="bi bi-plus-circle"></i> Enroll in a Scheme
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="d-flex justify-content-between mb-4">
+    <a href="{{ url_for('employee.manage_enrollments') }}" class="btn btn-secondary">Back to Enrollments</a>
+    <a href="{{ url_for('employee.manage_welfare_schemes') }}" class="btn btn-outline-primary">Manage Welfare Schemes</a>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="deleteConfirmModalLabel">Confirm Removal</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to remove <strong>{{ citizen.name }}</strong> from the <strong id="schemeNameSpan"></strong> scheme?</p>
+                <div class="alert alert-warning">
+                    <i class="bi bi-info-circle-fill me-2"></i> This action cannot be undone.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form id="deleteForm" method="POST">
+                    <button type="submit" class="btn btn-danger">Remove</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .avatar-circle {
+        width: 100px;
+        height: 100px;
+        background-color: #007bff;
+        text-align: center;
+        border-radius: 50%;
+        -webkit-border-radius: 50%;
+        -moz-border-radius: 50%;
+        margin-bottom: 15px;
+    }
+    
+    .initials {
+        position: relative;
+        top: 25px;
+        font-size: 40px;
+        line-height: 50px;
+        color: #fff;
+        font-weight: bold;
+    }
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Delete modal functionality
+        const deleteButtons = document.querySelectorAll('.delete-btn');
+        const deleteForm = document.getElementById('deleteForm');
+        const schemeNameSpan = document.getElementById('schemeNameSpan');
+        
+        deleteButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const enrollmentId = this.getAttribute('data-enrollment-id');
+                const schemeName = this.getAttribute('data-scheme-name');
+                
+                schemeNameSpan.textContent = schemeName;
+                deleteForm.action = "{{ url_for('employee.delete_enrollment', enrollment_id=0) }}".replace('0', enrollmentId);
+            });
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,181 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Scheme Enrollments - Gram Panchayat{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <div class="d-flex justify-content-between align-items-center">
+            <h2>Welfare Scheme Enrollments</h2>
+            <div>
+                <a href="{{ url_for('employee.add_enrollment') }}" class="btn btn-primary">
+                    <i class="bi bi-person-plus"></i> Add New Enrollment
+                </a>
+            </div>
+        </div>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Manage Enrollments</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <div class="row align-items-center">
+            <div class="col">
+                <h5 class="mb-0">All Scheme Enrollments</h5>
+            </div>
+            <div class="col-auto">
+                <div class="input-group">
+                    <input type="text" id="searchInput" class="form-control" placeholder="Search enrollments...">
+                    <button class="btn btn-outline-secondary" type="button" id="clearSearch">
+                        <i class="bi bi-x-circle"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover" id="enrollmentsTable">
+                <thead class="table-primary">
+                    <tr>
+                        <th>Enrollment ID</th>
+                        <th>Citizen</th>
+                        <th>Scheme</th>
+                        <th>Enrollment Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for enrollment in enrollments %}
+                    <tr>
+                        <td>{{ enrollment.enrollment_id }}</td>
+                        <td>
+                            <a href="{{ url_for('employee.view_citizen', citizen_id=enrollment.citizen_id) }}">
+                                {{ enrollment.citizen_name }}
+                            </a>
+                        </td>
+                        <td>
+                            <a href="{{ url_for('employee.view_welfare_scheme', scheme_id=enrollment.scheme_id) }}">
+                                {{ enrollment.scheme_name }}
+                            </a>
+                        </td>
+                        <td>{{ enrollment.enrollment_date }}</td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <a href="{{ url_for('employee.citizen_enrollments', citizen_id=enrollment.citizen_id) }}" class="btn btn-info" title="View Citizen's Enrollments">
+                                    <i class="bi bi-list-check"></i>
+                                </a>
+                                <button type="button" class="btn btn-danger delete-btn" 
+                                        data-bs-toggle="modal" 
+                                        data-bs-target="#deleteConfirmModal" 
+                                        data-enrollment-id="{{ enrollment.enrollment_id }}" 
+                                        data-citizen-name="{{ enrollment.citizen_name }}"
+                                        data-scheme-name="{{ enrollment.scheme_name }}"
+                                        title="Delete">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="card-footer">
+        <div class="d-flex justify-content-between align-items-center">
+            <span>Total Enrollments: <strong>{{ enrollments|length }}</strong></span>
+            <div>
+                <a href="{{ url_for('employee.manage_welfare_schemes') }}" class="btn btn-outline-primary btn-sm me-2">
+                    <i class="bi bi-card-list"></i> Manage Schemes
+                </a>
+                <a href="{{ url_for('dashboard') }}" class="btn btn-secondary btn-sm">Back to Dashboard</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="deleteConfirmModalLabel">Confirm Deletion</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete this enrollment?</p>
+                <ul class="list-group mb-3">
+                    <li class="list-group-item"><strong>Citizen:</strong> <span id="citizenNameSpan"></span></li>
+                    <li class="list-group-item"><strong>Scheme:</strong> <span id="schemeNameSpan"></span></li>
+                </ul>
+                <div class="alert alert-warning">
+                    <i class="bi bi-info-circle-fill me-2"></i> This action cannot be undone.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form id="deleteForm" method="POST">
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Search functionality
+        const searchInput = document.getElementById('searchInput');
+        const clearSearchBtn = document.getElementById('clearSearch');
+        const table = document.getElementById('enrollmentsTable');
+        const rows = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+        
+        searchInput.addEventListener('keyup', function() {
+            const searchTerm = searchInput.value.toLowerCase();
+            
+            for (let i = 0; i < rows.length; i++) {
+                const rowData = rows[i].textContent.toLowerCase();
+                if (rowData.includes(searchTerm)) {
+                    rows[i].style.display = '';
+                } else {
+                    rows[i].style.display = 'none';
+                }
+            }
+        });
+        
+        clearSearchBtn.addEventListener('click', function() {
+            searchInput.value = '';
+            for (let i = 0; i < rows.length; i++) {
+                rows[i].style.display = '';
+            }
+        });
+        
+        // Delete modal functionality
+        const deleteModal = document.getElementById('deleteConfirmModal');
+        const deleteButtons = document.querySelectorAll('.delete-btn');
+        const deleteForm = document.getElementById('deleteForm');
+        const citizenNameSpan = document.getElementById('citizenNameSpan');
+        const schemeNameSpan = document.getElementById('schemeNameSpan');
+        
+        deleteButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const enrollmentId = this.getAttribute('data-enrollment-id');
+                const citizenName = this.getAttribute('data-citizen-name');
+                const schemeName = this.getAttribute('data-scheme-name');
+                
+                citizenNameSpan.textContent = citizenName;
+                schemeNameSpan.textContent = schemeName;
+                deleteForm.action = "{{ url_for('employee.delete_enrollment', enrollment_id=0) }}".replace('0', enrollmentId);
+            });
+        });
+    });
+</script>
+{% endblock %}

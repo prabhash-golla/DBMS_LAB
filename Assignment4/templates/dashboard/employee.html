@@ -30,7 +30,7 @@
             <div class="card-body">
                 <h5 class="card-title">Land Records</h5>
                 <p class="card-text">View and update land ownership data</p>
-                <a href="#" class="btn btn-primary">Manage Land Records</a>
+                <a href="{{ url_for('employee.manage_land_records') }}" class="btn btn-primary">Manage Land Records</a>
             </div>
         </div>
     </div>
@@ -42,7 +42,7 @@
             <div class="card-body">
                 <h5 class="card-title">Welfare Scheme Enrollments</h5>
                 <p class="card-text">Process welfare scheme enrollments</p>
-                <a href="#" class="btn btn-primary">Manage Enrollments</a>
+                <a href="{{ url_for('employee.manage_welfare_schemes') }}" class="btn btn-primary">Manage Schemes</a>
             </div>
         </div>
     </div>
@@ -51,7 +51,7 @@
             <div class="card-body">
                 <h5 class="card-title">Census Data</h5>
                 <p class="card-text">Record and manage census information</p>
-                <a href="#" class="btn btn-primary">Census Records</a>
+                <a href="{{ url_for('employee.manage_census') }}" class="btn btn-primary">Census Records</a>
             </div>
         </div>
     </div>
@@ -60,7 +60,7 @@
             <div class="card-body">
                 <h5 class="card-title">Assets Management</h5>
                 <p class="card-text">Manage panchayat assets and infrastructure</p>
-                <a href="#" class="btn btn-primary">Manage Assets</a>
+                <a href="#" class="btn btn-primary">Assets Data</a>
             </div>
         </div>
     </div>
@@ -72,7 +72,8 @@
             <div class="card-body">
                 <h5 class="card-title">Vaccination Records</h5>
                 <p class="card-text">Manage vaccination records for citizens</p>
-                <a href="#" class="btn btn-primary">Vaccination Data</a>
+                <a href="{{ url_for('employee.manage_vaccinations') }}" class="btn btn-primary">Vaccination Data</a>
+
             </div>
         </div>
     </div>

@@ -1,0 +1,306 @@
+{% extends 'base.html' %}
+
+{% block title %}Census Reports - Gram Panchayat{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <div class="d-flex justify-content-between align-items-center">
+            <h2>Census Data Reports</h2>
+            <div>
+                <a href="{{ url_for('employee.manage_census') }}" class="btn btn-outline-primary">
+                    <i class="bi bi-list-check"></i> Manage Census Records
+                </a>
+            </div>
+        </div>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('employee.manage_census') }}">Census Records</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Reports</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card border-primary h-100">
+            <div class="card-body text-center">
+                <div class="display-4 text-primary">{{ statistics.household_count }}</div>
+                <h5 class="card-title">Total Households</h5>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-success h-100">
+            <div class="card-body text-center">
+                <div class="display-4 text-success">{{ statistics.avg_household_size }}</div>
+                <h5 class="card-title">Avg. Household Size</h5>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-info h-100">
+            <div class="card-body text-center">
+                <div class="display-4 text-info">
+                    {% set total_pop = namespace(value=0) %}
+                    {% for stat in statistics.gender_stats %}
+                        {% set total_pop.value = total_pop.value + stat.count %}
+                    {% endfor %}
+                    {{ total_pop.value }}
+                </div>
+                <h5 class="card-title">Total Population</h5>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-warning h-100">
+            <div class="card-body text-center">
+                <div class="display-4 text-warning">
+                    {% set total_events = 0 %}
+                    {% for stat in statistics.event_stats %}
+                        {% set total_events = total_events + stat.count %}
+                    {% endfor %}
+                    {{ total_events }}
+                </div>
+                <h5 class="card-title">Total Events</h5>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Event Type Distribution</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="eventTypesChart" height="250"></canvas>
+            </div>
+            <div class="card-footer">
+                <div class="table-responsive">
+                    <table class="table table-sm table-striped mb-0">
+                        <thead>
+                            <tr>
+                                <th>Event Type</th>
+                                <th>Count</th>
+                                <th>Percentage</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% set total_events = namespace(value=0) %}
+                            {% for stat in statistics.event_stats %}
+                                {% set total_events.value = total_events.value + stat.count %}
+                            {% endfor %}
+                            
+                            {% for stat in statistics.event_stats %}
+                                <tr>
+                                    <td>{{ stat.type|replace('_', ' ') }}</td>
+                                    <td>{{ stat.count }}</td>
+                                    <td>{{ ((stat.count / total_events.value) * 100)|round(1) }}%</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">Population by Gender</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="genderChart" height="250"></canvas>
+            </div>
+            <div class="card-footer">
+                <div class="table-responsive">
+                    <table class="table table-sm table-striped mb-0">
+                        <thead>
+                            <tr>
+                                <th>Gender</th>
+                                <th>Count</th>
+                                <th>Percentage</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% set total_population = namespace(value=0) %}
+                            {% for stat in statistics.gender_stats %}
+                                {% set total_population.value = total_population.value + stat.count %}
+                            {% endfor %}
+                            
+                            {% for stat in statistics.gender_stats %}
+                                <tr>
+                                    <td>{{ stat.gender }}</td>
+                                    <td>{{ stat.count }}</td>
+                                    <td>{{ ((stat.count / total_population.value) * 100)|round(1) }}%</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">Recent Census Activity</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Event Type</th>
+                                <th>Date</th>
+                                <th>Citizen</th>
+                                <th>Address</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for activity in statistics.recent_activity %}
+                                <tr>
+                                    <td>
+                                        <span class="badge {% if activity.type == 'Birth' %}bg-success{% elif activity.type == 'Death' %}bg-danger{% elif activity.type == 'Marriage' %}bg-info{% elif activity.type == 'Migration_In' %}bg-primary{% elif activity.type == 'Migration_Out' %}bg-warning{% else %}bg-secondary{% endif %}">
+                                            {{ activity.type|replace('_', ' ') }}
+                                        </span>
+                                    </td>
+                                    <td>{{ activity.date }}</td>
+                                    <td>{{ activity.name }}</td>
+                                    <td>{{ activity.address }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="d-flex justify-content-between mb-4">
+    <a href="{{ url_for('employee.manage_census') }}" class="btn btn-secondary">Back to Census Records</a>
+    <a href="{{ url_for('dashboard') }}" class="btn btn-primary">Back to Dashboard</a>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Event Types Chart
+        const eventTypesCanvas = document.getElementById('eventTypesChart');
+        if (eventTypesCanvas) {
+            const eventTypes = [];
+            const eventCounts = [];
+            const backgroundColors = [];
+            
+            {% for stat in statistics.event_stats %}
+                eventTypes.push("{{ stat.type|replace('_', ' ') }}");
+                eventCounts.push({{ stat.count }});
+                
+                // Assign colors based on event type
+                {% if stat.type == 'Birth' %}
+                    backgroundColors.push('#28a745');
+                {% elif stat.type == 'Death' %}
+                    backgroundColors.push('#dc3545');
+                {% elif stat.type == 'Marriage' %}
+                    backgroundColors.push('#17a2b8');
+                {% elif stat.type == 'Migration_In' %}
+                    backgroundColors.push('#007bff');
+                {% elif stat.type == 'Migration_Out' %}
+                    backgroundColors.push('#ffc107');
+                {% elif stat.type == 'Education_Update' %}
+                    backgroundColors.push('#6f42c1');
+                {% elif stat.type == 'Income_Change' %}
+                    backgroundColors.push('#fd7e14');
+                {% elif stat.type == 'Occupation_Change' %}
+                    backgroundColors.push('#20c997');
+                {% elif stat.type == 'Health_Status_Update' %}
+                    backgroundColors.push('#e83e8c');
+                {% else %}
+                    backgroundColors.push('#6c757d');
+                {% endif %}
+            {% endfor %}
+            
+            new Chart(eventTypesCanvas, {
+                type: 'bar',
+                data: {
+                    labels: eventTypes,
+                    datasets: [{
+                        label: 'Number of Events',
+                        data: eventCounts,
+                        backgroundColor: backgroundColors,
+                        borderColor: backgroundColors,
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            precision: 0
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Gender Distribution Chart
+        const genderCanvas = document.getElementById('genderChart');
+        if (genderCanvas) {
+            const genders = [];
+            const genderCounts = [];
+            const genderColors = [];
+            
+            {% for stat in statistics.gender_stats %}
+                genders.push("{{ stat.gender }}");
+                genderCounts.push({{ stat.count }});
+                
+                // Assign colors based on gender
+                {% if stat.gender == 'Male' %}
+                    genderColors.push('#007bff');
+                {% elif stat.gender == 'Female' %}
+                    genderColors.push('#e83e8c');
+                {% else %}
+                    genderColors.push('#6c757d');
+                {% endif %}
+            {% endfor %}
+            
+            new Chart(genderCanvas, {
+                type: 'doughnut',
+                data: {
+                    labels: genders,
+                    datasets: [{
+                        data: genderCounts,
+                        backgroundColor: genderColors,
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

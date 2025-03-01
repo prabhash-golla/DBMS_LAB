@@ -1,0 +1,214 @@
+{% extends 'base.html' %}
+
+{% block title %}Add Vaccination Record - Gram Panchayat{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <h2>Add Vaccination Record</h2>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('employee.manage_vaccinations') }}">Vaccination Records</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Add Vaccination</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">New Vaccination Record</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('employee.add_vaccination') }}">
+                    <div class="mb-3">
+                        <label for="citizen_id" class="form-label">Citizen <span class="text-danger">*</span></label>
+                        <select class="form-select" id="citizen_id" name="citizen_id" required>
+                            <option value="">Select Citizen</option>
+                            {% for citizen in citizens %}
+                            <option value="{{ citizen[0] }}">{{ citizen[1] }} (DOB: {{ citizen[2] }}, {{ citizen[3] }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="vaccine_type" class="form-label">Vaccine Type <span class="text-danger">*</span></label>
+                        <select class="form-select" id="vaccine_type" name="vaccine_type" required>
+                            <option value="">Select Vaccine</option>
+                            {% for vaccine in vaccine_types %}
+                            <option value="{{ vaccine }}">{{ vaccine }}</option>
+                            {% endfor %}
+                        </select>
+                        <div class="form-text">
+                            <a href="#" data-bs-toggle="modal" data-bs-target="#customVaccineModal">
+                                <i class="bi bi-plus-circle"></i> Add custom vaccine type
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="date_administered" class="form-label">Date Administered</label>
+                        <input type="date" class="form-control" id="date_administered" name="date_administered" max="{{ today }}">
+                        <div class="form-text">If not specified, today's date will be used.</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="notes" class="form-label">Notes</label>
+                        <textarea class="form-control" id="notes" name="notes" rows="3"></textarea>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('employee.manage_vaccinations') }}" class="btn btn-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-primary">Save Record</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="bi bi-info-circle"></i> Information</h5>
+            </div>
+            <div class="card-body">
+                <p>Add vaccination records for citizens in the panchayat. Required fields are marked with an asterisk (*)</p>
+                <h6 class="mt-3">Common Vaccines:</h6>
+                <ul class="small">
+                    <li><strong>BCG:</strong> Tuberculosis vaccine</li>
+                    <li><strong>OPV/IPV:</strong> Polio vaccines</li>
+                    <li><strong>DPT:</strong> Diphtheria, Pertussis, Tetanus</li>
+                    <li><strong>MMR:</strong> Measles, Mumps, Rubella</li>
+                    <li><strong>COVID-19:</strong> Coronavirus vaccine</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="bi bi-search"></i> Quick Citizen Search</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <input type="text" class="form-control" id="citizenSearchInput" placeholder="Search by name...">
+                </div>
+                <div id="citizenSearchResults" class="list-group small" style="max-height: 200px; overflow-y: auto;">
+                    <!-- Results will appear here -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Custom Vaccine Modal -->
+<div class="modal fade" id="customVaccineModal" tabindex="-1" aria-labelledby="customVaccineModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="customVaccineModalLabel">Add Custom Vaccine</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="customVaccineName" class="form-label">Vaccine Name</label>
+                    <input type="text" class="form-control" id="customVaccineName">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="addCustomVaccine">Add</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Custom vaccine functionality
+        const customVaccineInput = document.getElementById('customVaccineName');
+        const addCustomVaccineBtn = document.getElementById('addCustomVaccine');
+        const vaccineTypeSelect = document.getElementById('vaccine_type');
+        
+        addCustomVaccineBtn.addEventListener('click', function() {
+            const customVaccine = customVaccineInput.value.trim();
+            if (customVaccine) {
+                // Check if it already exists
+                let exists = false;
+                for (let i = 0; i < vaccineTypeSelect.options.length; i++) {
+                    if (vaccineTypeSelect.options[i].value === customVaccine) {
+                        exists = true;
+                        break;
+                    }
+                }
+                
+                if (!exists) {
+                    const newOption = new Option(customVaccine, customVaccine);
+                    vaccineTypeSelect.add(newOption);
+                }
+                
+                // Select the new option
+                vaccineTypeSelect.value = customVaccine;
+                
+                // Clear and close modal
+                customVaccineInput.value = '';
+                const modal = bootstrap.Modal.getInstance(document.getElementById('customVaccineModal'));
+                modal.hide();
+            }
+        });
+        
+        // Quick citizen search
+        const citizenSearchInput = document.getElementById('citizenSearchInput');
+        const citizenSearchResults = document.getElementById('citizenSearchResults');
+        const citizenSelect = document.getElementById('citizen_id');
+        
+        citizenSearchInput.addEventListener('keyup', function() {
+            const searchTerm = this.value.toLowerCase();
+            
+            if (searchTerm.length < 2) {
+                citizenSearchResults.innerHTML = '';
+                return;
+            }
+            
+            // Clear previous results
+            citizenSearchResults.innerHTML = '';
+            
+            // Find matching citizens
+            let matches = 0;
+            for (let i = 0; i < citizenSelect.options.length; i++) {
+                const option = citizenSelect.options[i];
+                if (option.value && option.text.toLowerCase().includes(searchTerm)) {
+                    const resultItem = document.createElement('a');
+                    resultItem.href = '#';
+                    resultItem.className = 'list-group-item list-group-item-action py-2';
+                    resultItem.textContent = option.text;
+                    resultItem.dataset.value = option.value;
+                    
+                    resultItem.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        citizenSelect.value = this.dataset.value;
+                        citizenSearchResults.innerHTML = '';
+                        citizenSearchInput.value = '';
+                    });
+                    
+                    citizenSearchResults.appendChild(resultItem);
+                    matches++;
+                    
+                    if (matches >= 5) break; // Limit results
+                }
+            }
+            
+            if (matches === 0) {
+                const noResults = document.createElement('div');
+                noResults.className = 'list-group-item text-muted';
+                noResults.textContent = 'No matching citizens found';
+                citizenSearchResults.appendChild(noResults);
+            }
+        });
+    });
+</script>
+{% endblock %}

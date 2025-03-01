@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Land Record - Gram Panchayat{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <h2>Edit Land Record</h2>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('employee.manage_land_records') }}">Manage Land Records</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Edit Land Record</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Editing Land Record</h5>
+                    <span class="badge bg-light text-dark">ID: {{ land_record.land_id }}</span>
+                </div>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('employee.edit_land_record', land_id=land_record.land_id) }}" id="editLandRecordForm">
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h6 class="form-section-title">Owner Information</h6>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="citizen_id" class="form-label">Land Owner <span class="text-danger">*</span></label>
+                            <select class="form-select" id="citizen_id" name="citizen_id" required>
+                                <option value="">Select a citizen</option>
+                                {% for citizen in citizens %}
+                                <option value="{{ citizen[0] }}" {% if land_record.citizen_id == citizen[0] %}selected{% endif %}>
+                                    {{ citizen[1] }} - {{ citizen[2] }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h6 class="form-section-title">Land Details</h6>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="area_acres" class="form-label">Area (in Acres) <span class="text-danger">*</span></label>
+                            <input type="number" step="0.01" class="form-control" id="area_acres" name="area_acres" value="{{ land_record.area_acres }}" required min="0.01">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="crop_type" class="form-label">Crop Type</label>
+                            <select class="form-select" id="crop_type" name="crop_type">
+                                <option value="">Select a crop type</option>
+                                {% for crop in common_crops %}
+                                <option value="{{ crop }}" {% if land_record.crop_type == crop %}selected{% endif %}>{{ crop }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('employee.manage_land_records') }}" class="btn btn-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block styles %}
+<style>
+    .form-section-title {
+        font-weight: 600;
+        color: #0d6efd;
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid #dee2e6;
+    }
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Form validation
+        const form = document.getElementById('editLandRecordForm');
+        form.addEventListener('submit', function(event) {
+            const citizenSelect = document.getElementById('citizen_id');
+            if (!citizenSelect.value) {
+                event.preventDefault();
+                alert('Please select a land owner.');
+                citizenSelect.focus();
+                return;
+            }
+            
+            const areaInput = document.getElementById('area_acres');
+            if (!areaInput.value || parseFloat(areaInput.value) <= 0) {
+                event.preventDefault();
+                alert('Please enter a valid land area greater than zero.');
+                areaInput.focus();
+                return;
+            }
+        });
+    });
+</script>
+{% endblock %}

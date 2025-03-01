@@ -84,13 +84,13 @@
     </div>
     <div class="card-footer">
         <div class="d-flex justify-content-between align-items-center">
-            <span>Total Schemes: <strong>{{ welfare_schemes|length }}</strong></span>
+            <span class="mb-2">Total Schemes: <strong>{{ welfare_schemes|length }}</strong></span>
             <div>
-                <a href="{{ url_for('employee.manage_enrollments') }}" class="btn btn-outline-primary btn-sm me-2">
+                <a href="{{ url_for('employee.manage_enrollments') }}" class="btn btn-sm me-2 mb-2"  style="background-color: #02830fa8;">
                     <i class="bi bi-person-plus"></i> Manage Enrollments
                 </a>
-                <a href="{{ url_for('dashboard') }}" class="btn btn-secondary btn-sm">Back to Dashboard</a>
-            </div>
+                <a href="{{ url_for('dashboard') }}" class="btn btn-sm mb-2"  style="background-color: #02830fa8;" >Back to Dashboard</a>
+            </div>          
         </div>
     </div>
 </div>

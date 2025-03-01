@@ -39,11 +39,11 @@
                                     Management
                                 </a>
                                 <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                                    <li><a class="dropdown-item" href="#">Citizen Records</a></li>
-                                    <li><a class="dropdown-item" href="#">Land Records</a></li>
-                                    <li><a class="dropdown-item" href="#">Welfare Schemes</a></li>
+                                    <li><a class="dropdown-item" href="{{ url_for('employee.manage_citizens') }}">Citizen Records</a></li>
+                                    <li><a class="dropdown-item" href="{{ url_for('employee.manage_land_records') }}">Land Records</a></li>
+                                    <li><a class="dropdown-item" href="{{ url_for('employee.manage_welfare_schemes') }}">Welfare Schemes</a></li>
                                     <li><hr class="dropdown-divider"></li>
-                                    <li><a class="dropdown-item" href="#">Reports</a></li>
+                                    <li><a class="dropdown-item" href="{{ url_for('employee.census_reports') }}">Reports</a></li>
                                 </ul>
                             </li>
                         {% endif %}

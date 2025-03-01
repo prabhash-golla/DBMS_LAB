@@ -52,6 +52,7 @@ body {
     text-transform: uppercase;
     letter-spacing: 0.5px;
     transition: all 0.3s ease;
+    color: white;
 }
 
 .btn-primary {

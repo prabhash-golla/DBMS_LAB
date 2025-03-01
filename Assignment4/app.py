@@ -52,16 +52,13 @@ def register():
         
         # Connect to database
         conn, cur = get_db_cursor()
-        # Disable autocommit to use transaction
-        conn.autocommit = False
-        
+
         try:
             # Check if username or email already exists
             cur.execute("SELECT * FROM users WHERE username = %s OR email = %s", (username, email))
             if cur.fetchone():
                 flash('Username or email already exists', 'danger')
-                if user_id:
-                    cur.execute("DELETE FROM users WHERE user_id = %s", (user_id,))
+                
                 close_db_connection(conn, cur)
                 
                 # Get roles again for the registration form
@@ -90,8 +87,7 @@ def register():
                 # Validate required citizen fields
                 if not name or not gender or not dob:
                     flash('Please fill in all required citizen information fields (Name, Gender, and Date of Birth).', 'danger')
-                    if user_id:
-                        cur.execute("DELETE FROM users WHERE user_id = %s", (user_id,))
+                    
                     close_db_connection(conn, cur)
                     
                     # Get roles again
@@ -115,8 +111,7 @@ def register():
                     
                     if not household_id:
                         flash('Household ID is required when using an existing household', 'danger')
-                        if user_id:
-                            cur.execute("DELETE FROM users WHERE user_id = %s", (user_id,))
+                        
                         close_db_connection(conn, cur)
                         
                         # Get roles again
@@ -131,8 +126,7 @@ def register():
                     cur.execute("SELECT * FROM households WHERE household_id = %s", (household_id,))
                     if not cur.fetchone():
                         flash('Household ID not found', 'danger')
-                        if user_id:
-                            cur.execute("DELETE FROM users WHERE user_id = %s", (user_id,))
+                        
                         close_db_connection(conn, cur)
                         
                         # Get roles again
@@ -153,8 +147,7 @@ def register():
                     
                     if not household_address:
                         flash('Address is required for a new household', 'danger')
-                        if user_id:
-                            cur.execute("DELETE FROM users WHERE user_id = %s", (user_id,))
+                        
                         close_db_connection(conn, cur)
                         
                         # Get roles again
@@ -189,8 +182,7 @@ def register():
                 
                 if not citizen_id:
                     flash('Citizen ID is required for employee registration. Please register as a citizen first.', 'danger')
-                    if user_id:
-                        cur.execute("DELETE FROM users WHERE user_id = %s", (user_id,))
+                    
                     close_db_connection(conn, cur)
                     
                     # Get roles again
@@ -205,8 +197,7 @@ def register():
                 cur.execute("SELECT * FROM citizens WHERE citizen_id = %s", (citizen_id,))
                 if not cur.fetchone():
                     flash('Citizen ID not found. Please provide a valid Citizen ID.', 'danger')
-                    if user_id:
-                        cur.execute("DELETE FROM users WHERE user_id = %s", (user_id,))
+                    
                     close_db_connection(conn, cur)
                     
                     # Get roles again
@@ -221,8 +212,7 @@ def register():
                 cur.execute("SELECT * FROM panchayat_employees WHERE citizen_id = %s", (citizen_id,))
                 if cur.fetchone():
                     flash('This Citizen ID is already registered as an employee.', 'danger')
-                    if user_id:
-                        cur.execute("DELETE FROM users WHERE user_id = %s", (user_id,))
+                    
                     close_db_connection(conn, cur)
                     
                     # Get roles again
@@ -247,8 +237,6 @@ def register():
             
         except Exception as e:
             # If any error occurs, roll back the entire transaction
-            if user_id:
-                cur.execute("DELETE FROM users WHERE user_id = %s", (user_id,))
             flash(f'An error occurred: {str(e)}', 'danger')
             
             # Get roles again
@@ -259,8 +247,7 @@ def register():
             
             return render_template('register.html', roles=roles)
         finally:
-            # Always restore autocommit mode and close connection
-            conn.autocommit = True
+            
             close_db_connection(conn, cur)
     
     # GET request - display registration form

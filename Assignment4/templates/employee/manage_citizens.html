@@ -7,7 +7,7 @@
     <div class="col-md-12 mb-4">
         <div class="d-flex justify-content-between align-items-center">
             <h2>Citizen Management</h2>
-            <a href="{{ url_for('add_citizen') }}" class="btn btn-primary">
+            <a href="{{ url_for('employee.add_citizen') }}" class="btn btn-primary">
                 <i class="bi bi-person-plus"></i> Add New Citizen
             </a>
         </div>
@@ -71,10 +71,10 @@
                         </td>
                         <td>
                             <div class="btn-group btn-group-sm">
-                                <a href="{{ url_for('view_citizen', citizen_id=citizen.citizen_id) }}" class="btn btn-info" title="View Details">
+                                <a href="{{ url_for('employee.view_citizen', citizen_id=citizen.citizen_id) }}" class="btn btn-info" title="View Details">
                                     <i class="bi bi-eye"></i>
                                 </a>
-                                <a href="{{ url_for('edit_citizen', citizen_id=citizen.citizen_id) }}" class="btn btn-primary" title="Edit">
+                                <a href="{{ url_for('employee.edit_citizen', citizen_id=citizen.citizen_id) }}" class="btn btn-primary" title="Edit">
                                     <i class="bi bi-pencil"></i>
                                 </a>
                                 <button type="button" class="btn btn-danger delete-btn" 
@@ -181,7 +181,7 @@
                 
                 citizenNameSpan.textContent = citizenName;
                 citizenIdSpan.textContent = citizenId;
-                deleteForm.action = `/employee/citizens/delete/${citizenId}`;
+                deleteForm.action = "{{ url_for('employee.delete_citizen', citizen_id=0) }}".replace('0', citizenId);
                 
                 if (username && username !== 'None') {
                     userAccountItem.style.display = 'list-item';

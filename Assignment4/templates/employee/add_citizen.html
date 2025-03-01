@@ -9,7 +9,7 @@
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
-                <li class="breadcrumb-item"><a href="{{ url_for('manage_citizens') }}">Manage Citizens</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('employee.manage_citizens') }}">Manage Citizens</a></li>
                 <li class="breadcrumb-item active" aria-current="page">Add Citizen</li>
             </ol>
         </nav>
@@ -23,7 +23,7 @@
                 <h5 class="mb-0">Citizen Information</h5>
             </div>
             <div class="card-body">
-                <form method="POST" action="{{ url_for('add_citizen') }}" id="addCitizenForm">
+                <form method="POST" action="{{ url_for('employee.add_citizen') }}" id="addCitizenForm">
                     <div class="row mb-4">
                         <div class="col-12">
                             <h6 class="form-section-title">Personal Information</h6>
@@ -142,7 +142,7 @@
                     </div>
                     
                     <div class="d-flex justify-content-between">
-                        <a href="{{ url_for('manage_citizens') }}" class="btn btn-secondary">Cancel</a>
+                        <a href="{{ url_for('employee.manage_citizens') }}" class="btn btn-secondary">Cancel</a>
                         <button type="submit" class="btn btn-primary">Add Citizen</button>
                     </div>
                 </form>

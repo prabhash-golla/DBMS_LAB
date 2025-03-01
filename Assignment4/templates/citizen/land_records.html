@@ -1,0 +1,243 @@
+{% extends 'base.html' %}
+
+{% block title %}Land Records - Gram Panchayat{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-12 mb-4">
+            <h2>Land Records</h2>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Land Records</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">Your Land Holdings</h5>
+                </div>
+                <div class="card-body">
+                    {% if land_records %}
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Land ID</th>
+                                        <th>Area (acres)</th>
+                                        <th>Crop Type</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for record in land_records %}
+                                        <tr>
+                                            <td>{{ record.land_id }}</td>
+                                            <td>{{ record.area }}</td>
+                                            <td>{{ record.crop_type }}</td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline-primary" onclick="viewDetails('{{ record.land_id }}')">
+                                                    <i class="fas fa-eye"></i> View Details
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle me-2"></i>
+                                <strong>Need to update your land information?</strong> Please visit the Gram Panchayat office with your land documents to update crop information or report changes.
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            No land records found. If you own land in the village, please visit the Gram Panchayat office with your documents to register.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if land_records %}
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">Land Use Breakdown</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="landUseChart" width="400" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">Agricultural Resources</h5>
+                </div>
+                <div class="card-body">
+                    <h6>Available Agricultural Resources</h6>
+                    <ul class="list-group">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Soil Testing
+                            <a href="#" class="btn btn-sm btn-outline-primary">Request Test</a>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Seed Distribution
+                            <a href="#" class="btn btn-sm btn-outline-primary">View Schedule</a>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Irrigation Support
+                            <a href="#" class="btn btn-sm btn-outline-primary">Check Eligibility</a>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Crop Insurance
+                            <a href="#" class="btn btn-sm btn-outline-primary">Learn More</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Land Details Modal -->
+<div class="modal fade" id="landDetailsModal" tabindex="-1" aria-labelledby="landDetailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title" id="landDetailsModalLabel">Land Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="landDetailsContent">
+                <div class="text-center">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Sample chart data - In real app, this would be generated from the backend
+    document.addEventListener('DOMContentLoaded', function() {
+        {% if land_records %}
+        // Extract crop types for chart
+        const cropTypes = [];
+        const areas = [];
+        const bgColors = [
+            'rgba(75, 192, 192, 0.7)',
+            'rgba(153, 102, 255, 0.7)',
+            'rgba(255, 159, 64, 0.7)',
+            'rgba(255, 99, 132, 0.7)',
+            'rgba(54, 162, 235, 0.7)'
+        ];
+        
+        {% for record in land_records %}
+        cropTypes.push("{{ record.crop_type }}");
+        areas.push({{ record.area }});
+        {% endfor %}
+        
+        // Create pie chart
+        const ctx = document.getElementById('landUseChart').getContext('2d');
+        const landUseChart = new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: cropTypes,
+                datasets: [{
+                    data: areas,
+                    backgroundColor: bgColors.slice(0, cropTypes.length),
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                    },
+                    title: {
+                        display: true,
+                        text: 'Land Use by Crop Type (acres)'
+                    }
+                }
+            }
+        });
+        {% endif %}
+    });
+
+    // Function to handle opening the land details modal
+    function viewDetails(landId) {
+        const modal = new bootstrap.Modal(document.getElementById('landDetailsModal'));
+        
+        // In a real app, you'd fetch details from server
+        // For now, just show a static example
+        document.getElementById('landDetailsContent').innerHTML = `
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>Land ID: ${landId}</h5>
+                    <table class="table table-bordered">
+                        <tr>
+                            <th>Registration Number</th>
+                            <td>REG-${landId}-${Math.floor(Math.random() * 10000)}</td>
+                        </tr>
+                        <tr>
+                            <th>Survey Number</th>
+                            <td>SVY-${Math.floor(Math.random() * 1000)}</td>
+                        </tr>
+                        <tr>
+                            <th>Land Type</th>
+                            <td>Agricultural</td>
+                        </tr>
+                        <tr>
+                            <th>Registration Date</th>
+                            <td>01-06-2020</td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="col-md-6">
+                    <h5>Soil Information</h5>
+                    <table class="table table-bordered">
+                        <tr>
+                            <th>Soil Type</th>
+                            <td>Loamy</td>
+                        </tr>
+                        <tr>
+                            <th>pH Level</th>
+                            <td>6.8</td>
+                        </tr>
+                        <tr>
+                            <th>Fertility Rating</th>
+                            <td>Good</td>
+                        </tr>
+                        <tr>
+                            <th>Last Tested</th>
+                            <td>15-01-2023</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        `;
+        modal.show();
+    }
+</script>
+{% endblock %}
+{% endblock %}

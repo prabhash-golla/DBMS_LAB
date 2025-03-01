@@ -7,12 +7,14 @@ from config import Config
 
 # Import the employee blueprint
 from employee_routes import employee_bp
+from citizen_routes import citizen_bp  
 
 app = Flask(__name__)
 app.config.from_object(Config)
 
 # Register blueprint
 app.register_blueprint(employee_bp)
+app.register_blueprint(citizen_bp)  
 
 # Custom decorator for role-based access control
 def role_required(allowed_roles):
@@ -302,7 +304,41 @@ def dashboard():
     elif role == 'panchayat_employee':
         return render_template('dashboard/employee.html')
     elif role == 'citizen':
-        return render_template('dashboard/citizen.html')
+        # Initialize village_stats with default values
+        village_stats = {
+            'population': 0,
+            'families': 0,
+            'land_area': 0,
+            'schemes': 0
+        }
+        
+        # Try to get actual data
+        try:
+            conn, cur = get_db_cursor()
+            
+            # Get population count
+            cur.execute("SELECT COUNT(*) FROM citizens")
+            village_stats['population'] = cur.fetchone()[0]
+            
+            # Get household count
+            cur.execute("SELECT COUNT(DISTINCT household_id) FROM households")
+            village_stats['families'] = cur.fetchone()[0]
+            
+            # Get total land area
+            cur.execute("SELECT SUM(area_acres) FROM land_records")
+            total_area = cur.fetchone()[0]
+            village_stats['land_area'] = total_area if total_area else 0
+            
+            # Get count of welfare schemes
+            cur.execute("SELECT COUNT(*) FROM welfare_schemes")
+            village_stats['schemes'] = cur.fetchone()[0]
+            
+            close_db_connection(conn, cur)
+        except Exception as e:
+            print(f"Error fetching village stats: {e}")
+            # If there's an error, we'll use the default values initialized above
+        
+        return render_template('dashboard/citizen.html', village_stats=village_stats)
     elif role == 'government_monitor':
         return render_template('dashboard/monitor.html')
     else:

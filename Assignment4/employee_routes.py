@@ -2005,3 +2005,273 @@ def get_recommended_vaccines(age):
         ])
     
     return recommended
+
+# Asset Management Routes
+@employee_bp.route('/assets')
+@role_required(['admin', 'panchayat_employee'])
+def manage_assets():
+    conn, cur = get_db_cursor()
+    try:
+        # Fetch all assets
+        cur.execute("""
+            SELECT asset_id, type, location, installation_date
+            FROM assets
+            ORDER BY asset_id
+        """)
+        records = cur.fetchall()
+        
+        # Format the data for template
+        assets = []
+        for record in records:
+            assets.append({
+                'asset_id': record[0],
+                'type': record[1],
+                'location': record[2],
+                'installation_date': record[3]
+            })
+        
+        return render_template('employee/manage_assets.html', assets=assets)
+    except Exception as e:
+        flash(f'An error occurred: {str(e)}', 'danger')
+        return redirect(url_for('dashboard'))
+    finally:
+        close_db_connection(conn, cur)
+
+@employee_bp.route('/assets/add', methods=['GET', 'POST'])
+@role_required(['admin', 'panchayat_employee'])
+def add_asset():
+    if request.method == 'POST':
+        # Extract form data
+        asset_type = request.form['type']
+        location = request.form['location']
+        installation_date = request.form.get('installation_date') or None
+        
+        # Validate required fields
+        if not asset_type or not location:
+            flash('Please fill in all required fields.', 'danger')
+            return redirect(url_for('employee.add_asset'))
+        
+        conn, cur = get_db_cursor()
+        try:
+            # Insert new asset
+            if installation_date:
+                cur.execute(
+                    "INSERT INTO assets (type, location, installation_date) VALUES (%s, %s, %s) RETURNING asset_id",
+                    (asset_type, location, installation_date)
+                )
+            else:
+                cur.execute(
+                    "INSERT INTO assets (type, location) VALUES (%s, %s) RETURNING asset_id",
+                    (asset_type, location)
+                )
+            asset_id = cur.fetchone()[0]
+            
+            flash(f'Asset added successfully with ID: {asset_id}', 'success')
+            return redirect(url_for('employee.manage_assets'))
+        except Exception as e:
+            flash(f'An error occurred: {str(e)}', 'danger')
+            return redirect(url_for('employee.add_asset'))
+        finally:
+            close_db_connection(conn, cur)
+    
+    # GET request - show form
+    # Define common asset types
+    asset_types = [
+        "Road", "Bridge", "Building", "Water Tank", "Street Light", "Drainage", 
+        "Public Toilet", "Playground", "Community Center", "School", "Health Center", "Other"
+    ]
+    
+    return render_template('employee/add_asset.html', asset_types=asset_types)
+
+@employee_bp.route('/assets/edit/<int:asset_id>', methods=['GET', 'POST'])
+@role_required(['admin', 'panchayat_employee'])
+def edit_asset(asset_id):
+    if request.method == 'POST':
+        # Extract form data
+        asset_type = request.form['type']
+        location = request.form['location']
+        installation_date = request.form.get('installation_date') or None
+        
+        # Validate required fields
+        if not asset_type or not location:
+            flash('Please fill in all required fields.', 'danger')
+            return redirect(url_for('employee.edit_asset', asset_id=asset_id))
+        
+        conn, cur = get_db_cursor()
+        try:
+            # Update asset
+            if installation_date:
+                cur.execute(
+                    "UPDATE assets SET type = %s, location = %s, installation_date = %s WHERE asset_id = %s",
+                    (asset_type, location, installation_date, asset_id)
+                )
+            else:
+                cur.execute(
+                    "UPDATE assets SET type = %s, location = %s WHERE asset_id = %s",
+                    (asset_type, location, asset_id)
+                )
+            
+            flash('Asset updated successfully.', 'success')
+            return redirect(url_for('employee.manage_assets'))
+        except Exception as e:
+            flash(f'An error occurred: {str(e)}', 'danger')
+            return redirect(url_for('employee.edit_asset', asset_id=asset_id))
+        finally:
+            close_db_connection(conn, cur)
+    
+    # GET request - show form with asset data
+    conn, cur = get_db_cursor()
+    try:
+        # Get asset information
+        cur.execute("SELECT asset_id, type, location, installation_date FROM assets WHERE asset_id = %s", (asset_id,))
+        record = cur.fetchone()
+        
+        if not record:
+            flash('Asset not found.', 'danger')
+            return redirect(url_for('employee.manage_assets'))
+        
+        asset = {
+            'asset_id': record[0],
+            'type': record[1],
+            'location': record[2],
+            'installation_date': record[3]
+        }
+        
+        # Define common asset types
+        asset_types = [
+            "Road", "Bridge", "Building", "Water Tank", "Street Light", "Drainage", 
+            "Public Toilet", "Playground", "Community Center", "School", "Health Center", "Other"
+        ]
+        
+        return render_template('employee/edit_asset.html', asset=asset, asset_types=asset_types)
+    except Exception as e:
+        flash(f'An error occurred: {str(e)}', 'danger')
+        return redirect(url_for('employee.manage_assets'))
+    finally:
+        close_db_connection(conn, cur)
+
+@employee_bp.route('/assets/delete/<int:asset_id>', methods=['POST'])
+@role_required(['admin', 'panchayat_employee'])
+def delete_asset(asset_id):
+    conn, cur = get_db_cursor()
+    try:
+        # Check if asset exists
+        cur.execute("SELECT asset_id FROM assets WHERE asset_id = %s", (asset_id,))
+        if not cur.fetchone():
+            flash('Asset not found.', 'danger')
+            return redirect(url_for('employee.manage_assets'))
+        
+        # Delete the asset
+        cur.execute("DELETE FROM assets WHERE asset_id = %s", (asset_id,))
+        
+        flash('Asset deleted successfully.', 'success')
+    except Exception as e:
+        flash(f'An error occurred: {str(e)}', 'danger')
+    finally:
+        close_db_connection(conn, cur)
+    
+    return redirect(url_for('employee.manage_assets'))
+
+@employee_bp.route('/assets/view/<int:asset_id>')
+@role_required(['admin', 'panchayat_employee'])
+def view_asset(asset_id):
+    conn, cur = get_db_cursor()
+    try:
+        # Get asset information
+        cur.execute("""
+            SELECT asset_id, type, location, installation_date
+            FROM assets
+            WHERE asset_id = %s
+        """, (asset_id,))
+        record = cur.fetchone()
+        
+        if not record:
+            flash('Asset not found.', 'danger')
+            return redirect(url_for('employee.manage_assets'))
+        
+        asset = {
+            'asset_id': record[0],
+            'type': record[1],
+            'location': record[2],
+            'installation_date': record[3]
+        }
+        
+        # Get age of the asset
+        if asset['installation_date']:
+            from datetime import datetime
+            installation_date = datetime.strptime(str(asset['installation_date']), '%Y-%m-%d')
+            today = datetime.today()
+            age_days = (today - installation_date).days
+            
+            years = age_days // 365
+            remaining_days = age_days % 365
+            months = remaining_days // 30
+            days = remaining_days % 30
+            
+            age_str = ""
+            if years > 0:
+                age_str += f"{years} year{'s' if years != 1 else ''} "
+            if months > 0:
+                age_str += f"{months} month{'s' if months != 1 else ''} "
+            if days > 0:
+                age_str += f"{days} day{'s' if days != 1 else ''}"
+                
+            asset['age'] = age_str.strip()
+        else:
+            asset['age'] = "Unknown"
+        
+        return render_template('employee/view_asset.html', asset=asset)
+    except Exception as e:
+        flash(f'An error occurred: {str(e)}', 'danger')
+        return redirect(url_for('employee.manage_assets'))
+    finally:
+        close_db_connection(conn, cur)
+
+@employee_bp.route('/assets/reports')
+@role_required(['admin', 'panchayat_employee'])
+def asset_reports():
+    conn, cur = get_db_cursor()
+    try:
+        # Get statistics for different asset types
+        cur.execute("""
+            SELECT type, COUNT(*) as count
+            FROM assets
+            GROUP BY type
+            ORDER BY count DESC
+        """)
+        asset_type_stats = cur.fetchall()
+        
+        # Get assets by installation year
+        cur.execute("""
+            SELECT EXTRACT(YEAR FROM installation_date) as year, COUNT(*) as count
+            FROM assets
+            WHERE installation_date IS NOT NULL
+            GROUP BY year
+            ORDER BY year DESC
+        """)
+        yearly_stats = cur.fetchall()
+        
+        # Get recent asset additions
+        cur.execute("""
+            SELECT asset_id, type, location, installation_date
+            FROM assets
+            ORDER BY 
+                CASE WHEN installation_date IS NULL THEN '1900-01-01'::date ELSE installation_date END DESC,
+                asset_id DESC
+            LIMIT 10
+        """)
+        recent_assets = cur.fetchall()
+        
+        # Format data for template
+        statistics = {
+            'asset_type_stats': [{'type': stat[0], 'count': stat[1]} for stat in asset_type_stats],
+            'yearly_stats': [{'year': int(stat[0]), 'count': stat[1]} for stat in yearly_stats],
+            'recent_assets': [{'id': asset[0], 'type': asset[1], 'location': asset[2], 'date': asset[3]} for asset in recent_assets]
+        }
+        
+        return render_template('employee/asset_reports.html', statistics=statistics)
+    except Exception as e:
+        flash(f'An error occurred: {str(e)}', 'danger')
+        return redirect(url_for('employee.manage_assets'))
+    finally:
+        close_db_connection(conn, cur)

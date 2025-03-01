@@ -1,0 +1,251 @@
+{% extends 'base.html' %}
+
+{% block title %}Village Information - Gram Panchayat{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-12 mb-4">
+            <h2>Village Information</h2>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Village Information</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Village Statistics -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0">Village Statistics</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 mb-3 text-center">
+                            <div class="card h-100 bg-light">
+                                <div class="card-body">
+                                    <i class="fas fa-users fa-3x text-primary mb-3"></i>
+                                    <h2 class="mb-0">{{ village_stats.population }}</h2>
+                                    <p class="text-muted">Total Population</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3 text-center">
+                            <div class="card h-100 bg-light">
+                                <div class="card-body">
+                                    <i class="fas fa-home fa-3x text-success mb-3"></i>
+                                    <h2 class="mb-0">{{ village_stats.families }}</h2>
+                                    <p class="text-muted">Total Households</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3 text-center">
+                            <div class="card h-100 bg-light">
+                                <div class="card-body">
+                                    <i class="fas fa-map fa-3x text-info mb-3"></i>
+                                    <h2 class="mb-0">{{ village_stats.land_area|default(0)|round|int }}</h2>
+                                    <p class="text-muted">Land Area (acres)</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3 text-center">
+                            <div class="card h-100 bg-light">
+                                <div class="card-body">
+                                    <i class="fas fa-handshake fa-3x text-danger mb-3"></i>
+                                    <h2 class="mb-0">{{ village_stats.schemes }}</h2>
+                                    <p class="text-muted">Welfare Schemes</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Village Facilities -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Village Facilities</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Primary Health Center
+                            <span class="badge bg-success">Available</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Primary School
+                            <span class="badge bg-success">Available</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Secondary School
+                            <span class="badge bg-success">Available</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Bank Branch
+                            <span class="badge bg-success">Available</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Post Office
+                            <span class="badge bg-success">Available</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Public Library
+                            <span class="badge bg-warning">Under Construction</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">Infrastructure Status</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Water Supply
+                            <div class="progress" style="width: 40%;">
+                                <div class="progress-bar bg-success" role="progressbar" style="width: 95%;" aria-valuenow="95" aria-valuemin="0" aria-valuemax="100">95%</div>
+                            </div>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Electricity
+                            <div class="progress" style="width: 40%;">
+                                <div class="progress-bar bg-success" role="progressbar" style="width: 100%;" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100">100%</div>
+                            </div>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Road Connectivity
+                            <div class="progress" style="width: 40%;">
+                                <div class="progress-bar bg-success" role="progressbar" style="width: 80%;" aria-valuenow="80" aria-valuemin="0" aria-valuemax="100">80%</div>
+                            </div>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Internet Connectivity
+                            <div class="progress" style="width: 40%;">
+                                <div class="progress-bar bg-warning" role="progressbar" style="width: 60%;" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100">60%</div>
+                            </div>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Sanitation
+                            <div class="progress" style="width: 40%;">
+                                <div class="progress-bar bg-info" role="progressbar" style="width: 75%;" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100">75%</div>
+                            </div>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Waste Management
+                            <div class="progress" style="width: 40%;">
+                                <div class="progress-bar bg-warning" role="progressbar" style="width: 50%;" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100">50%</div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Village Programs -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">Ongoing Village Development Programs</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Program Name</th>
+                                    <th>Description</th>
+                                    <th>Status</th>
+                                    <th>Completion</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Drinking Water Project</td>
+                                    <td>Installation of clean drinking water facilities</td>
+                                    <td><span class="badge bg-success">In Progress</span></td>
+                                    <td>75%</td>
+                                </tr>
+                                <tr>
+                                    <td>Solar Street Lights</td>
+                                    <td>Installation of solar-powered street lights</td>
+                                    <td><span class="badge bg-success">In Progress</span></td>
+                                    <td>60%</td>
+                                </tr>
+                                <tr>
+                                    <td>Community Center</td>
+                                    <td>Construction of new community center building</td>
+                                    <td><span class="badge bg-warning">Planning</span></td>
+                                    <td>10%</td>
+                                </tr>
+                                <tr>
+                                    <td>Health Camp</td>
+                                    <td>Monthly health check-up camps</td>
+                                    <td><span class="badge bg-success">Ongoing</span></td>
+                                    <td>N/A</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contact Information -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">Panchayat Contact Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Office Address</h6>
+                            <p>
+                                Gram Panchayat Office<br>
+                                Main Road, Village Center<br>
+                                PIN: 123456
+                            </p>
+                            
+                            <h6>Office Hours</h6>
+                            <p>
+                                Monday to Friday: 9:00 AM - 5:00 PM<br>
+                                Saturday: 9:00 AM - 1:00 PM<br>
+                                Sunday: Closed
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Contact Details</h6>
+                            <p>
+                                <i class="fas fa-phone me-2"></i> Phone: 0123-456789<br>
+                                <i class="fas fa-envelope me-2"></i> Email: contact@grampanchayat.gov.in<br>
+                                <i class="fas fa-globe me-2"></i> Website: www.grampanchayat.gov.in
+                            </p>
+                            
+                            <h6>Emergency Contact</h6>
+                            <p>
+                                <i class="fas fa-phone me-2"></i> Helpline: 0123-456780<br>
+                                <i class="fas fa-ambulance me-2"></i> Ambulance: 108
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,153 @@
+{% extends 'base.html' %}
+
+{% block title %}Asset Reports - Gram Panchayat{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <h2>Asset Reports</h2>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('employee.manage_assets') }}">Manage Assets</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Asset Reports</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Assets by Type -->
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Assets by Type</h5>
+            </div>
+            <div class="card-body">
+                {% if statistics.asset_type_stats %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Asset Type</th>
+                                <th>Count</th>
+                                <th>Percentage</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% set total = statistics.asset_type_stats|sum(attribute='count') %}
+                            {% for stat in statistics.asset_type_stats %}
+                            <tr>
+                                <td>{{ stat.type }}</td>
+                                <td>{{ stat.count }}</td>
+                                <td>{{ ((stat.count / total) * 100)|round(1) }}%</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot class="table-light">
+                            <tr>
+                                <th>Total</th>
+                                <th>{{ total }}</th>
+                                <th>100%</th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+                {% else %}
+                <div class="alert alert-info">No asset data available.</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Assets by Installation Year -->
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Assets by Installation Year</h5>
+            </div>
+            <div class="card-body">
+                {% if statistics.yearly_stats %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Year</th>
+                                <th>Number of Assets</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for stat in statistics.yearly_stats %}
+                            <tr>
+                                <td>{{ stat.year }}</td>
+                                <td>{{ stat.count }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="alert alert-info">No installation date data available.</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Recent Assets -->
+    <div class="col-md-12 mb-4">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Recent Assets</h5>
+            </div>
+            <div class="card-body">
+                {% if statistics.recent_assets %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>ID</th>
+                                <th>Type</th>
+                                <th>Location</th>
+                                <th>Installation Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for asset in statistics.recent_assets %}
+                            <tr>
+                                <td>{{ asset.id }}</td>
+                                <td>{{ asset.type }}</td>
+                                <td>{{ asset.location }}</td>
+                                <td>{{ asset.date if asset.date else 'Not recorded' }}</td>
+                                <td>
+                                    <a href="{{ url_for('employee.view_asset', asset_id=asset.id) }}" class="btn btn-sm btn-info">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="alert alert-info">No recent assets available.</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <a href="{{ url_for('employee.manage_assets') }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Assets Management
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

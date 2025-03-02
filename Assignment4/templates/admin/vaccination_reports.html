@@ -1,0 +1,424 @@
+{% extends 'base.html' %}
+
+{% block title %}Vaccination Reports - Gram Panchayat{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <h2>Vaccination Reports</h2>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('admin.manage_vaccinations') }}">Vaccination Records</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Reports</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Vaccine Type Distribution -->
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header text-white">
+                <h5 class="mb-0"><i class="bi bi-pie-chart"></i> Vaccine Type Distribution</h5>
+            </div>
+            <div class="card-body">
+                {% if statistics.vaccine_stats %}
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Vaccine Type</th>
+                                <th>Count</th>
+                                <th>Percentage</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% set total = statistics.vaccine_stats|sum(attribute='count') %}
+                            {% for stat in statistics.vaccine_stats %}
+                            <tr>
+                                <td>{{ stat.type }}</td>
+                                <td>{{ stat.count }}</td>
+                                <td>
+                                    {% set percentage = (stat.count / total * 100)|round(1) %}
+                                    <div class="progress" style="height: 20px;">
+                                        <div class="progress-bar" role="progressbar" 
+                                             style="width: {{ percentage }}%;" 
+                                             aria-valuenow="{{ percentage }}" 
+                                             aria-valuemin="0" 
+                                             aria-valuemax="100">{{ percentage }}%</div>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot>
+                            <tr class="fw-bold">
+                                <td>Total</td>
+                                <td colspan="2">{{ total }}</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+                {#<div class="text-center mt-3">
+                    <a href="#" class="btn btn-sm" onclick="exportTable('vaccine-type-table', 'Vaccine_Type_Distribution.csv')"  style="background-color: #02830fa8;color:white;">
+                        <i class="bi bi-download"></i> Export as CSV
+                    </a>
+                </div>#}
+                {% else %}
+                <div class="alert alert-info">No data available</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Age Group Distribution -->
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header text-white">
+                <h5 class="mb-0"><i class="bi bi-bar-chart"></i> Age Group Distribution</h5>
+            </div>
+            <div class="card-body">
+                {% if statistics.age_group_stats %}
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Age Group</th>
+                                <th>Number of Citizens</th>
+                                <th>Percentage</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% set total = statistics.age_group_stats|sum(attribute='count') %}
+                            {% for stat in statistics.age_group_stats %}
+                            <tr>
+                                <td>{{ stat.age_group }}</td>
+                                <td>{{ stat.count }}</td>
+                                <td>
+                                    {% set percentage = (stat.count / total * 100)|round(1) %}
+                                    <div class="progress" style="height: 20px;">
+                                        <div class="progress-bar bg-success" role="progressbar" 
+                                             style="width: {{ percentage }}%;" 
+                                             aria-valuenow="{{ percentage }}" 
+                                             aria-valuemin="0" 
+                                             aria-valuemax="100">{{ percentage }}%</div>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot>
+                            <tr class="fw-bold">
+                                <td>Total</td>
+                                <td colspan="2">{{ total }}</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+                {#<div class="text-center mt-3">
+                    <a href="#" class="btn btn-sm" onclick="exportTable('age-group-table', 'Age_Group_Distribution.csv')" style="background-color: #02830fa8;color:white;">
+                        <i class="bi bi-download"></i> Export as CSV
+                    </a>
+                </div>#}
+                {% else %}
+                <div class="alert alert-info">No data available</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Monthly Vaccination Trends -->
+    <div class="col-md-8 mb-4">
+        <div class="card h-100">
+            <div class="card-header text-white">
+                <h5 class="mb-0"><i class="bi bi-graph-up"></i> Monthly Vaccination Trends</h5>
+            </div>
+            <div class="card-body">
+                {% if statistics.monthly_stats %}
+                <canvas id="monthlyChart" width="400" height="200"></canvas>
+                <div class="table-responsive mt-4">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Month</th>
+                                <th>Count</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for stat in statistics.monthly_stats %}
+                            <tr>
+                                <td>{{ stat.month }}</td>
+                                <td>{{ stat.count }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {#<div class="text-center mt-3">
+                    <a href="#" class="btn btn-outline-info btn-sm" onclick="exportTable('monthly-stats-table', 'Monthly_Vaccination_Trends.csv')">
+                        <i class="bi bi-download"></i> Export as CSV
+                    </a>
+                </div>#}
+                {% else %}
+                <div class="alert alert-info">No data available</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recent Activity -->
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            <div class="card-header text-dark">
+                <h5 class="mb-0"><i class="bi bi-activity"></i> Recent Vaccination Activity</h5>
+            </div>
+            <div class="card-body">
+                {% if statistics.recent_activity %}
+                <div class="list-group list-group-flush">
+                    {% for activity in statistics.recent_activity %}
+                    <div class="list-group-item">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">{{ activity.type }}</h6>
+                            <small>{{ activity.date }}</small>
+                        </div>
+                        <p class="mb-1">{{ activity.name }}</p>
+                        <small class="text-muted">DOB: {{ activity.dob }}</small>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="alert alert-info">No recent activity</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Export Options -->
+    <div class="col-md-12 mb-4">
+        <div class="card">
+            <div class="card-header text-white">
+                <h5 class="mb-0"><i class="bi bi-file-earmark-arrow-down"></i> Generate Full Reports</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <div class="card h-100">
+                            <div class="card-body text-center">
+                                <i class="bi bi-file-earmark-excel display-4 text-success"></i>
+                                <h5 class="mt-3">Full Vaccination Data</h5>
+                                <p class="text-muted">Export complete vaccination records</p>
+                                <a href="#" class="btn btn-outline-success btn-sm" onclick="generateFullReport('vaccinations')">
+                                    <i class="bi bi-download"></i> Export as Excel
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="card h-100">
+                            <div class="card-body text-center">
+                                <i class="bi bi-file-earmark-pdf display-4 text-danger"></i>
+                                <h5 class="mt-3">Vaccination Coverage Report</h5>
+                                <p class="text-muted">Generate coverage summary by area</p>
+                                <a href="#" class="btn btn-outline-danger btn-sm" onclick="generateFullReport('coverage')">
+                                    <i class="bi bi-download"></i> Generate PDF
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="card h-100">
+                            <div class="card-body text-center">
+                                <i class="bi bi-file-earmark-bar-graph display-4 text-primary"></i>
+                                <h5 class="mt-3">Vaccination Analytics</h5>
+                                <p class="text-muted">Detailed statistical analysis</p>
+                                <a href="#" class="btn btn-outline-primary btn-sm" onclick="generateFullReport('analytics')">
+                                    <i class="bi bi-download"></i> Generate Report
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div id="reportModal" class="modal fade" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title">Generating Report</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            <p id="reportMessage">Please wait while we generate your report...</p>
+            <div class="progress">
+            <div id="reportProgress" class="progress-bar progress-bar-striped progress-bar-animated bg-success" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+            </div>
+        </div>
+        </div>
+    </div>
+</div>
+
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
+    <div id="reportToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header">
+        <strong class="me-auto">Report Ready</strong>
+        <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body">
+        Your report is ready for download.
+        <div class="mt-2 pt-2 border-top">
+            <button type="button" class="btn btn-primary btn-sm" id="downloadReportBtn">Download Report</button>
+        </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        {% if statistics.monthly_stats %}
+        // Extract data for chart
+        const months = [{% for stat in statistics.monthly_stats %}'{{ stat.month }}',{% endfor %}];
+        const counts = [{% for stat in statistics.monthly_stats %}{{ stat.count }},{% endfor %}];
+        
+        // Reverse arrays to show chronological order
+        months.reverse();
+        counts.reverse();
+        
+        // Monthly vaccinations chart
+        const ctx = document.getElementById('monthlyChart').getContext('2d');
+        const myChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: months,
+                datasets: [{
+                    label: 'Number of Vaccinations',
+                    data: counts,
+                    backgroundColor: 'rgba(23, 162, 184, 0.2)',
+                    borderColor: 'rgba(23, 162, 184, 1)',
+                    borderWidth: 2,
+                    tension: 0.1
+                }]
+            },
+            options: {
+                
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0
+                        }
+                    }
+                },
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Monthly Vaccination Trends'
+                    }
+                }
+            }
+        });
+        {% endif %}
+        
+        // Export table to CSV
+        window.exportTable = function(tableId, filename) {
+            const table = document.getElementById(tableId);
+            if (!table) {
+                alert('Table not found');
+                return;
+            }
+            
+            let csv = [];
+            const rows = table.querySelectorAll('tr');
+            
+            for (let i = 0; i < rows.length; i++) {
+                const row = [], cols = rows[i].querySelectorAll('td, th');
+                
+                for (let j = 0; j < cols.length; j++) {
+                    // Remove HTML and clean up text
+                    const text = cols[j].innerText.replace(/"/g, '""');
+                    row.push('"' + text + '"');
+                }
+                
+                csv.push(row.join(','));
+            }
+            
+            // Download CSV file
+            downloadCSV(csv.join('\n'), filename);
+        };
+        
+        window.downloadCSV = function(csv, filename) {
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            
+            link.setAttribute('href', url);
+            link.setAttribute('download', filename);
+            link.style.visibility = 'hidden';
+            
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        };
+        
+        // Generate full reports
+        // Generate full reports
+        window.generateFullReport = function(reportType) {
+            // Show the modal
+            var reportModal = new bootstrap.Modal(document.getElementById('reportModal'));
+            reportModal.show();
+        
+            var progressBar = document.getElementById('reportProgress');
+            var messageElement = document.getElementById('reportMessage');
+        
+            // Simulate progress
+            var progress = 0;
+            var interval = setInterval(function() {
+                progress += 10;
+                progressBar.style.width = progress + '%';
+                progressBar.setAttribute('aria-valuenow', progress);
+        
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    messageElement.textContent = `${reportType} report generated successfully!`;
+                    progressBar.classList.remove('progress-bar-animated');
+                    
+                    // Simulate download ready
+                    setTimeout(function() {
+                        reportModal.hide();
+                        
+                        // Show toast notification
+                        var toastElement = document.getElementById('reportToast');
+                        var toast = new bootstrap.Toast(toastElement);
+                        toastElement.querySelector('.toast-body').innerHTML = 
+                            `Your ${reportType} report is ready for download.
+                            <div class="mt-2 pt-2 border-top">
+                                <button type="button" class="btn btn-primary btn-sm" id="downloadReportBtn">Download Report</button>
+                            </div>`;
+                        toast.show();
+        
+                        // Add click event for download button
+                        document.getElementById('downloadReportBtn').onclick = function() {
+                            // In a real implementation, trigger the actual download here
+                            console.log(`Downloading ${reportType} report...`);
+                        };
+                    }, 1000);
+                }
+            }, 500);
+            progress=0;
+            // In a real implementation, you would make an AJAX call to your backend here
+            // The backend would generate the report and send back a download link
+            // You would then trigger the download using that link
+        };
+
+    });
+</script>
+{% endblock %}

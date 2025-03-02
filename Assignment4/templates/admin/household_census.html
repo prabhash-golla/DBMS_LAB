@@ -1,0 +1,378 @@
+{% extends 'base.html' %}
+
+{% block title %}Household Census Records - Gram Panchayat{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <div class="d-flex justify-content-between align-items-center">
+            <h2>Census Records for Household #{{ household.household_id }}</h2>
+            <a href="{{ url_for('admin.add_census_record') }}?household_id={{ household.household_id }}" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> Add New Record
+            </a>
+        </div>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('admin.manage_census') }}">Census Records</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Household Records</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4 mb-4">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Household Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3 d-flex justify-content-center">
+                    <div class="household-icon">
+                        <i class="bi bi-houses-fill"></i>
+                    </div>
+                </div>
+                <table class="table table-striped">
+                    <tbody>
+                        <tr>
+                            <th scope="row">Household ID</th>
+                            <td>{{ household.household_id }}</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Address</th>
+                            <td>{{ household.address }}</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Household Income</th>
+                            <td>₹ {{ household.income or 'Not recorded' }}</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Total Members</th>
+                            <td>{{ members|length }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div class="card mt-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Household Members</h5>
+            </div>
+            <div class="card-body">
+                {% if members %}
+                    <ul class="list-group">
+                        {% for member in members %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <a href="{{ url_for('admin.citizen_census', citizen_id=member.citizen_id) }}">{{ member.name }}</a>
+                                    <span class="badge bg-secondary ms-2">{{ member.gender }}</span>
+                                </div>
+                                <div class="btn-group btn-group-sm">
+                                    <a href="{{ url_for('admin.view_citizen', citizen_id=member.citizen_id) }}" class="btn btn-outline-primary">
+                                        <i class="bi bi-person"></i>
+                                    </a>
+                                    <a href="{{ url_for('admin.citizen_census', citizen_id=member.citizen_id) }}" class="btn btn-outline-info">
+                                        <i class="bi bi-clipboard2-data"></i>
+                                    </a>
+                                </div>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i> No members found in this household.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-8 mb-4">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Household Census Records</h5>
+            </div>
+            <div class="card-body">
+                {% if census_records %}
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Event Type</th>
+                                    <th>Date</th>
+                                    <th>Citizen</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for record in census_records %}
+                                    <tr>
+                                        <td>
+                                            <span class="badge {% if record.event_type == 'Birth' %}bg-success{% elif record.event_type == 'Death' %}bg-danger{% elif record.event_type == 'Marriage' %}bg-info{% elif record.event_type == 'Migration_In' %}bg-primary{% elif record.event_type == 'Migration_Out' %}bg-warning{% else %}bg-secondary{% endif %}">
+                                                {{ record.event_type|replace('_', ' ') }}
+                                            </span>
+                                        </td>
+                                        <td>{{ record.event_date }}</td>
+                                        <td>
+                                            <a href="{{ url_for('admin.citizen_census', citizen_id=record.citizen_id) }}">
+                                                {{ record.citizen_name }}
+                                            </a>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm">
+                                                <a href="{{ url_for('admin.edit_census_record', census_id=record.census_id) }}" class="btn btn-primary">
+                                                    <i class="bi bi-pencil"></i>
+                                                </a>
+                                                <button type="button" class="btn btn-danger delete-btn" 
+                                                        data-bs-toggle="modal" 
+                                                        data-bs-target="#deleteConfirmModal" 
+                                                        data-census-id="{{ record.census_id }}" 
+                                                        data-event-type="{{ record.event_type }}"
+                                                        data-citizen-name="{{ record.citizen_name }}"
+                                                        title="Delete">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle-fill me-2"></i> No census records found for this household.
+                    </div>
+                    <div class="text-center mt-3">
+                        <a href="{{ url_for('admin.add_census_record') }}?household_id={{ household.household_id }}" class="btn btn-primary">
+                            <i class="bi bi-plus-circle"></i> Add First Census Record
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="card mt-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Household Events Summary</h5>
+            </div>
+            <div class="card-body">
+                {% if census_records %}
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <h6 class="card-title text-center">Events by Type</h6>
+                                    <canvas id="eventTypesChart" height="200"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <h6 class="card-title text-center">Events Timeline</h6>
+                                    <div id="timeline" class="px-2" style="height: 200px; overflow-y: auto;">
+                                        <ul class="timeline-small">
+                                            {% for record in census_records %}
+                                                <li class="timeline-small-item">
+                                                    <span class="timeline-small-date">{{ record.event_date }}</span>
+                                                    <h6 class="timeline-small-title">{{ record.event_type|replace('_', ' ') }}</h6>
+                                                    <p class="timeline-small-text">{{ record.citizen_name }}</p>
+                                                </li>
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle-fill me-2"></i> No data available for summary.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="d-flex justify-content-between mb-4">
+    <a href="{{ url_for('admin.manage_census') }}" class="btn btn-secondary">Back to Census Records</a>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="deleteConfirmModalLabel">Confirm Deletion</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete this census record?</p>
+                <ul class="list-group mb-3">
+                    <li class="list-group-item"><strong>Event Type:</strong> <span id="eventTypeSpan"></span></li>
+                    <li class="list-group-item"><strong>Citizen:</strong> <span id="citizenNameSpan"></span></li>
+                </ul>
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i> This action cannot be undone.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form id="deleteForm" method="POST">
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .household-icon {
+        width: 100px;
+        height: 100px;
+        background-color: #007bff;
+        text-align: center;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 15px;
+    }
+    
+    .household-icon i {
+        font-size: 50px;
+        color: #fff;
+    }
+    
+    .timeline-small {
+        position: relative;
+        list-style: none;
+        padding-left: 30px;
+        margin: 0;
+    }
+    
+    .timeline-small:before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 10px;
+        width: 2px;
+        height: 100%;
+        background-color: #e9ecef;
+    }
+    
+    .timeline-small-item {
+        position: relative;
+        padding-bottom: 15px;
+    }
+    
+    .timeline-small-item:before {
+        content: "";
+        position: absolute;
+        left: -24px;
+        top: 6px;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background-color: #007bff;
+    }
+    
+    .timeline-small-date {
+        font-size: 0.8rem;
+        color: #6c757d;
+    }
+    
+    .timeline-small-title {
+        margin: 2px 0;
+        font-size: 0.9rem;
+    }
+    
+    .timeline-small-text {
+        font-size: 0.85rem;
+        margin-bottom: 0;
+    }
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Delete modal functionality
+        const deleteButtons = document.querySelectorAll('.delete-btn');
+        const deleteForm = document.getElementById('deleteForm');
+        const eventTypeSpan = document.getElementById('eventTypeSpan');
+        const citizenNameSpan = document.getElementById('citizenNameSpan');
+        
+        deleteButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const censusId = this.getAttribute('data-census-id');
+                const eventType = this.getAttribute('data-event-type').replace('_', ' ');
+                const citizenName = this.getAttribute('data-citizen-name');
+                
+                eventTypeSpan.textContent = eventType;
+                citizenNameSpan.textContent = citizenName;
+                deleteForm.action = "{{ url_for('admin.delete_census_record', census_id=0) }}".replace('0', censusId);
+            });
+        });
+        
+        // Create Event Types Chart if canvas exists
+        const eventTypesCanvas = document.getElementById('eventTypesChart');
+        if (eventTypesCanvas) {
+            // Count events by type
+            const eventTypes = {};
+            {% for record in census_records %}
+                const eventType = "{{ record.event_type|replace('_', ' ') }}";
+                eventTypes[eventType] = (eventTypes[eventType] || 0) + 1;
+            {% endfor %}
+            
+            // Prepare data for chart
+            const labels = Object.keys(eventTypes);
+            const data = Object.values(eventTypes);
+            const backgroundColors = labels.map(label => {
+                if (label.includes('Birth')) return '#28a745';
+                if (label.includes('Death')) return '#dc3545';
+                if (label.includes('Marriage')) return '#17a2b8';
+                if (label.includes('Migration In')) return '#007bff';
+                if (label.includes('Migration Out')) return '#ffc107';
+                if (label.includes('Education')) return '#6f42c1';
+                if (label.includes('Income')) return '#fd7e14';
+                if (label.includes('Occupation')) return '#20c997';
+                if (label.includes('Health')) return '#e83e8c';
+                return '#6c757d';
+            });
+            
+            // Create pie chart
+            new Chart(eventTypesCanvas, {
+                type: 'pie',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: backgroundColors,
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                boxWidth: 12,
+                                font: {
+                                    size: 10
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

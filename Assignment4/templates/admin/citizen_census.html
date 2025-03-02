@@ -1,0 +1,302 @@
+{% extends 'base.html' %}
+
+{% block title %}Citizen Census Records - Gram Panchayat{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <div class="d-flex justify-content-between align-items-center">
+            <h2>Census History for {{ citizen.name }}</h2>
+            <a href="{{ url_for('admin.add_census_record') }}?citizen_id={{ citizen.citizen_id }}" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> Add New Record
+            </a>
+        </div>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('admin.manage_census') }}">Census Records</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Citizen History</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4 mb-4">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Citizen Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3 d-flex justify-content-center">
+                    <div class="avatar-circle">
+                        <span class="initials">{{ citizen.name[0] }}</span>
+                    </div>
+                </div>
+                <table class="table table-striped">
+                    <tbody>
+                        <tr>
+                            <th scope="row">Citizen ID</th>
+                            <td>{{ citizen.citizen_id }}</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Name</th>
+                            <td>{{ citizen.name }}</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Gender</th>
+                            <td>{{ citizen.gender }}</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Date of Birth</th>
+                            <td>{{ citizen.dob }}</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Address</th>
+                            <td>{{ citizen.address }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="text-center mt-3">
+                    <a href="{{ url_for('admin.view_citizen', citizen_id=citizen.citizen_id) }}" class="btn btn-outline-primary">
+                        <i class="bi bi-person-badge"></i> View Complete Profile
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-8 mb-4">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Census Timeline</h5>
+            </div>
+            <div class="card-body">
+                {% if census_records %}
+                    <div class="census-timeline">
+                        {% for record in census_records %}
+                            <div class="timeline-item">
+                                <div class="timeline-badge {% if record.event_type == 'Birth' %}bg-success{% elif record.event_type == 'Death' %}bg-danger{% elif record.event_type == 'Marriage' %}bg-info{% elif record.event_type == 'Migration_In' %}bg-primary{% elif record.event_type == 'Migration_Out' %}bg-warning{% else %}bg-secondary{% endif %}">
+                                    <i class="bi {% if record.event_type == 'Birth' %}bi-stars{% elif record.event_type == 'Death' %}bi-heart-fill{% elif record.event_type == 'Marriage' %}bi-people-fill{% elif record.event_type == 'Migration_In' %}bi-box-arrow-in-right{% elif record.event_type == 'Migration_Out' %}bi-box-arrow-right{% elif record.event_type == 'Education_Update' %}bi-book-fill{% elif record.event_type == 'Income_Change' %}bi-currency-rupee{% elif record.event_type == 'Occupation_Change' %}bi-briefcase-fill{% elif record.event_type == 'Health_Status_Update' %}bi-heart-pulse-fill{% else %}bi-clipboard-check{% endif %}"></i>
+                                </div>
+                                <div class="timeline-panel">
+                                    <div class="timeline-heading">
+                                        <h5 class="timeline-title">{{ record.event_type|replace('_', ' ') }}</h5>
+                                        <p class="timeline-date">{{ record.event_date }}</p>
+                                    </div>
+                                    <div class="timeline-body">
+                                        <p>Location: {{ record.address }}</p>
+                                    </div>
+                                    <div class="timeline-footer">
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="{{ url_for('admin.edit_census_record', census_id=record.census_id) }}" class="btn btn-outline-primary">
+                                                <i class="bi bi-pencil"></i> Edit
+                                            </a>
+                                            <button type="button" class="btn btn-outline-danger delete-btn" 
+                                                    data-bs-toggle="modal" 
+                                                    data-bs-target="#deleteConfirmModal" 
+                                                    data-census-id="{{ record.census_id }}" 
+                                                    data-event-type="{{ record.event_type }}"
+                                                    data-event-date="{{ record.event_date }}">
+                                                <i class="bi bi-trash"></i> Delete
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle-fill me-2"></i> No census records found for this citizen.
+                    </div>
+                    <div class="text-center mt-3">
+                        <a href="{{ url_for('admin.add_census_record') }}?citizen_id={{ citizen.citizen_id }}" class="btn btn-primary">
+                            <i class="bi bi-plus-circle"></i> Add First Census Record
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="d-flex justify-content-between mb-4">
+    <a href="{{ url_for('admin.manage_census') }}" class="btn btn-secondary">Back to Census Records</a>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="deleteConfirmModalLabel">Confirm Deletion</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete this census record?</p>
+                <ul class="list-group mb-3">
+                    <li class="list-group-item"><strong>Event:</strong> <span id="eventTypeSpan"></span></li>
+                    <li class="list-group-item"><strong>Date:</strong> <span id="eventDateSpan"></span></li>
+                </ul>
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i> This action cannot be undone.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form id="deleteForm" method="POST">
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .avatar-circle {
+        width: 100px;
+        height: 100px;
+        background-color: #007bff;
+        text-align: center;
+        border-radius: 50%;
+        -webkit-border-radius: 50%;
+        -moz-border-radius: 50%;
+        margin-bottom: 15px;
+    }
+    
+    .initials {
+        position: relative;
+        top: 25px;
+        font-size: 40px;
+        line-height: 50px;
+        color: #fff;
+        font-weight: bold;
+    }
+    
+    .census-timeline {
+        position: relative;
+        margin-bottom: 20px;
+    }
+    
+    .census-timeline:before {
+        content: '';
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 4px;
+        background: #ddd;
+        left: 31px;
+        margin-left: -1.5px;
+    }
+    
+    .timeline-item {
+        position: relative;
+        margin-bottom: 30px;
+    }
+    
+    .timeline-badge {
+        color: #fff;
+        width: 50px;
+        height: 50px;
+        line-height: 50px;
+        font-size: 1.4em;
+        text-align: center;
+        position: absolute;
+        top: 16px;
+        left: 9px;
+        margin-left: -25px;
+        background-color: #999999;
+        z-index: 100;
+        border-top-right-radius: 50%;
+        border-top-left-radius: 50%;
+        border-bottom-right-radius: 50%;
+        border-bottom-left-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .timeline-panel {
+        width: calc(100% - 90px);
+        float: right;
+        border: 1px solid #d4d4d4;
+        border-radius: 8px;
+        padding: 20px;
+        position: relative;
+        box-shadow: 0 1px 6px rgba(0, 0, 0, 0.175);
+        background: #fff;
+    }
+    
+    .timeline-panel:before {
+        position: absolute;
+        top: 26px;
+        right: 100%;
+        display: inline-block;
+        border-top: 15px solid transparent;
+        border-left: 0 solid #ccc;
+        border-right: 15px solid #ccc;
+        border-bottom: 15px solid transparent;
+        content: " ";
+    }
+    
+    .timeline-panel:after {
+        position: absolute;
+        top: 27px;
+        right: 100%;
+        display: inline-block;
+        border-top: 14px solid transparent;
+        border-left: 0 solid #fff;
+        border-right: 14px solid #fff;
+        border-bottom: 14px solid transparent;
+        content: " ";
+    }
+    
+    .timeline-title {
+        margin-top: 0;
+        color: inherit;
+        font-size: 1.1rem;
+        font-weight: 600;
+    }
+    
+    .timeline-date {
+        color: #777;
+        margin-bottom: 8px;
+    }
+    
+    .timeline-body > p,
+    .timeline-body > ul {
+        margin-bottom: 0;
+    }
+    
+    .timeline-footer {
+        margin-top: 10px;
+        border-top: 1px solid #eee;
+        padding-top: 10px;
+    }
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Delete modal functionality
+        const deleteButtons = document.querySelectorAll('.delete-btn');
+        const deleteForm = document.getElementById('deleteForm');
+        const eventTypeSpan = document.getElementById('eventTypeSpan');
+        const eventDateSpan = document.getElementById('eventDateSpan');
+        
+        deleteButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const censusId = this.getAttribute('data-census-id');
+                const eventType = this.getAttribute('data-event-type').replace('_', ' ');
+                const eventDate = this.getAttribute('data-event-date');
+                
+                eventTypeSpan.textContent = eventType;
+                eventDateSpan.textContent = eventDate;
+                deleteForm.action = "{{ url_for('admin.delete_census_record', census_id=0) }}".replace('0', censusId);
+            });
+        });
+    });
+</script>
+{% endblock %}

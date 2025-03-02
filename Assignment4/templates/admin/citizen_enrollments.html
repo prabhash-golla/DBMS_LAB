@@ -24,7 +24,7 @@
 <div class="row">
     <div class="col-md-4 mb-4">
         <div class="card">
-            <div class="card-header bg-primary text-white">
+            <div class="card-header text-white">
                 <h5 class="mb-0">Citizen Information</h5>
             </div>
             <div class="card-body">
@@ -58,7 +58,7 @@
                     </tbody>
                 </table>
                 <div class="text-center mt-3">
-                    <a href="{{ url_for('admin.view_citizen', citizen_id=citizen.citizen_id) }}" class="btn btn-outline-primary">
+                    <a href="{{ url_for('admin.view_citizen', citizen_id=citizen.citizen_id) }}" class="btn btn-primary">
                         <i class="bi bi-person-badge"></i> View Complete Profile
                     </a>
                 </div>
@@ -68,7 +68,7 @@
     
     <div class="col-md-8 mb-4">
         <div class="card">
-            <div class="card-header bg-primary text-white">
+            <div class="card-header text-white">
                 <h5 class="mb-0">Enrolled Welfare Schemes</h5>
             </div>
             <div class="card-body">
@@ -125,7 +125,7 @@
 
 <div class="d-flex justify-content-between mb-4">
     <a href="{{ url_for('admin.manage_enrollments') }}" class="btn btn-secondary">Back to Enrollments</a>
-    <a href="{{ url_for('admin.manage_welfare_schemes') }}" class="btn btn-outline-primary">Manage Welfare Schemes</a>
+    <a href="{{ url_for('admin.manage_welfare_schemes') }}" class="btn btn-primary">Manage Welfare Schemes</a>
 </div>
 
 <!-- Delete Confirmation Modal -->
@@ -156,7 +156,7 @@
     .avatar-circle {
         width: 100px;
         height: 100px;
-        background-color: #007bff;
+        background-color: #02830fa8;
         text-align: center;
         border-radius: 50%;
         -webkit-border-radius: 50%;

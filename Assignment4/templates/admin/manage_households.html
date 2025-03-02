@@ -3,77 +3,82 @@
 {% block title %}Manage Households - Gram Panchayat Admin{% endblock %}
 
 {% block content %}
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-md-12 mb-4">
-            <div class="d-flex justify-content-between align-items-center">
-                <h2>Manage Households</h2>
-                <a href="{{ url_for('admin.add_household') }}" class="btn btn-primary">
-                    <i class="bi bi-house-add"></i> Add New Household
-                </a>
-            </div>
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
-                    <li class="breadcrumb-item"><a href="{{ url_for('admin.admin_dashboard') }}">Admin</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">Households</li>
-                </ol>
-            </nav>
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <div class="d-flex justify-content-between align-items-center">
+            <h2>Manage Households</h2>
+            <a href="{{ url_for('admin.add_household') }}" class="btn" style="background-color: #02830fa8;color:white;">
+                <i class="bi bi-house-add"></i> Add New Household
+            </a>
         </div>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Households</li>
+            </ol>
+        </nav>
     </div>
-    
-    <div class="row">
-        <div class="col-md-12">
-            <div class="card">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0">Household Registry</h5>
-                </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-striped table-hover" id="householdsTable">
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Address</th>
-                                    <th>Income</th>
-                                    <th>Members</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for household in households %}
-                                <tr>
-                                    <td>{{ household.household_id }}</td>
-                                    <td>{{ household.address }}</td>
-                                    <td>{{ household.income }}</td>
-                                    <td>{{ household.member_count }}</td>
-                                    <td>
-                                        <div class="btn-group btn-group-sm">
-                                            <a href="{{ url_for('admin.view_household', household_id=household.household_id) }}" class="btn btn-outline-primary" title="View">
-                                                <i class="bi bi-eye"></i>
-                                            </a>
-                                            <a href="{{ url_for('admin.edit_household', household_id=household.household_id) }}" class="btn btn-outline-secondary" title="Edit">
-                                                <i class="bi bi-pencil"></i>
-                                            </a>
-                                            <button type="button" class="btn btn-outline-danger delete-household-btn" data-bs-toggle="modal" data-bs-target="#deleteHouseholdModal" data-household-id="{{ household.household_id }}" data-address="{{ household.address }}" data-member-count="{{ household.member_count }}" title="Delete">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <div class="row align-items-center">
+            <div class="col">
+                <h5 class="mb-0">Household Registry</h5>
+            </div>
+            <div class="col-auto">
+                <div class="input-group">
+                    <input type="text" id="searchInput" class="form-control" placeholder="Search households...">
+                    <button class="btn btn-outline-secondary" type="button" id="clearSearch">
+                        <i class="bi bi-x-circle"></i>
+                    </button>
                 </div>
             </div>
         </div>
     </div>
-    
-    <div class="d-flex justify-content-between mt-4 mb-4">
-        <a href="{{ url_for('admin.admin_dashboard') }}" class="btn btn-secondary">
-            <i class="bi bi-arrow-left"></i> Back to Admin Dashboard
-        </a>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover" id="householdsTable">
+                <thead class="table-primary">
+                    <tr>
+                        <th>ID</th>
+                        <th>Address</th>
+                        <th>Income</th>
+                        <th>Members</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for household in households %}
+                    <tr>
+                        <td>{{ household.household_id }}</td>
+                        <td>{{ household.address }}</td>
+                        <td>{{ household.income }}</td>
+                        <td>{{ household.member_count }}</td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <a href="{{ url_for('admin.view_household', household_id=household.household_id) }}" class="btn btn-info" title="View Details">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                <a href="{{ url_for('admin.edit_household', household_id=household.household_id) }}" class="btn btn-secondary" title="Edit" style="background-color: #02830fa8;color:white;">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <button type="button" class="btn btn-danger delete-household-btn" data-bs-toggle="modal" data-bs-target="#deleteHouseholdModal" data-household-id="{{ household.household_id }}" data-address="{{ household.address }}" data-member-count="{{ household.member_count }}" title="Delete">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="card-footer">
+        <div class="d-flex justify-content-between align-items-center">
+            <span>Total Households: <strong>{{ households|length }}</strong></span>
+            <a href="{{ url_for('dashboard') }}" class="btn btn-secondary btn-sm mb-2">Back to Dashboard</a>
+        </div>
     </div>
 </div>
 
@@ -88,7 +93,7 @@
             <div class="modal-body">
                 <p>Are you sure you want to delete the household at <strong id="deleteHouseholdAddress"></strong>?</p>
                 <div id="householdHasMembers" class="alert alert-warning">
-                    <i class="bi bi-exclamation-triangle-fill"></i> 
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i> 
                     <strong>Warning:</strong> This household has <span id="memberCount"></span> members. You must reassign or delete these citizens before deleting the household.
                 </div>
                 <div id="householdEmpty" class="alert alert-warning">
@@ -108,37 +113,52 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="https://cdn.jsdelivr.net/npm/simple-datatables@latest"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Initialize DataTables
-        const householdsTable = new simpleDatatables.DataTable("#householdsTable", {
-            searchable: true,
-            fixedHeight: true,
-            perPage: 15,
-            columns: [
-                { select: 4, sortable: false }
-            ]
+
+        const searchInput = document.getElementById('searchInput');
+        const clearSearchBtn = document.getElementById('clearSearch');
+        const table = document.getElementById('householdsTable');
+        const rows = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+        
+        searchInput.addEventListener('keyup', function() {
+            const searchTerm = searchInput.value.toLowerCase();
+            
+            for (let i = 0; i < rows.length; i++) {
+                const rowData = rows[i].textContent.toLowerCase();
+                if (rowData.includes(searchTerm)) {
+                    rows[i].style.display = '';
+                } else {
+                    rows[i].style.display = 'none';
+                }
+            }
         });
         
-        // Delete household modal functionality
+        clearSearchBtn.addEventListener('click', function() {
+            searchInput.value = '';
+            for (let i = 0; i < rows.length; i++) {
+                rows[i].style.display = '';
+            }
+        });
+        
         const deleteModal = document.getElementById('deleteHouseholdModal');
+        const deleteButtons = document.querySelectorAll('.delete-household-btn');
         const deleteForm = document.getElementById('deleteHouseholdForm');
         const deleteHouseholdAddress = document.getElementById('deleteHouseholdAddress');
         const householdHasMembers = document.getElementById('householdHasMembers');
         const householdEmpty = document.getElementById('householdEmpty');
         const memberCount = document.getElementById('memberCount');
         const deleteButton = document.getElementById('deleteHouseholdBtn');
-        
-        document.querySelectorAll('.delete-household-btn').forEach(button => {
+
+        deleteButtons.forEach(button => {
             button.addEventListener('click', function() {
                 const householdId = this.getAttribute('data-household-id');
                 const address = this.getAttribute('data-address');
                 const memberCount = parseInt(this.getAttribute('data-member-count'));
-                
+
                 deleteHouseholdAddress.textContent = address;
                 deleteForm.action = "{{ url_for('admin.delete_household', household_id=0) }}".replace('0', householdId);
-                
+
                 // Show appropriate warning and disable delete button if there are members
                 if (memberCount > 0) {
                     document.getElementById('memberCount').textContent = memberCount;
@@ -154,8 +174,4 @@
         });
     });
 </script>
-{% endblock %}
-
-{% block styles %}
-<link href="https://cdn.jsdelivr.net/npm/simple-datatables@latest/dist/style.css" rel="stylesheet" type="text/css">
 {% endblock %}

@@ -27,7 +27,7 @@
                         <li class="nav-item">
                             <a class="nav-link" href="{{ url_for('dashboard') }}">Dashboard</a>
                         </li>
-                        {% if session.get('role') != 'government_monitor' %}
+                        {% if session.get('role') != 'government_monitor' and session.get('role') != 'admin' %}
                         <li class="nav-item">
                             <a class="nav-link" href="{{ url_for('profile') }}">My Profile</a>
                         </li>

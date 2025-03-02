@@ -15,7 +15,6 @@
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
                     <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
-                    <li class="breadcrumb-item"><a href="{{ url_for('admin.admin_dashboard') }}">Admin</a></li>
                     <li class="breadcrumb-item active" aria-current="page">Users</li>
                 </ol>
             </nav>
@@ -25,8 +24,20 @@
     <div class="row">
         <div class="col-md-12">
             <div class="card">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0">User Accounts</h5>
+                <div class="card-header">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h5 class="mb-0">User Account</h5>
+                        </div>
+                        <div class="col-auto">
+                            <div class="input-group">
+                                <input type="text" id="searchInput" class="form-control" placeholder="Search user...">
+                                <button class="btn btn-outline-secondary" type="button" id="clearSearch">
+                                    <i class="bi bi-x-circle"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
@@ -63,15 +74,15 @@
                                     <td>{{ user.created_at }}</td>
                                     <td>
                                         <div class="btn-group btn-group-sm">
-                                            <a href="{{ url_for('admin.edit_user', user_id=user.user_id) }}" class="btn btn-outline-primary" title="Edit">
+                                            <a href="{{ url_for('admin.edit_user', user_id=user.user_id) }}" class="btn btn-info" title="Edit">
                                                 <i class="bi bi-pencil"></i>
                                             </a>
                                             {% if session.user_id != user.user_id %}
-                                            <button type="button" class="btn btn-outline-danger delete-user-btn" data-bs-toggle="modal" data-bs-target="#deleteUserModal" data-user-id="{{ user.user_id }}" data-username="{{ user.username }}" title="Delete">
+                                            <button type="button" class="btn btn-danger delete-user-btn" data-bs-toggle="modal" data-bs-target="#deleteUserModal" data-user-id="{{ user.user_id }}" data-username="{{ user.username }}" title="Delete">
                                                 <i class="bi bi-trash"></i>
                                             </button>
                                             {% else %}
-                                            <button type="button" class="btn btn-outline-danger" disabled title="Cannot delete your own account">
+                                            <button type="button" class="btn btn-danger" disabled title="Cannot delete your own account">
                                                 <i class="bi bi-trash"></i>
                                             </button>
                                             {% endif %}
@@ -83,14 +94,14 @@
                         </table>
                     </div>
                 </div>
+                <div class="card-footer">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span>Total Users: <strong>{{ users|length }}</strong></span>
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-secondary btn-sm mb-2">Back to Dashboard</a>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
-    
-    <div class="d-flex justify-content-between mt-4 mb-4">
-        <a href="{{ url_for('admin.admin_dashboard') }}" class="btn btn-secondary">
-            <i class="bi bi-arrow-left"></i> Back to Admin Dashboard
-        </a>
     </div>
 </div>
 
@@ -122,17 +133,32 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="https://cdn.jsdelivr.net/npm/simple-datatables@latest"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Initialize DataTables
-        const usersTable = new simpleDatatables.DataTable("#usersTable", {
-            searchable: true,
-            fixedHeight: true,
-            perPage: 15,
-            columns: [
-                { select: 6, sortable: false }
-            ]
+        const searchInput = document.getElementById('searchInput');
+        const clearSearchBtn = document.getElementById('clearSearch');
+        const table = document.getElementById('usersTable');
+        const rows = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+        
+        searchInput.addEventListener('keyup', function() {
+            const searchTerm = searchInput.value.toLowerCase();
+            
+            for (let i = 0; i < rows.length; i++) {
+                const rowData = rows[i].textContent.toLowerCase();
+                if (rowData.includes(searchTerm)) {
+                    rows[i].style.display = '';
+                } else {
+                    rows[i].style.display = 'none';
+                }
+            }
+        });
+        
+        clearSearchBtn.addEventListener('click', function() {
+            searchInput.value = '';
+            for (let i = 0; i < rows.length; i++) {
+                rows[i].style.display = '';
+            }
         });
         
         // Delete user modal functionality
@@ -151,8 +177,4 @@
         });
     });
 </script>
-{% endblock %}
-
-{% block styles %}
-<link href="https://cdn.jsdelivr.net/npm/simple-datatables@latest/dist/style.css" rel="stylesheet" type="text/css">
 {% endblock %}

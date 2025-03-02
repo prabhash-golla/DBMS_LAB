@@ -5,18 +5,20 @@ import psycopg2
 from database.db_config import get_db_connection, get_db_cursor, close_db_connection
 from config import Config
 
-# Import the employee blueprint
+# Import the blueprints
 from employee_routes import employee_bp
 from citizen_routes import citizen_bp
 from monitor_routes import monitor_bp  
+from admin_routes import admin_bp 
 
 app = Flask(__name__)
 app.config.from_object(Config)
 
-# Register blueprint
+# Register blueprints
 app.register_blueprint(employee_bp)
 app.register_blueprint(citizen_bp) 
-app.register_blueprint(monitor_bp)   
+app.register_blueprint(monitor_bp)
+app.register_blueprint(admin_bp)  
 
 # Custom decorator for role-based access control
 def role_required(allowed_roles):

@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Welfare Scheme - Gram Panchayat{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <h2>Edit Welfare Scheme</h2>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('admin.manage_welfare_schemes') }}">Manage Welfare Schemes</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Edit Scheme</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Editing Scheme</h5>
+                    <span class="badge bg-light text-dark">ID: {{ welfare_scheme.scheme_id }}</span>
+                </div>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('admin.edit_welfare_scheme', scheme_id=welfare_scheme.scheme_id) }}" id="editSchemeForm">
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h6 class="form-section-title">Basic Details</h6>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="name" class="form-label">Scheme Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="name" name="name" value="{{ welfare_scheme.name }}" required>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-12">
+                            <label for="description" class="form-label">Description</label>
+                            <textarea class="form-control" id="description" name="description" rows="5">{{ welfare_scheme.description }}</textarea>
+                            <small class="form-text text-muted">Provide details about eligibility criteria, benefits, and application process.</small>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('admin.manage_welfare_schemes') }}" class="btn btn-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block styles %}
+<style>
+    .form-section-title {
+        font-weight: 600;
+        color: #02830fa8;
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid #dee2e6;
+    }
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Form validation
+        const form = document.getElementById('editSchemeForm');
+        const nameInput = document.getElementById('name');
+        
+        form.addEventListener('submit', function(event) {
+            if (!nameInput.value.trim()) {
+                event.preventDefault();
+                alert('Please enter a scheme name.');
+                nameInput.focus();
+                return;
+            }
+        });
+    });
+</script>
+{% endblock %}

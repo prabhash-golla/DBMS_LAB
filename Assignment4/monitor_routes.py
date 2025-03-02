@@ -202,7 +202,6 @@ def welfare_scheme_analytics():
             'gender_demographics': [{'scheme': demo[0], 'gender': demo[1], 'count': demo[2]} for demo in gender_demographics],
             'recent_enrollments': [{'scheme': enroll[0], 'date': enroll[1], 'name': enroll[2], 'gender': enroll[3]} for enroll in recent_enrollments]
         }
-
         
         return render_template('monitor/welfare_analytics.html', statistics=statistics)
     except Exception as e:

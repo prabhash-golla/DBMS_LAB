@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Household - Gram Panchayat Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12 mb-4">
+            <h2>Edit Household</h2>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('admin.admin_dashboard') }}">Admin</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('admin.manage_households') }}">Households</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Edit Household</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+    
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Edit Household</h5>
+                        <span class="badge bg-light text-dark">ID: {{ household.household_id }}</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <form id="editHouseholdForm" method="POST" action="{{ url_for('admin.edit_household', household_id=household.household_id) }}">
+                        <div class="row mb-3">
+                            <div class="col-md-12">
+                                <label for="address" class="form-label">Address <span class="text-danger">*</span></label>
+                                <textarea class="form-control" id="address" name="address" rows="3" required>{{ household.address }}</textarea>
+                                <small class="form-text text-muted">
+                                    Please provide the complete address of the household.
+                                </small>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="income" class="form-label">Annual Income</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">₹</span>
+                                    <input type="number" class="form-control" id="income" name="income" min="0" step="1000" value="{{ household.income }}">
+                                </div>
+                                <small class="form-text text-muted">
+                                    Leave blank if income is unknown or not applicable.
+                                </small>
+                            </div>
+                        </div>
+                        
+                        <div class="alert alert-info mb-4">
+                            <i class="bi bi-info-circle-fill"></i> 
+                            <strong>Note:</strong> To manage household members, please use the <a href="{{ url_for('admin.view_household', household_id=household.household_id) }}">household details page</a>.
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('admin.manage_households') }}" class="btn btn-secondary">Cancel</a>
+                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Form validation
+        const form = document.getElementById('editHouseholdForm');
+        form.addEventListener('submit', function(event) {
+            const address = document.getElementById('address').value.trim();
+            
+            if (!address) {
+                event.preventDefault();
+                alert('Address is required.');
+                return;
+            }
+        });
+    });
+</script>
+{% endblock %}

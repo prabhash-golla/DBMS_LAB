@@ -1,0 +1,185 @@
+{% extends 'base.html' %}
+
+{% block title %}Household Details - Gram Panchayat Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12 mb-4">
+            <h2>Household Details</h2>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('admin.admin_dashboard') }}">Admin</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('admin.manage_households') }}">Households</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">View Household</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Household Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <strong>Household ID:</strong>
+                        <span class="badge bg-secondary">{{ household.household_id }}</span>
+                    </div>
+                    <div class="mb-3">
+                        <strong>Address:</strong>
+                        <p class="mt-1">{{ household.address }}</p>
+                    </div>
+                    <div class="mb-3">
+                        <strong>Annual Income:</strong>
+                        <p class="mt-1">₹{{ household.income }}</p>
+                    </div>
+                    <div class="d-flex justify-content-between mt-4">
+                        <a href="{{ url_for('admin.edit_household', household_id=household.household_id) }}" class="btn btn-outline-primary">
+                            <i class="bi bi-pencil"></i> Edit
+                        </a>
+                        <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteHouseholdModal">
+                            <i class="bi bi-trash"></i> Delete
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Household Members</h5>
+                    <a href="{{ url_for('admin.manage_citizens') }}" class="btn btn-sm btn-light">
+                        <i class="bi bi-person-plus"></i> Add Member
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if members|length > 0 %}
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="membersTable">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th>Gender</th>
+                                    <th>Age</th>
+                                    <th>Education</th>
+                                    <th>User Account</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for member in members %}
+                                <tr>
+                                    <td>{{ member.citizen_id }}</td>
+                                    <td>{{ member.name }}</td>
+                                    <td>{{ member.gender }}</td>
+                                    <td>{{ ((now - member.dob).days / 365.25)|int }} years</td>
+                                    <td>{{ member.education }}</td>
+                                    <td>
+                                        {% if member.username %}
+                                        <span class="badge bg-success">{{ member.username }}</span>
+                                        {% else %}
+                                        <span class="badge bg-secondary">No Account</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="{{ url_for('admin.edit_citizen', citizen_id=member.citizen_id) }}" class="btn btn-outline-secondary" title="Edit">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+                                            <a href="{{ url_for('admin.view_citizen', citizen_id=member.citizen_id) }}" class="btn btn-outline-primary" title="View">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i>
+                        No members have been added to this household yet.
+                    </div>
+                    <div class="text-center my-4">
+                        <a href="{{ url_for('admin.manage_citizens') }}" class="btn btn-primary">
+                            <i class="bi bi-person-plus"></i> Add New Citizen
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="d-flex justify-content-between mt-4 mb-4">
+        <a href="{{ url_for('admin.manage_households') }}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Back to Households
+        </a>
+    </div>
+</div>
+
+<!-- Delete Household Modal -->
+<div class="modal fade" id="deleteHouseholdModal" tabindex="-1" aria-labelledby="deleteHouseholdModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="deleteHouseholdModalLabel">Confirm Delete</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete this household?</p>
+                
+                {% if members|length > 0 %}
+                <div class="alert alert-danger">
+                    <i class="bi bi-exclamation-triangle-fill"></i> 
+                    <strong>Cannot Delete:</strong> This household has {{ members|length }} member(s). You must reassign or delete these citizens before deleting the household.
+                </div>
+                {% else %}
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle-fill"></i> 
+                    <strong>Warning:</strong> This action will permanently delete the household record and cannot be undone.
+                </div>
+                {% endif %}
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form action="{{ url_for('admin.delete_household', household_id=household.household_id) }}" method="POST">
+                    <button type="submit" class="btn btn-danger" {% if members|length > 0 %}disabled{% endif %}>
+                        Delete Household
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/simple-datatables@latest"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        {% if members|length > 0 %}
+        // Initialize DataTables for members
+        const membersTable = new simpleDatatables.DataTable("#membersTable", {
+            searchable: true,
+            fixedHeight: true,
+            perPage: 10,
+            columns: [
+                { select: 6, sortable: false }
+            ]
+        });
+        {% endif %}
+    });
+</script>
+{% endblock %}
+
+{% block styles %}
+<link href="https://cdn.jsdelivr.net/npm/simple-datatables@latest/dist/style.css" rel="stylesheet" type="text/css">
+{% endblock %}

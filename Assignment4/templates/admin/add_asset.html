@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+
+{% block title %}Add Asset - Gram Panchayat{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <h2>Add New Asset</h2>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('admin.manage_assets') }}">Manage Assets</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Add Asset</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Asset Details</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('admin.add_asset') }}" id="addAssetForm">
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h6 class="form-section-title">Asset Information</h6>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="type" class="form-label">Asset Type <span class="text-danger">*</span></label>
+                            <select class="form-select" id="type" name="type" required>
+                                <option value="">Select asset type</option>
+                                {% for asset_type in asset_types %}
+                                <option value="{{ asset_type }}">{{ asset_type }}</option>
+                                {% endfor %}
+                            </select>
+                            <small class="form-text text-muted">Select the type of infrastructure or asset.</small>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="otherType" class="form-label">Other Type (if selected "Other")</label>
+                            <input type="text" class="form-control" id="otherType" name="otherType" disabled>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-12">
+                            <label for="location" class="form-label">Location <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="location" name="location" required>
+                            <small class="form-text text-muted">Describe the location within the panchayat (e.g., "Near main temple", "Ward 3", etc.)</small>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <label for="installation_date" class="form-label">Installation Date</label>
+                            <input type="date" class="form-control" id="installation_date" name="installation_date">
+                            <small class="form-text text-muted">When was this asset installed or built? Leave blank if unknown.</small>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('admin.manage_assets') }}" class="btn btn-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-primary">Add Asset</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block styles %}
+<style>
+    .form-section-title {
+        font-weight: 600;
+        color: #0d6efd;
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid #dee2e6;
+    }
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const typeSelect = document.getElementById('type');
+        const otherTypeInput = document.getElementById('otherType');
+        
+        // Handle "Other" selection
+        typeSelect.addEventListener('change', function() {
+            if (this.value === 'Other') {
+                otherTypeInput.disabled = false;
+                otherTypeInput.required = true;
+            } else {
+                otherTypeInput.disabled = true;
+                otherTypeInput.required = false;
+                otherTypeInput.value = '';
+            }
+        });
+        
+        // Form validation
+        const form = document.getElementById('addAssetForm');
+        form.addEventListener('submit', function(event) {
+            if (!typeSelect.value) {
+                event.preventDefault();
+                alert('Please select an asset type.');
+                typeSelect.focus();
+                return;
+            }
+            
+            const locationInput = document.getElementById('location');
+            if (!locationInput.value.trim()) {
+                event.preventDefault();
+                alert('Please enter a location for the asset.');
+                locationInput.focus();
+                return;
+            }
+            
+            // If "Other" is selected, ensure other type is provided
+            if (typeSelect.value === 'Other' && !otherTypeInput.value.trim()) {
+                event.preventDefault();
+                alert('Please specify the asset type.');
+                otherTypeInput.focus();
+                return;
+            }
+        });
+    });
+</script>
+{% endblock %}

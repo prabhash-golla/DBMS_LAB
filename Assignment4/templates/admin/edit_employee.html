@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Employee - Gram Panchayat{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <h2>Edit Employee</h2>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('admin.manage_employees') }}">Manage Employees</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Edit Employee</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header bg text-white">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Editing: {{ employee.name }} ({{ employee.role }})</h5>
+                    <span class="badge bg-light text-dark">ID: {{ employee.employee_id }}</span>
+                </div>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('admin.edit_employee', employee_id=employee.employee_id) }}">
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h6 class="form-section-title">Employee Information</h6>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Citizen Name</label>
+                            <input type="text" class="form-control" value="{{ employee.name }}" readonly>
+                            <small class="form-text text-muted">To change citizen details, use the citizen management section</small>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Address</label>
+                            <input type="text" class="form-control" value="{{ employee.address }}" readonly>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <label for="role" class="form-label">Employee Role <span class="text-danger">*</span></label>
+                            <select class="form-select" id="role" name="role" required>
+                                <option value="">Select a role</option>
+                                {% for role in employee_roles %}
+                                <option value="{{ role }}" {% if employee.role == role %}selected{% endif %}>{{ role }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="joining_date" class="form-label">Joining Date</label>
+                            <input type="date" class="form-control" id="joining_date" name="joining_date" value="{{ employee.joining_date }}">
+                        </div>
+                    </div>
+                    
+                    <!-- User Account Information -->
+                    {% if employee.user_id %}
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h6 class="form-section-title">User Account Information</h6>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="username" class="form-label">Username</label>
+                            <input type="text" class="form-control" id="username" value="{{ employee.username }}" readonly>
+                            <small class="form-text text-muted">Username cannot be changed</small>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="email" name="email" value="{{ employee.email }}">
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('admin.manage_employees') }}" class="btn btn-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-danger">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

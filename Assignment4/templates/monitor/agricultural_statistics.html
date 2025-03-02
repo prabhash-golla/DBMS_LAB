@@ -23,7 +23,7 @@
 </div>
 
 <div class="row mb-4">
-    <div class="col-md-4">
+    <div class="col-md-6">
         <div class="card border-success h-100">
             <div class="card-body text-center">
                 <div class="display-4 text-success">{{ statistics.total_area|round(2) }}</div>
@@ -31,25 +31,11 @@
             </div>
         </div>
     </div>
-    <div class="col-md-4">
+    <div class="col-md-6">
         <div class="card border-primary h-100">
             <div class="card-body text-center">
                 <div class="display-4 text-primary">{{ statistics.crop_stats|length }}</div>
                 <h5 class="card-title">Crop Varieties</h5>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card border-warning h-100">
-            <div class="card-body text-center">
-                <div class="display-4 text-warning">
-                    {% set total_fields = 0 %}
-                    {% for stat in statistics.crop_stats %}
-                        {% set total_fields = total_fields + stat.field_count %}
-                    {% endfor %}
-                    {{ total_fields }}
-                </div>
-                <h5 class="card-title">Total Land Parcels</h5>
             </div>
         </div>
     </div>
@@ -139,28 +125,28 @@
                 <h5 class="mb-0"><i class="fas fa-file-download"></i> Generate Reports</h5>
             </div>
             <div class="card-body">
-                <div class="row justify-content-center">
-                    <div class="col-md-4 mb-3">
-                        <div class="card h-100">
-                            <div class="card-body text-center">
-                                <i class="fas fa-file-excel display-4 text-success"></i>
-                                <h5 class="mt-3">Agricultural Data</h5>
-                                <p class="text-muted">Export complete land records</p>
-                                <a href="#" class="btn btn-outline-success btn-sm" onclick="generateFullReport('land')">
-                                    <i class="fas fa-download"></i> Export as Excel
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-4 mb-3">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
                         <div class="card h-100">
                             <div class="card-body text-center">
                                 <i class="fas fa-file-pdf display-4 text-danger"></i>
-                                <h5 class="mt-3">Crop Distribution Report</h5>
-                                <p class="text-muted">Generate detailed crop analysis</p>
-                                <a href="#" class="btn btn-outline-danger btn-sm" onclick="generateFullReport('crops')">
-                                    <i class="fas fa-download"></i> Generate PDF
-                                </a>
+                                <h5 class="mt-3">Full Agricultural Report</h5>
+                                <p class="text-muted">Complete land and crop data</p>
+                                <button class="btn btn-danger btn-sm" onclick="generateFullReport('full_report')">
+                                    <i class="fas fa-download"></i> Download Full PDF
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="card h-100">
+                            <div class="card-body text-center">
+                                <i class="fas fa-file-pdf display-4 text-warning"></i>
+                                <h5 class="mt-3">Crop Statistics Report</h5>
+                                <p class="text-muted">Crop-specific land distribution</p>
+                                <button class="btn btn-warning btn-sm" onclick="generateFullReport('crop_report')">
+                                    <i class="fas fa-download"></i> Download Crop Report
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -176,134 +162,160 @@
     </a>
 </div>
 
-
 <div id="reportModal" class="modal fade" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
-        <div class="modal-header">
-            <h5 class="modal-title">Generating Report</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-            <p id="reportMessage">Please wait while we generate your report...</p>
-            <div class="progress">
-            <div id="reportProgress" class="progress-bar progress-bar-striped progress-bar-animated bg-success" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+            <div class="modal-header">
+                <h5 class="modal-title">Generating Report</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-        </div>
+            <div class="modal-body">
+                <p id="reportMessage">Please wait while we generate your report...</p>
+                <div class="progress">
+                    <div id="reportProgress" class="progress-bar progress-bar-striped progress-bar-animated bg-success" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
 
 <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
     <div id="reportToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
-      <div class="toast-header">
-        <strong class="me-auto">Report Ready</strong>
-        <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
-      </div>
-      <div class="toast-body">
-        Your report is ready for download.
-        <div class="mt-2 pt-2 border-top">
-          <button type="button" class="btn btn-primary btn-sm" id="downloadReportBtn">Download Report</button>
+        <div class="toast-header">
+            <strong class="me-auto">Report Ready</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
         </div>
-      </div>
+        <div class="toast-body">
+            Your report is ready for download.
+            <div class="mt-2 pt-2 border-top">
+                <button type="button" class="btn btn-primary btn-sm" id="downloadReportBtn">Download Report</button>
+            </div>
+        </div>
     </div>
-  </div>
+</div>
 {% endblock %}
 
 {% block scripts %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Crop Distribution Chart
-        const cropCanvas = document.getElementById('cropDistributionChart');
-        if (cropCanvas) {
-            const cropTypes = [];
-            const cropAreas = [];
-            const backgroundColors = [
-                '#28a745', '#02830fa8', '#ffc107', '#dc3545', '#17a2b8', 
-                '#6610f2', '#fd7e14', '#20c997', '#e83e8c', '#6c757d'
-            ];
-            
-            {% for stat in statistics.crop_stats %}
-                cropTypes.push("{{ stat.crop_type }}");
-                cropAreas.push({{ stat.total_area }});
-            {% endfor %}
-            
-            new Chart(cropCanvas, {
-                type: 'pie',
-                data: {
-                    labels: cropTypes,
-                    datasets: [{
-                        data: cropAreas,
-                        backgroundColor: backgroundColors.slice(0, cropTypes.length),
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    maintainAspectRatio: false,
-                    aspectRatio: 2,
-                    responsive: true,
-                    plugins: {
-                        legend: {
-                            position: 'right'
-                        },
-                        title: {
-                            display: true,
-                            text: 'Land Area by Crop Type (acres)'
-                        }
+document.addEventListener('DOMContentLoaded', function() {
+    // Crop Distribution Chart
+    const cropCanvas = document.getElementById('cropDistributionChart');
+    if (cropCanvas) {
+        const cropTypes = [];
+        const cropAreas = [];
+        const backgroundColors = [
+            '#28a745', '#ffc107', '#dc3545', '#17a2b8', 
+            '#6610f2', '#fd7e14', '#20c997', '#e83e8c', '#6c757d', '#02830fa8'
+        ];
+        
+        {% for stat in statistics.crop_stats %}
+            cropTypes.push("{{ stat.crop_type }}");
+            cropAreas.push({{ stat.total_area }});
+        {% endfor %}
+        
+        new Chart(cropCanvas, {
+            type: 'pie',
+            data: {
+                labels: cropTypes,
+                datasets: [{
+                    data: cropAreas,
+                    backgroundColor: backgroundColors.slice(0, cropTypes.length),
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                maintainAspectRatio: false,
+                aspectRatio: 2,
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'right'
+                    },
+                    title: {
+                        display: true,
+                        text: 'Land Area by Crop Type (acres)'
                     }
                 }
-            });
+            }
+        });
+    }
+
+    // Initialize toast components
+    const reportToast = new bootstrap.Toast(document.getElementById('reportToast'));
+    const downloadReportBtn = document.getElementById('downloadReportBtn');
+    let reportUrl = '';
+    let reportFilename = '';
+
+    // Download button event listener
+    downloadReportBtn.addEventListener('click', function() {
+        if (reportUrl && reportFilename) {
+            const a = document.createElement('a');
+            a.href = reportUrl;
+            a.download = reportFilename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(reportUrl);
+            reportToast.hide();
         }
-        
-         // Generate full reports
-         window.generateFullReport = function(reportType) {
-            // Show the modal
-            var reportModal = new bootstrap.Modal(document.getElementById('reportModal'));
-            reportModal.show();
-        
-            var progressBar = document.getElementById('reportProgress');
-            var messageElement = document.getElementById('reportMessage');
-        
-            // Simulate progress
-            var progress = 0;
-            var interval = setInterval(function() {
-                progress += 10;
-                progressBar.style.width = progress + '%';
-                progressBar.setAttribute('aria-valuenow', progress);
-        
-                if (progress >= 100) {
-                    clearInterval(interval);
-                    messageElement.textContent = `${reportType} report generated successfully!`;
-                    progressBar.classList.remove('progress-bar-animated');
-                    
-                    // Simulate download ready
-                    setTimeout(function() {
-                        reportModal.hide();
-                        
-                        // Show toast notification
-                        var toastElement = document.getElementById('reportToast');
-                        var toast = new bootstrap.Toast(toastElement);
-                        toastElement.querySelector('.toast-body').innerHTML = 
-                            `Your ${reportType} report is ready for download.
-                            <div class="mt-2 pt-2 border-top">
-                                <button type="button" class="btn btn-primary btn-sm" id="downloadReportBtn">Download Report</button>
-                            </div>`;
-                        toast.show();
-        
-                        // Add click event for download button
-                        document.getElementById('downloadReportBtn').onclick = function() {
-                            // In a real implementation, trigger the actual download here
-                            console.log(`Downloading ${reportType} report...`);
-                        };
-                    }, 1000);
-                }
-            }, 500);
-            progress=0;
-            // In a real implementation, you would make an AJAX call to your backend here
-            // The backend would generate the report and send back a download link
-            // You would then trigger the download using that link
-        };
     });
+
+    // Improved generateFullReport function
+    window.generateFullReport = function(reportType) {
+        // Show the modal
+        const reportModal = new bootstrap.Modal(document.getElementById('reportModal'));
+        reportModal.show();
+
+        const progressBar = document.getElementById('reportProgress');
+        const messageElement = document.getElementById('reportMessage');
+        
+        progressBar.style.width = "0%";
+        progressBar.setAttribute('aria-valuenow', "0");
+        
+        let progress = 0;
+        
+        // Simulate progress
+        const interval = setInterval(function() {
+            progress += 10;
+            progressBar.style.width = progress + '%';
+            progressBar.setAttribute('aria-valuenow', progress);
+
+            if (progress >= 100) {
+                clearInterval(interval);
+                messageElement.textContent = `${reportType} report generated successfully!`;
+                progressBar.classList.remove('progress-bar-animated');
+
+                setTimeout(function() {
+                    reportModal.hide();
+
+                    // Use fetch to trigger the report generation and download
+                    fetch(`/${reportType}`)
+                        .then(response => {
+                            if (response.ok) {
+                                return response.blob();  // Get the data as a blob
+                            } else {
+                                throw new Error(`Report generation failed: ${response.statusText}`);
+                            }
+                        })
+                        .then(blob => {
+                            // Create a temporary URL for the blob
+                            reportUrl = window.URL.createObjectURL(blob);
+                            reportFilename = `${reportType}_report.pdf`;
+                            
+                            // Show the toast notification
+                            reportToast.show();
+                        })
+                        .catch(error => {
+                            console.error(error);
+                            alert(`Error generating ${reportType} report. Please try again.`);
+                        });
+                }, 1000);
+            }
+        }, 300);
+    };
+});
 </script>
 {% endblock %}

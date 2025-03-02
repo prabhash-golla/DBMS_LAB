@@ -349,6 +349,96 @@ def dashboard():
         flash('Invalid role', 'danger')
         return redirect(url_for('logout'))
 
+from flask import Response
+import pdfkit
+
+# Set the wkhtmltopdf path manually
+config = pdfkit.configuration(wkhtmltopdf="/usr/bin/wkhtmltopdf")
+
+@app.route('/full_report')
+def generate_full_report():
+    rendered_html = render_template("monitor/Reports/Agri.html", statistics=get_data())
+    pdf = pdfkit.from_string(rendered_html, False , configuration=config)
+    return Response(pdf, mimetype='application/pdf', headers={"Content-Disposition": "attachment; filename=agriculture_report.pdf"})
+
+
+
+@app.route('/crop_report')
+def generate_crop_report():
+    """Generate a PDF report with only the crop statistics section."""
+    statistics = get_data()
+    
+    # Render HTML template
+    crop_statistics_html = render_template("monitor/Reports/Crop.html", statistics=statistics)
+    
+    # Convert HTML to PDF
+    pdf = pdfkit.from_string(crop_statistics_html, False, configuration=config)
+    
+    return Response(pdf, mimetype='application/pdf', headers={"Content-Disposition": "attachment; filename=crop_report.pdf"})
+
+def get_data():
+    """Fetch actual agricultural data from the database."""
+    try:
+        conn, cur = get_db_cursor()
+        
+        # Get total agricultural area
+        cur.execute("SELECT SUM(area_acres) FROM land_records")
+        total_area = cur.fetchone()[0] or 0  # Default to 0 if NULL
+        
+        # Get crop statistics
+        cur.execute("""
+            SELECT 
+                crop_type, 
+                SUM(area_acres) as total_area, 
+                COUNT(*) as field_count
+            FROM land_records
+            WHERE crop_type IS NOT NULL
+            GROUP BY crop_type
+            ORDER BY total_area DESC
+        """)
+        crop_stats = []
+        for row in cur.fetchall():
+            crop_stats.append({
+                "crop_type": row[0],
+                "total_area": row[1],
+                "field_count": row[2]
+            })
+        
+        # Get top landowners
+        cur.execute("""
+            SELECT 
+                c.name, 
+                SUM(lr.area_acres) as total_area
+            FROM land_records lr
+            JOIN citizens c ON lr.citizen_id = c.citizen_id
+            GROUP BY c.name
+            ORDER BY total_area DESC
+            LIMIT 5
+        """)
+        top_landowners = []
+        for row in cur.fetchall():
+            top_landowners.append({
+                "name": row[0],
+                "total_area": row[1]
+            })
+        
+        close_db_connection(conn, cur)
+        
+        return {
+            "total_area": total_area,
+            "crop_stats": crop_stats,
+            "top_landowners": top_landowners
+        }
+        
+    except Exception as e:
+        print(f"Error fetching agricultural data: {e}")
+        # Return mock data as fallback if database query fails
+        return {
+            "total_area": 0,
+            "crop_stats": [],
+            "top_landowners": []
+        }
+
 # Example of a role-restricted route
 @app.route('/admin/users')
 @role_required(['admin'])

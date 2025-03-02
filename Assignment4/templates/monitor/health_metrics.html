@@ -229,6 +229,39 @@
         <i class="fas fa-arrow-left"></i> Back to Dashboard
     </a>
 </div>
+
+<div id="reportModal" class="modal fade" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title">Generating Report</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            <p id="reportMessage">Please wait while we generate your report...</p>
+            <div class="progress">
+            <div id="reportProgress" class="progress-bar progress-bar-striped progress-bar-animated bg-success" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+            </div>
+        </div>
+        </div>
+    </div>
+</div>
+
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
+    <div id="reportToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+      <div class="toast-header">
+        <strong class="me-auto">Report Ready</strong>
+        <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+      </div>
+      <div class="toast-body">
+        Your report is ready for download.
+        <div class="mt-2 pt-2 border-top">
+          <button type="button" class="btn btn-primary btn-sm" id="downloadReportBtn">Download Report</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
 {% endblock %}
 
 {% block scripts %}
@@ -241,8 +274,8 @@
             const vaccineTypes = [];
             const vaccineCounts = [];
             const backgroundColors = [
-                '#ffc107', '#28a745', '#007bff', '#dc3545', '#17a2b8', 
-                '#6610f2', '#fd7e14', '#20c997', '#e83e8c', '#6c757d'
+                '#6610f2', '#fd7e14', '#20c997', '#e83e8c', '#ffc107',
+                '#6c757d','#28a745', '#007bff', '#dc3545', '#17a2b8' 
             ];
             
             {% for stat in statistics.vaccine_stats %}
@@ -261,6 +294,8 @@
                     }]
                 },
                 options: {
+                    maintainAspectRatio: false,
+                    aspectRatio: 2,
                     responsive: true,
                     plugins: {
                         legend: {
@@ -296,12 +331,14 @@
                     datasets: [{
                         label: 'Vaccinated Citizens',
                         data: ageCounts,
-                        backgroundColor: '#ffc107',
+                        backgroundColor: '#6610f2',
                         borderColor: '#ffc107',
                         borderWidth: 1
                     }]
                 },
                 options: {
+                    maintainAspectRatio: false,
+                    aspectRatio: 2,
                     responsive: true,
                     scales: {
                         y: {
@@ -340,6 +377,8 @@
             new Chart(monthlyCanvas, {
                 type: 'line',
                 data: {
+                    maintainAspectRatio: false,
+                    aspectRatio: 2,
                     labels: months,
                     datasets: [{
                         label: 'Number of Vaccinations',
@@ -352,6 +391,8 @@
                     }]
                 },
                 options: {
+                    maintainAspectRatio: false,
+                    aspectRatio: 2,
                     responsive: true,
                     scales: {
                         y: {
@@ -371,9 +412,54 @@
         
         // Generate full reports
         window.generateFullReport = function(reportType) {
-            // In a real implementation, this would call a backend route
-            alert(`Generating ${reportType} report... In a real implementation, this would download the requested report.`);
+            // Show the modal
+            var reportModal = new bootstrap.Modal(document.getElementById('reportModal'));
+            reportModal.show();
+        
+            var progressBar = document.getElementById('reportProgress');
+            var messageElement = document.getElementById('reportMessage');
+        
+            // Simulate progress
+            var progress = 0;
+            var interval = setInterval(function() {
+                progress += 10;
+                progressBar.style.width = progress + '%';
+                progressBar.setAttribute('aria-valuenow', progress);
+        
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    messageElement.textContent = `${reportType} report generated successfully!`;
+                    progressBar.classList.remove('progress-bar-animated');
+                    
+                    // Simulate download ready
+                    setTimeout(function() {
+                        reportModal.hide();
+                        
+                        // Show toast notification
+                        var toastElement = document.getElementById('reportToast');
+                        var toast = new bootstrap.Toast(toastElement);
+                        toastElement.querySelector('.toast-body').innerHTML = 
+                            `Your ${reportType} report is ready for download.
+                            <div class="mt-2 pt-2 border-top">
+                                <button type="button" class="btn btn-primary btn-sm" id="downloadReportBtn">Download Report</button>
+                            </div>`;
+                        toast.show();
+        
+                        // Add click event for download button
+                        document.getElementById('downloadReportBtn').onclick = function() {
+                            // In a real implementation, trigger the actual download here
+                            console.log(`Downloading ${reportType} report...`);
+                        };
+                    }, 1000);
+                }
+            }, 500);
+            progress=0;
+            // In a real implementation, you would make an AJAX call to your backend here
+            // The backend would generate the report and send back a download link
+            // You would then trigger the download using that link
         };
+        
+
     });
 </script>
 {% endblock %}

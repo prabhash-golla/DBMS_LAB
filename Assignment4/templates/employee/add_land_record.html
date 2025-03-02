@@ -49,8 +49,11 @@
                         <div class="col-md-6">
                             <label for="area_acres" class="form-label">Area (in Acres) <span class="text-danger">*</span></label>
                             <input type="number" step="0.01" class="form-control" id="area_acres" name="area_acres" required min="0.01">
-                            <small class="form-text text-muted">Enter the size of the land in acres.</small>
+                            <small class="form-text text-muted">Enter the size of the land in acres (minimum 0.01).</small>
+                            <div class="invalid-feedback">Please enter a valid land area (minimum 0.01 acres).</div>
                         </div>
+                        
+                        
                         <div class="col-md-6">
                             <label for="crop_type" class="form-label">Crop Type</label>
                             <select class="form-select" id="crop_type" name="crop_type">
@@ -64,7 +67,7 @@
                     </div>
                     
                     <div class="d-flex justify-content-between">
-                        <a href="{{ url_for('employee.manage_land_records') }}" class="btn"  style="background-color: #f44336;">Cancel</a>
+                        <a href="{{ url_for('employee.manage_land_records') }}" class="btn btn-danger">Cancel</a>
                         <button type="submit" class="btn btn-primary">Add Land Record</button>
                     </div>
                 </form>
@@ -88,6 +91,37 @@
 
 {% block scripts %}
 <script>
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const areaInput = document.getElementById('area_acres');
+    
+        areaInput.addEventListener('input', function() {
+            // Allow empty input or valid numbers
+            if (this.value === '' || (parseFloat(this.value) >= 0.01)) {
+                this.setCustomValidity('');
+            } else {
+                this.setCustomValidity('Minimum area is 0.01 acres');
+            }
+        });
+    
+        areaInput.addEventListener('blur', function() {
+            // On losing focus, if the value is less than 0.01, set it to 0.01
+            let value = parseFloat(this.value);
+            if (!isNaN(value) && value < 0.01) {
+                this.value = 0.01;
+                this.setCustomValidity('');
+            }
+        });
+    
+        areaInput.addEventListener('keydown', function(e) {
+            // Prevent 'e' input
+            if (e.key === 'e') {
+                e.preventDefault();
+            }
+        });
+    });
+    
+    
     document.addEventListener('DOMContentLoaded', function() {
         // Enhanced select for citizen (you can replace with Select2 or similar library for better UX)
         const citizenSelect = document.getElementById('citizen_id');

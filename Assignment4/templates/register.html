@@ -30,17 +30,16 @@
                         <div class="col-md-6">
                             <label for="role_id" class="form-label">User Role</label>
                             <select class="form-select" id="role_id" name="role_id" required>
+                                <option value="">Select a Role</option>
                                 {% for role in roles %}
                                     {% if role[1] != "admin" %}
-                                        <option value="{{ role[0] }}">{{ role[1]|title }}</option>
-                                    {%else%}
-                                        <option>------</option>
+                                        <option value="{{ role[0] }}" data-role-name="{{ role[1] }}">{{ role[1]|title }}</option>
                                     {% endif %}
                                 {% endfor %}
-                            </select>                            
+                            </select>
                         </div>
                     </div>
-                    
+
                     <!-- Citizen Fields -->
                     <div id="citizenFields" style="display: none;">
                         <hr>
@@ -48,11 +47,11 @@
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <label for="name" class="form-label">Full Name <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" id="name" name="name" required>
+                                <input type="text" class="form-control" id="name" name="name">
                             </div>
                             <div class="col-md-6">
                                 <label for="gender" class="form-label">Gender <span class="text-danger">*</span></label>
-                                <select class="form-select" id="gender" name="gender" required>
+                                <select class="form-select" id="gender" name="gender">
                                     <option value="">Select</option>
                                     <option value="Male">Male</option>
                                     <option value="Female">Female</option>
@@ -63,8 +62,10 @@
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <label for="dob" class="form-label">Date of Birth <span class="text-danger">*</span></label>
-                                <input type="date" class="form-control" id="dob" name="dob" required>
+                                <input type="date" class="form-control" id="dob" name="dob" max="">
+                                <div class="invalid-feedback">Please enter a valid date of birth (must be in the past).</div>
                             </div>
+                            
                             <div class="col-md-6">
                                 <label for="education" class="form-label">Educational Qualification</label>
                                 <select class="form-select" id="education" name="education">
@@ -79,7 +80,7 @@
                                 </select>
                             </div>
                         </div>
-                        
+
                         <!-- Household Existence Check -->
                         <div class="row mb-3">
                             <div class="col-md-12">
@@ -98,16 +99,16 @@
                                 </div>
                             </div>
                         </div>
-                        
+
                         <!-- Existing Household ID -->
                         <div class="row mb-3" id="existingHouseholdField" style="display: none;">
                             <div class="col-md-6">
                                 <label for="existing_household_id" class="form-label">Household ID <span class="text-danger">*</span></label>
-                                <input type="number" class="form-control" id="existing_household_id" name="existing_household_id">
+                                <input type="number" class="form-control" id="existing_household_id" name="existing_household_id" min="1">
                                 <div class="form-text">Enter the ID of your existing household</div>
                             </div>
-                        </div>
-                        
+                        </div>                        
+
                         <!-- New Household Information -->
                         <div id="newHouseholdFields">
                             <div class="row mb-3">
@@ -125,31 +126,31 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <!-- Employee Fields -->
                     <div id="employeeFields" style="display: none;">
                         <hr>
                         <h5 class="mb-3">Employee Information</h5>
-                        
+
                         <div class="alert alert-info">
                             <i class="bi bi-info-circle-fill me-2"></i>
                             <strong>Note:</strong> Employees must have a Citizen ID. If you don't have one, please register as a citizen first.
                         </div>
-                        
+
                         <!-- Citizen ID Field (Required) -->
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <label for="existing_citizen_id" class="form-label">Citizen ID <span class="text-danger">*</span></label>
-                                <input type="number" class="form-control" id="existing_citizen_id" name="existing_citizen_id" required>
+                                <input type="number" class="form-control" id="existing_citizen_id" name="existing_citizen_id">
                                 <div class="form-text">Please enter your existing Citizen ID</div>
                             </div>
                         </div>
-                        
+
                         <!-- Employee Role -->
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <label for="employee_role" class="form-label">Employee Role</label>
-                                <select class="form-select" id="employee_role" name="employee_role" required>
+                                <select class="form-select" id="employee_role" name="employee_role">
                                     <option value="">Select</option>
                                     <option value="Clerk">Clerk</option>
                                     <option value="Field Officer">Field Officer</option>
@@ -160,9 +161,9 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="d-grid gap-2 mt-4">
-                        <button type="submit" class="btn btn-primary">Register</button>
+                        <button type="submit" class="btn" style="background-color: #02830fa8;color:white">Register</button>
                     </div>
                 </form>
             </div>
@@ -176,145 +177,156 @@
 
 {% block scripts %}
 <script>
-// Handle role selection
-document.getElementById('role_id').addEventListener('change', function() {
-    const citizenFields = document.getElementById('citizenFields');
-    const employeeFields = document.getElementById('employeeFields');
-    const roleId = this.value;
-    
-    // Hide all role-specific fields initially
-    citizenFields.style.display = 'none';
-    employeeFields.style.display = 'none';
-    
-    // Reset required attributes
-    // First, make employee fields not required when choosing citizen role
-    document.getElementById('existing_citizen_id').required = false;
-    document.getElementById('employee_role').required = false;
-    
-    // Reset citizen field requirements
-    document.getElementById('name').required = false;
-    document.getElementById('gender').required = false;
-    document.getElementById('dob').required = false;
-    document.getElementById('address').required = false;
-    document.getElementById('existing_household_id').required = false;
-    
-    // Show fields based on role selection
-    if (roleId === '3') { // Citizen role
-        citizenFields.style.display = 'block';
-        
-        // Set citizen fields as required
-        document.getElementById('name').required = true;
-        document.getElementById('gender').required = true;
-        document.getElementById('dob').required = true;
-        
-        // Trigger the household radio buttons to ensure proper display
-        const checkedRadio = document.querySelector('input[name="household_exists"]:checked');
-        if (checkedRadio) {
-            checkedRadio.dispatchEvent(new Event('change'));
-        } else {
-            // Default to "no" if nothing is checked
-            document.getElementById('household_no').checked = true;
-            document.getElementById('household_no').dispatchEvent(new Event('change'));
-        }
-    } else if (roleId === '2') { // Employee role
-        employeeFields.style.display = 'block';
-        
-        // Set employee fields as required
-        document.getElementById('existing_citizen_id').required = true;
-        document.getElementById('employee_role').required = true;
-    }
-});
 
-// Handle household existence selection
-document.querySelectorAll('input[name="household_exists"]').forEach(function(radio) {
-    radio.addEventListener('change', function() {
-        const existingHouseholdField = document.getElementById('existingHouseholdField');
-        const newHouseholdFields = document.getElementById('newHouseholdFields');
-        
-        if (this.value === 'yes') {
-            existingHouseholdField.style.display = 'block';
-            newHouseholdFields.style.display = 'none';
-            
-            // Update field requirements
-            document.getElementById('existing_household_id').required = true;
-            document.getElementById('address').required = false;
-        } else {
-            existingHouseholdField.style.display = 'none';
-            newHouseholdFields.style.display = 'block';
-            
-            // Update field requirements
-            document.getElementById('existing_household_id').required = false;
-            document.getElementById('address').required = true;
+    document.getElementById('existing_household_id').addEventListener('input', function(e) {
+        if (this.value < 1) {
+            this.value = '';
         }
     });
-});
-
-// Set up form submission validation
-document.querySelector('form').addEventListener('submit', function(event) {
-    const roleId = document.getElementById('role_id').value;
     
-    if (roleId === '2') { // Employee role
-        const citizenId = document.getElementById('existing_citizen_id').value;
-        const employeeRole = document.getElementById('employee_role').value;
-        
-        if (!citizenId) {
-            event.preventDefault();
-            alert('Citizen ID is required for employee registration. Please register as a citizen first if you don\'t have one.');
-            return;
+    document.getElementById('existing_household_id').addEventListener('keydown', function(e) {
+        if (e.key === '-' || e.key === 'e') {
+            e.preventDefault();
         }
-        
-        if (!employeeRole) {
-            event.preventDefault();
-            alert('Please select an employee role.');
-            return;
-        }
-    } else if (roleId === '3') { // Citizen role
-        // Ensure form validation for citizen fields
-        const name = document.getElementById('name').value;
-        const gender = document.getElementById('gender').value;
-        const dob = document.getElementById('dob').value;
-        
-        if (!name || !gender || !dob) {
-            event.preventDefault();
-            alert('Please fill in all required citizen information fields (Name, Gender, and Date of Birth).');
-            return;
-        }
-        
-        // Validate household information
-        const householdExists = document.querySelector('input[name="household_exists"]:checked').value;
-        
-        if (householdExists === 'yes') {
-            const existingHouseholdId = document.getElementById('existing_household_id').value;
-            if (!existingHouseholdId) {
-                event.preventDefault();
-                alert('Please enter your household ID.');
-                return;
+    });
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        // Set max date to today
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('dob').setAttribute('max', today);
+    
+        // Validate date of birth
+        document.getElementById('dob').addEventListener('change', function() {
+            const selectedDate = new Date(this.value);
+            const now = new Date();
+    
+            if (selectedDate > now) {
+                this.setCustomValidity('Date of birth must be in the past');
+                this.classList.add('is-invalid');
+            } else {
+                this.setCustomValidity('');
+                this.classList.remove('is-invalid');
             }
-        } else {
-            const address = document.getElementById('address').value;
-            if (!address) {
-                event.preventDefault();
-                alert('Please enter your address for the new household.');
-                return;
-            }
-        }
-        
-        // If everything is valid, let the form submit
-        console.log('Citizen form valid, submitting...');
+        });
+    });
+
+    
+document.addEventListener('DOMContentLoaded', function () {
+    const roleSelect = document.getElementById('role_id');
+    const citizenFields = document.getElementById('citizenFields');
+    const employeeFields = document.getElementById('employeeFields');
+    const nameInput = document.getElementById('name');
+    const genderSelect = document.getElementById('gender');
+    const dobInput = document.getElementById('dob');
+    const existingCitizenIdInput = document.getElementById('existing_citizen_id');
+    const employeeRoleSelect = document.getElementById('employee_role');
+    const householdYesRadio = document.getElementById('household_yes');
+    const householdNoRadio = document.getElementById('household_no');
+    const existingHouseholdField = document.getElementById('existingHouseholdField');
+    const newHouseholdFields = document.getElementById('newHouseholdFields');
+    const addressInput = document.getElementById('address');
+    const existingHouseholdIdInput = document.getElementById('existing_household_id');
+    const householdRadios = document.querySelectorAll('input[name="household_exists"]');
+
+    function hideAllFields() {
+        citizenFields.style.display = 'none';
+        employeeFields.style.display = 'none';
     }
-});
 
-// Initial form setup
-window.addEventListener('DOMContentLoaded', function() {
-    // Trigger the role selection change event to set up initial state
-    document.getElementById('role_id').dispatchEvent(new Event('change'));
-    
-    // Ensure household radio buttons are properly initialized
-    document.getElementById('household_no').checked = true;
-    document.getElementById('household_no').dispatchEvent(new Event('change'));
-    
-    // Debugging log
-    console.log('Form initialized');
+    function resetRequirements(elements) {
+        elements.forEach(element => {
+            element.required = false;
+        });
+    }
+
+    function setRequirements(elements) {
+        elements.forEach(element => {
+            element.required = true;
+        });
+    }
+
+    function setupRoleVisibility(selectedRole) {
+        hideAllFields();
+
+        if (selectedRole) {
+            const selectedOption = roleSelect.options[roleSelect.selectedIndex];
+            const roleName = selectedOption.dataset.roleName;
+            if (roleName === 'citizen') {
+                citizenFields.style.display = 'block';
+                setRequirements([nameInput, genderSelect, dobInput]);
+                setupHouseholdInformation();
+
+            } else if (roleName === 'panchayat_employee') {
+                employeeFields.style.display = 'block';
+                setRequirements([existingCitizenIdInput, employeeRoleSelect]);
+            }
+        }
+    }
+
+    function setupHouseholdInformation() {
+        householdRadios.forEach(radio => {
+            radio.addEventListener('change', () => {
+                if (householdYesRadio.checked) {
+                    existingHouseholdField.style.display = 'block';
+                    newHouseholdFields.style.display = 'none';
+                    setRequirements([existingHouseholdIdInput]);
+                    resetRequirements([addressInput]);
+
+                } else if (householdNoRadio.checked) {
+                    existingHouseholdField.style.display = 'none';
+                    newHouseholdFields.style.display = 'block';
+                    setRequirements([addressInput]);
+                    resetRequirements([existingHouseholdIdInput]);
+                }
+            });
+        });
+
+         // Trigger initial state
+        if(householdNoRadio.checked){
+            householdNoRadio.dispatchEvent(new Event('change'));
+        }
+    }
+
+    // Event Listeners
+    roleSelect.addEventListener('change', () => {
+        setupRoleVisibility(roleSelect.value);
+    });
+
+    // Initialization
+    hideAllFields();
+    setupRoleVisibility(roleSelect.value);
+
+     // Prevent form from submitting with js disabled to avoid errors
+     document.querySelector('form').addEventListener('submit', function(event) {
+            const selectedRole = roleSelect.options[roleSelect.selectedIndex];
+            const roleName = selectedRole.dataset.roleName;
+            
+            if (roleName === 'citizen') {
+                if (!nameInput.value || !genderSelect.value || !dobInput.value) {
+                    event.preventDefault();
+                    alert('Please fill in all required citizen information fields.');
+                    return;
+                }
+
+                if (householdYesRadio.checked && !existingHouseholdIdInput.value) {
+                        event.preventDefault();
+                        alert('Please enter your household ID.');
+                        return;
+                    }
+                 else if (householdNoRadio.checked && !addressInput.value) {
+                        event.preventDefault();
+                        alert('Please enter your address for the new household.');
+                        return;
+                    }
+            } else if (roleName === 'panchayat_employee') {
+                if (!existingCitizenIdInput.value || !employeeRoleSelect.value) {
+                    event.preventDefault();
+                    alert('Please provide both citizen ID and employee role.');
+                    return;
+                }
+            }
+        });
+
 });
 </script>
 {% endblock %}

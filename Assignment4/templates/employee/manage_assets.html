@@ -5,31 +5,30 @@
 {% block content %}
 <div class="row">
     <div class="col-md-12 mb-4">
-        <h2>Manage Panchayat Assets</h2>
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
-                <li class="breadcrumb-item active" aria-current="page">Manage Assets</li>
-            </ol>
-        </nav>
+        <div class="d-flex justify-content-between align-items-center">
+            <h2>Manage Panchayat Assets</h2>
+            <div>
+                <a href="{{ url_for('employee.asset_reports') }}" class="btn ms-2" style="background-color: #02830fa8;color:white;">
+                    <i class="bi bi-bar-chart-fill"></i> Asset Reports
+                </a>
+                <a href="{{ url_for('employee.add_asset') }}" class="btn btn-primary">
+                    <i class="bi bi-plus-circle"></i> Add New Asset
+                </a>
+            </div>
+        </div>
     </div>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Manage Assets</li>
+        </ol>
+    </nav>
 </div>
 
 <div class="row mb-4">
     <div class="col-md-12">
         <div class="card">
             <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h5 class="card-title">Panchayat Assets</h5>
-                    <div>
-                        <a href="{{ url_for('employee.add_asset') }}" class="btn btn-primary">
-                            <i class="fas fa-plus-circle"></i> Add New Asset
-                        </a>
-                        <a href="{{ url_for('employee.asset_reports') }}" class="btn ms-2" style="background-color: #02830fa8;color:white;">
-                            <i class="fas fa-chart-bar"></i> Asset Reports
-                        </a>
-                    </div>
-                </div>
                 
                 {% if assets %}
                 <div class="table-responsive">
@@ -74,6 +73,12 @@
                     No assets have been recorded yet. <a href="{{ url_for('employee.add_asset') }}">Add your first asset</a>.
                 </div>
                 {% endif %}
+            </div>
+            <div class="card-footer">
+                <div class="d-flex justify-content-between align-items-center">
+                    <span>Total Records: <strong id="recordCount">{{ assets|length }}</strong></span>
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-secondary btn-sm mb-2">Back to Dashboard</a>
+                </div>
             </div>
         </div>
     </div>

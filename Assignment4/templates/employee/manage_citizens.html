@@ -56,7 +56,11 @@
                     {% for citizen in citizens %}
                     <tr>
                         <td>{{ citizen.citizen_id }}</td>
-                        <td>{{ citizen.name }}</td>
+                        <td> 
+                            <a href="{{ url_for('employee.view_citizen', citizen_id=citizen.citizen_id) }}" class="btn btn-sm">
+                                {{ citizen.name }}
+                            </a>
+                        </td>
                         <td>{{ citizen.gender }}</td>
                         <td>{{ citizen.dob }}</td>
                         <td>{{ citizen.education }}</td>
@@ -97,7 +101,7 @@
     <div class="card-footer">
         <div class="d-flex justify-content-between align-items-center">
             <span>Total Citizens: <strong>{{ citizens|length }}</strong></span>
-            <a href="{{ url_for('dashboard') }}" class="btn btn-secondary btn-sm">Back to Dashboard</a>
+            <a href="{{ url_for('dashboard') }}" class="btn btn-secondary btn-sm mb-2">Back to Dashboard</a>
         </div>
     </div>
 </div>

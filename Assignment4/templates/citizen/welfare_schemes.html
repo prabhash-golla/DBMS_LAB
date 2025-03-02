@@ -4,13 +4,33 @@
 
 {% block content %}
 <div class="container">
+    <!-- Modal -->
+    <div class="modal fade" id="applyModal" tabindex="-1" aria-labelledby="applyModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="applyModalLabel">How to Apply for this Scheme</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Please visit the Gram Panchayat office with your ID proof to apply for this scheme.</p>
+                    <p>Alternatively, you can download the application form from our website and submit it in person.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <a href="{{ download_url }}" class="btn btn-success">Download Application Form</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="row">
         <div class="col-md-12 mb-4">
             <h2>Welfare Schemes</h2>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
                     <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">Welfare Schemes</li>
+                    <li class="breadcrumb-item active" aria-current="page" aria-aria-current="page">Welfare Schemes</li>
                 </ol>
             </nav>
         </div>
@@ -75,7 +95,6 @@
                                             <h5 class="mb-0">{{ scheme.name }}{% if scheme.is_enrolled %}
                                                 <span class="badge bg-success float-end">Enrolled</span>
                                             {% endif %}</h5>
-                                            
                                         </div>
                                         <div class="card-body">
                                             <p>{{ scheme.description }}</p>
@@ -88,9 +107,10 @@
                                         </div>
                                         <div class="card-footer">
                                             {% if scheme.is_enrolled %}
-                                                <button class="btn" disabled style="background-color: #02830fa8;color:white;">Already Enrolled</button>
+                                                <button class="btn btn-secondary" disabled>Already Enrolled</button>
                                             {% else %}
-                                                <a href="#" class="btn" onclick="alert('Please visit the Gram Panchayat office with your ID proof to apply for this scheme.')" style="background-color: #02830fa8;color:white;">
+                                                <a href="#" class="btn btn-primary apply-button"
+                                                   data-bs-toggle="modal" data-bs-target="#applyModal">
                                                     How to Apply
                                                 </a>
                                             {% endif %}
@@ -103,6 +123,16 @@
                         <div class="alert alert-info">No welfare schemes are currently available.</div>
                     {% endif %}
                 </div>
+            </div>
+        </div>
+    </div>
+
+
+     <!-- Back to Dashboard Button -->
+     <div class="py-3 bg-light">
+        <div class="container">
+            <div class="d-flex justify-content-end">
+                <a href="{{ url_for('dashboard') }}" class="btn btn-secondary btn-sm">Back to Dashboard</a>
             </div>
         </div>
     </div>

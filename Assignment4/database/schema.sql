@@ -41,6 +41,7 @@ CREATE TABLE land_records (
 CREATE TABLE panchayat_employees (
     employee_id SERIAL PRIMARY KEY,
     citizen_id INTEGER REFERENCES citizens(citizen_id),
+    user_id INTEGER REFERENCES users(user_id),
     role TEXT,
     joining_date DATE DEFAULT CURRENT_DATE
 );

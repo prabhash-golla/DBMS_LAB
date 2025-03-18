@@ -1949,7 +1949,7 @@ def vaccination_reports():
             'age_group_stats': [{'age_group': stat[0], 'count': stat[1]} for stat in age_group_stats]
         }
         
-        return render_template('vaccination_reports.html', statistics=statistics)
+        return render_template('employee/vaccination_reports.html', statistics=statistics)
     except Exception as e:
         flash(f'An error occurred: {str(e)}', 'danger')
         return redirect(url_for('employee.manage_vaccinations'))

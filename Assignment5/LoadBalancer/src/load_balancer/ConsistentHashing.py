@@ -15,11 +15,7 @@ class ConsistentHashMap:
         probing (str): Method for handling collisions ('linear' or 'quadratic')
     """
     
-    def __init__(self, 
-                 hostnames: Optional[List[str]] = None, 
-                 n_slots: int = 256, 
-                 n_virtual: int = 9, 
-                 probing: str = 'linear'):
+    def __init__(self,hostnames: Optional[List[str]] = None,n_slots: int = 256,n_virtual: int = 9,probing: str = 'linear'):
         """
         Initialize the consistent hash map.
         

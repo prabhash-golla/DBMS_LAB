@@ -1,7 +1,13 @@
+import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
+
 class Config:
-    SECRET_KEY = 'team-titans'
-    DB_NAME ='22CS30027'
-    DB_USER ='22CS30027'
-    DB_PASSWORD = '5243y6!J'
-    DB_HOST = '10.5.18.72'
-    DB_PORT ='5432'
+    SECRET_KEY = os.getenv("SECRET_KEY", "default-secret")
+    DB_NAME = os.getenv("DB_NAME", "default-db")
+    DB_USER = os.getenv("DB_USER", "default-user")
+    DB_PASSWORD = os.getenv("DB_PASSWORD", "default-password")
+    DB_HOST = os.getenv("DB_HOST", "localhost")
+    DB_PORT = os.getenv("DB_PORT", "5432")

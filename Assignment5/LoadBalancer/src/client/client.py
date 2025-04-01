@@ -151,7 +151,14 @@ def handle_command(cmd: str, *args):
 
 # interactive mode
 def interactive_mode():
-    print("Server Load Testing Tool\nType HELP for available commands")
+    print("Server Load Testing Tool\n")
+    print("""Available commands:
+    ADD n [hostnames...]    - Add n servers with optional hostnames
+    DEL n [hostnames...]    - Delete n servers with optional hostnames
+    REP                     - Get server report
+    TEST n                  - Run load test with n servers
+    HELP                    - Show this help message
+    QUIT                    - Exit the program""")
 
     while True:
         try:
@@ -167,6 +174,7 @@ def interactive_mode():
             print(f"Unexpected error: {e}")
 
 if __name__ == '__main__':
+    
     if len(sys.argv) > 1:
         if sys.argv[1].upper() == 'TEST':
             server_count = int(sys.argv[2]) if len(sys.argv) > 2 else 3

@@ -4,15 +4,15 @@ import os
 import random
 import sys
 from aiodocker import Docker
-from fifolock import FifoLock
 from icecream import ic
 from quart import Quart, request, jsonify
 from colorama import Fore, Style
 from ConsistentHashing import ConsistentHashMap
 from utils import *
+from asyncio import Lock
 
 app = Quart(__name__)
-mutexLock = FifoLock()
+mutexLock = Lock()
 
 HASH_NUM = int(os.environ.get('HASH_NUM', 0))
 DEBUG = False

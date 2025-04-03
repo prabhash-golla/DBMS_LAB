@@ -1,9 +1,9 @@
 version: "3.9"
-name: LoadBalancer-P1
+x-name: LoadBalancer-P1
 
 networks:
   my_net:
-    name: my_net
+    name: LB
     
 services:
   load_balancer:

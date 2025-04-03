@@ -1,8 +1,8 @@
 start:
-	docker-compose up --build -d
+	sudo docker-compose up --build
 
 stop:
-	docker-compose down --timeout 100
+	sudo docker-compose down --timeout 100
 
 build-images:
 	cd server && docker build -t server:v1 .

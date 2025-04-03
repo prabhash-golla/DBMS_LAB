@@ -1,8 +1,7 @@
 FROM python:3.10-alpine AS builder
-RUN apk add --no-cache build-base libffi-dev openssl-dev
 COPY requirements.txt /
 RUN pip install --upgrade pip && \
-    pip wheel --no-cache-dir --wheel-dir /wheels --requirement /requirements.txt
+    pip wheel --no-cache-dir --wheel-dir /wheels --timeout 100 -r /requirements.txt
 
 FROM python:3.10-alpine
 WORKDIR /app

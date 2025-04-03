@@ -3,6 +3,7 @@ import signal
 import requests
 import asyncio
 import aiohttp
+import json
 import matplotlib.pyplot as plt
 from pprint import pp
 from time import time
@@ -40,7 +41,15 @@ def make_request(endpoint: str, payload=None):
     
     # Make the appropriate HTTP request based on the endpoint
     response = request_funcs[endpoint](f'{url}/{endpoint}', json=payload)
-    return f'Response: {response.text} | Code: {response.status_code}'
+
+    # Try to parse and pretty-print the JSON response
+    try:
+        json_response = response.json()
+        pretty_json = json.dumps(json_response, indent=4)
+        return f'\nResponse:\n{pretty_json}\n\nResponse Code: {response.status_code}\n'
+    except:
+        # If JSON parsing fails, return the original text
+        return f'Response: {response.text} | Code: {response.status_code}'
 
 # Load testing function with concurrency using asyncio and aiohttp
 async def gather_with_concurrency(session: aiohttp.ClientSession, batch: int, *urls: str):
@@ -249,7 +258,7 @@ if __name__ == '__main__':
     """
     if len(sys.argv) > 2:
         if sys.argv[2].upper() == 'TEST':
-            server_count = int(sys.argv[2]) if len(sys.argv) > 2 else 3
+            server_count = int(sys.argv[3]) if len(sys.argv) > 3 else 3
             asyncio.run(main(server_count=server_count))  # Run the load test
     else:
         interactive_mode()  # Start the interactive mode

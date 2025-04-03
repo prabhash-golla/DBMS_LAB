@@ -101,6 +101,8 @@ async def add():
                     heartbeat_fail_count[hostname] = 0
                     serv_id += 1
                     tasks.append(spawn_container(docker, serv_id, hostname))
+                    print(f"Added {hostname} to hash map. Current servers: {Servers.getServerList()}")
+                    print(f"Server slots for {hostname}: {Servers.server_slots[hostname]}")
                 await asyncio.gather(*tasks, return_exceptions=True)
             final_hostnames = Servers.getServerList()
         return jsonify(ic({
@@ -291,7 +293,14 @@ async def handle_flatline(serv_id: int, hostname: str):
             }
             container = await docker.containers.create_or_replace(name=hostname, config=container_config)
             my_net = await docker.networks.get('my_net')
-            await my_net.connect({'Container': container.id, 'EndpointConfig': {'Aliases': [hostname]}})
+            my_net = await docker.networks.get('my_net')
+            connect_config = {
+                'Container': container.id, 
+                'EndpointConfig': {
+                    'Aliases': [hostname]
+                }
+            }
+            await my_net.connect(connect_config)
             await container.start()
             if DEBUG:
                 print(f'{Fore.MAGENTA}RESPAWN | Started container for {hostname}{Style.RESET_ALL}', file=sys.stderr)

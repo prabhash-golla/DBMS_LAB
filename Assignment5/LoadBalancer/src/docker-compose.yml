@@ -74,4 +74,28 @@ services:
   #   environment:
   #     SERVER_ID: 4
 
-  
+  # Server-5:
+  #   build: ./server
+  #   image: server:v1
+  #   container_name: Server-5
+  #   networks:
+  #     my_net:
+  #       aliases:
+  #         - Server-5
+  #   hostname: Server-5
+  #   tty: true
+  #   environment:
+  #     SERVER_ID: 5
+
+  # Server-6:
+  #   build: ./server
+  #   image: server:v1
+  #   container_name: Server-6
+  #   networks:
+  #     my_net:
+  #       aliases:
+  #         - Server-6
+  #   hostname: Server-6
+  #   tty: true
+  #   environment:
+  #     SERVER_ID: 6

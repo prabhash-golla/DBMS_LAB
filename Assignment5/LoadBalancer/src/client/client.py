@@ -164,7 +164,7 @@ async def tester(server_count=3):
     plt.tight_layout()
 
     # Save and show the plot
-    filename = f'../../plots/plot-{server_count}-{int(time())}.png'
+    filename = f'../../plots/Servers-{server_count}.png'
     plt.savefig(filename, dpi=300)
     plt.show()
 

@@ -1,6 +1,7 @@
 import hashlib
 from typing import List, Dict, Optional, Union, Callable
 import logging
+import hashlib
 
 class ConsistentHashMap:
     """
@@ -36,12 +37,20 @@ class ConsistentHashMap:
         if probing.lower() not in ['linear', 'quadratic']:
             raise ValueError("Probing must be either 'linear' or 'quadratic'")
             
-        # Set up hash functions - KEEPING THE ORIGINAL HASH FUNCTIONS
+        # Given Hash Functions
         def requestHash(i):
-            return i**2 + 2*i + 17         # H(i) = i^2 + 2*i + 17
+            return i**2 + 2*i + 17 # H(i) = i^2 + 2*i + 17
 
         def serverHash(i, j):
-            return i**2 + j**2 + 2*j + 25  # Φ(i, j) = i^2 + j^2 + 2*j + 25
+            return i**2 + j**2 + 2*j + 25 # Φ(i, j) = i^2 + j^2 + 2*j + 25
+
+
+        # MD5-Based Hash Functions
+        def MD5requestHash(i):
+            return int(hashlib.md5(str(i).encode()).hexdigest(),16)
+
+        def MD5serverHash(i, j):
+            return int(hashlib.md5(f"{i}-{j}".encode()).hexdigest(),16)
         
         # Assign the hash functions
         self.requestHash = requestHash
@@ -67,7 +76,7 @@ class ConsistentHashMap:
         # Add initial servers if provided
         if hostnames is None:
             # Default hostnames
-            hostnames = ["Server-1", "Server-2", "Server-3"]
+            hostnames = ["Server-1", "Server-2","Server-3"]
         
         for hostname in hostnames:
             try:

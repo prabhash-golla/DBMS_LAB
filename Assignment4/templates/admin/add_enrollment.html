@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+
+{% block title %}Add Scheme Enrollment - Gram Panchayat{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <h2>Add New Enrollment</h2>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('admin.manage_enrollments') }}">Manage Enrollments</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Add Enrollment</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Enrollment Information</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('admin.add_enrollment') }}" id="addEnrollmentForm">
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h6 class="form-section-title">Citizen Selection</h6>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="citizen_id" class="form-label">Select Citizen <span class="text-danger">*</span></label>
+                            <select class="form-select" id="citizen_id" name="citizen_id" required>
+                                <option value="">Select a citizen</option>
+                                {% for citizen in citizens %}
+                                <option value="{{ citizen[0] }}">{{ citizen[1] }} - {{ citizen[2] }}</option>
+                                {% endfor %}
+                            </select>
+                            <small class="form-text text-muted">
+                                If the citizen is not listed, <a href="{{ url_for('admin.add_citizen') }}" target="_blank">add them first</a>.
+                            </small>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h6 class="form-section-title">Welfare Scheme Selection</h6>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="scheme_id" class="form-label">Select Welfare Scheme <span class="text-danger">*</span></label>
+                            <select class="form-select" id="scheme_id" name="scheme_id" required>
+                                <option value="">Select a welfare scheme</option>
+                                {% for scheme in schemes %}
+                                <option value="{{ scheme[0] }}" {% if request.args.get('scheme_id')|int == scheme[0] %}selected{% endif %}>{{ scheme[1] }}</option>
+                                {% endfor %}
+                            </select>
+                            <small class="form-text text-muted">
+                                If the scheme is not listed, <a href="{{ url_for('admin.add_welfare_scheme') }}" target="_blank">add it first</a>.
+                            </small>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h6 class="form-section-title">Enrollment Details</h6>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="enrollment_date" class="form-label">Enrollment Date</label>
+                            <input type="date" class="form-control" id="enrollment_date" name="enrollment_date">
+                            <small class="form-text text-muted">Leave blank to use today's date</small>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('admin.manage_enrollments') }}" class="btn btn-danger">Cancel</a>
+                        <button type="submit" class="btn btn-primary">Add Enrollment</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block styles %}
+<style>
+    .form-section-title {
+        font-weight: 600;
+        color: #02830fa8;
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid #dee2e6;
+    }
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Set default enrollment date to today if empty
+        const enrollmentDateInput = document.getElementById('enrollment_date');
+        if (!enrollmentDateInput.value) {
+            const today = new Date();
+            const formattedDate = today.toISOString().substr(0, 10); // YYYY-MM-DD format
+            enrollmentDateInput.value = formattedDate;
+        }
+        
+        // Form validation
+        const form = document.getElementById('addEnrollmentForm');
+        form.addEventListener('submit', function(event) {
+            const citizenSelect = document.getElementById('citizen_id');
+            if (!citizenSelect.value) {
+                event.preventDefault();
+                alert('Please select a citizen.');
+                citizenSelect.focus();
+                return;
+            }
+            
+            const schemeSelect = document.getElementById('scheme_id');
+            if (!schemeSelect.value) {
+                event.preventDefault();
+                alert('Please select a welfare scheme.');
+                schemeSelect.focus();
+                return;
+            }
+        });
+    });
+</script>
+{% endblock %}

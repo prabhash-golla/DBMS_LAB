@@ -1,0 +1,137 @@
+{% extends 'base.html' %}
+
+{% block title %}Citizen Dashboard - Gram Panchayat{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-12 mb-4">
+            <h2>Citizen Dashboard</h2>
+            <p class="lead">Welcome to the Gram Panchayat citizen portal. Access information and services for your village.</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Personal Information -->
+        <div class="col-md-4 mb-3">
+            <div class="card h-100">
+                <div class="card-header text-white">
+                    <h5 class="card-title mb-0"><i class="fas fa-user-circle me-2"></i>My Profile</h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">View your personal information and household details</p>
+                    <a href="{{ url_for('profile') }}" class="btn" style="background-color: #02830fa8;color:white;" >View Profile</a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Welfare Schemes -->
+        <div class="col-md-4 mb-3">
+            <div class="card h-100">
+                <div class="card-header text-white">
+                    <h5 class="card-title mb-0"><i class="fas fa-hand-holding-heart me-2"></i>Welfare Schemes</h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">Check available welfare schemes and eligibility criteria</p>
+                    <a href="{{ url_for('citizen.welfare_schemes') }}" class="btn" style="background-color: #02830fa8;color:white;" >View Schemes</a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Land Records -->
+        <div class="col-md-4 mb-3">
+            <div class="card h-100">
+                <div class="card-header text-white">
+                    <h5 class="card-title mb-0"><i class="fas fa-map-marked-alt me-2"></i>Land Records</h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">View your land ownership records and details</p>
+                    <a href="{{ url_for('citizen.land_records') }}" class="btn" style="background-color: #02830fa8;color:white;">View Records</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Health & Vaccination -->
+        <div class="col-md-6 mb-3">
+            <div class="card h-100 ">
+                <div class="card-header text-white">
+                    <h5 class="card-title mb-0"><i class="fas fa-syringe me-2"></i>Vaccination Records</h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">Access your vaccination history and health information</p>
+                    <a href="{{ url_for('citizen.vaccination_records') }}" class="btn" style="background-color: #02830fa8;color:white;">View Records</a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Village Information -->
+        <div class="col-md-6 mb-3">
+            <div class="card h-100">
+                <div class="card-header text-dark">
+                    <h5 class="card-title mb-0" style="color:white"><i class="fas fa-home me-2"></i>Village Information</h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">Explore information about village demographics, facilities, and assets</p>
+                    <a href="{{ url_for('citizen.village_info') }}" class="btn" style="background-color: #02830fa8;color:white;">View Village Info</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mt-4">
+        <!-- Quick Stats -->
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header text-white">
+                    <h5 class="mb-0">Village Quick Stats</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-3 mb-3">
+                            <div class="stat-item">
+                                <h3 class="text-primary">{{ village_stats.population|default('N/A') }}</h3>
+                                <p>Population</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="stat-item">
+                                <h3 class="text-success">{{ village_stats.families|default('N/A') }}</h3>
+                                <p>Total Families</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="stat-item">
+                                <h3 class="text-info">{{ village_stats.land_area|default('N/A') }}</h3>
+                                <p>Land Area (acres)</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="stat-item">
+                                <h3 class="text-danger">{{ village_stats.schemes|default('N/A') }}</h3>
+                                <p>Active Schemes</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        transition: transform 0.3s;
+    }
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+    .stat-item {
+        padding: 10px;
+        border-radius: 5px;
+        background-color: #f8f9fa;
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+
+{% block title %}Agricultural Statistics - Gram Panchayat{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card border-success h-100">
+            <div class="card-body text-center">
+                <div class="display-4 text-success">{{ statistics.total_area|round(2) }}</div>
+                <h5 class="card-title">Total Agricultural Land (acres)</h5>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card border-primary h-100">
+            <div class="card-body text-center">
+                <div class="display-4 text-primary">{{ statistics.crop_stats|length }}</div>
+                <h5 class="card-title">Crop Varieties</h5>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="col-md-4 mb-4">
+    <div class="card h-100">
+        <div class="card-header text-white">
+            <h5 class="mb-0"><i class="fas fa-list"></i> Crop Statistics</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-sm table-striped">
+                    <thead>
+                        <tr>
+                            <th>Crop Type</th>
+                            <th>Land Area (acres)</th>
+                            <th>% of Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for stat in statistics.crop_stats %}
+                            <tr>
+                                <td>{{ stat.crop_type }}</td>
+                                <td>{{ stat.total_area|round(2) }}</td>
+                                <td>{{ ((stat.total_area / statistics.total_area) * 100)|round(1) }}%</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <div class="card">
+            <div class="card-header text-white">
+                <h5 class="mb-0"><i class="fas fa-user-friends"></i> Top 10 Landowners</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Rank</th>
+                                <th>Owner Name</th>
+                                <th>Land Area (acres)</th>
+                                <th>% of Total Land</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for owner in statistics.top_landowners %}
+                                <tr>
+                                    <td>{{ loop.index }}</td>
+                                    <td>{{ owner.name }}</td>
+                                    <td>{{ owner.total_area|round(2) }}</td>
+                                    <td>{{ ((owner.total_area / statistics.total_area) * 100)|round(1) }}%</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

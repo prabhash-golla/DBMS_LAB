@@ -1,0 +1,246 @@
+{% extends 'base.html' %}
+
+{% block title %}System Overview - Gram Panchayat{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12 mb-4">
+            <h2>System Overview</h2>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('admin.admin_dashboard') }}">Admin</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">System Overview</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Data Overview</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card mb-3 bg-light">
+                                <div class="card-body p-3">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="mb-0">Citizens</h6>
+                                            <small class="text-muted">Total residents</small>
+                                        </div>
+                                        <h3 class="mb-0">{{ counts.citizens }}</h3>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card mb-3 bg-light">
+                                <div class="card-body p-3">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="mb-0">Households</h6>
+                                            <small class="text-muted">Registered families</small>
+                                        </div>
+                                        <h3 class="mb-0">{{ counts.households }}</h3>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card mb-3 bg-light">
+                                <div class="card-body p-3">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="mb-0">Employees</h6>
+                                            <small class="text-muted">Panchayat staff</small>
+                                        </div>
+                                        <h3 class="mb-0">{{ counts.panchayat_employees }}</h3>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card mb-3 bg-light">
+                                <div class="card-body p-3">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="mb-0">Users</h6>
+                                            <small class="text-muted">System accounts</small>
+                                        </div>
+                                        <h3 class="mb-0">{{ counts.users }}</h3>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card mb-3 bg-light">
+                                <div class="card-body p-3">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="mb-0">Land Records</h6>
+                                            <small class="text-muted">Registered plots</small>
+                                        </div>
+                                        <h3 class="mb-0">{{ counts.land_records }}</h3>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card mb-3 bg-light">
+                                <div class="card-body p-3">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="mb-0">Assets</h6>
+                                            <small class="text-muted">Panchayat properties</small>
+                                        </div>
+                                        <h3 class="mb-0">{{ counts.assets }}</h3>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card mb-3 bg-light">
+                                <div class="card-body p-3">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="mb-0">Schemes</h6>
+                                            <small class="text-muted">Welfare programs</small>
+                                        </div>
+                                        <h3 class="mb-0">{{ counts.welfare_schemes }}</h3>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card mb-3 bg-light">
+                                <div class="card-body p-3">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="mb-0">Enrollments</h6>
+                                            <small class="text-muted">Scheme memberships</small>
+                                        </div>
+                                        <h3 class="mb-0">{{ counts.scheme_enrollments }}</h3>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">User Distribution</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-4">
+                        <canvas id="userRoleChart" width="400" height="250"></canvas>
+                    </div>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Role</th>
+                                    <th>Count</th>
+                                    <th>Percentage</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% set total_users = user_roles|sum(attribute='count') %}
+                                {% for role in user_roles %}
+                                <tr>
+                                    <td>{{ role.role }}</td>
+                                    <td>{{ role.count }}</td>
+                                    <td>{{ ((role.count / total_users) * 100)|round(1) }}%</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <h6>Recent Activity</h6>
+                        <div class="list-group">
+                            {% for activity in recent_activity %}
+                            <div class="list-group-item list-group-item-action">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h6 class="mb-1">{{ activity.type }}</h6>
+                                    <small>{{ activity.date|default('N/A') }}</small>
+                                </div>
+                                <p class="mb-1">{{ activity.subject }}</p>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-between mb-4">
+        <a href="{{ url_for('admin.admin_dashboard') }}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Back to Admin Dashboard
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // User Roles Chart
+        const userRoleCtx = document.getElementById('userRoleChart').getContext('2d');
+        const userRoleData = {
+            labels: [{% for role in user_roles %}'{{ role.role }}',{% endfor %}],
+            datasets: [{
+                label: 'Number of Users',
+                data: [{% for role in user_roles %}{{ role.count }},{% endfor %}],
+                backgroundColor: [
+                    'rgba(54, 162, 235, 0.6)',
+                    'rgba(255, 99, 132, 0.6)',
+                    'rgba(75, 192, 192, 0.6)',
+                    'rgba(255, 159, 64, 0.6)'
+                ],
+                borderColor: [
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(255, 99, 132, 1)',
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(255, 159, 64, 1)'
+                ],
+                borderWidth: 1
+            }]
+        };
+        
+        const userRoleChart = new Chart(userRoleCtx, {
+            type: 'pie',
+            data: userRoleData,
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                    },
+                    title: {
+                        display: true,
+                        text: 'User Distribution by Role'
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

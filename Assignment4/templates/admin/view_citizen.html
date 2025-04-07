@@ -1,0 +1,302 @@
+{% extends 'base.html' %}
+
+{% block title %}Citizen Details - Gram Panchayat{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <div class="d-flex justify-content-between align-items-center">
+            <h2>Citizen Details</h2>
+            <div>
+                <a href="{{ url_for('admin.edit_citizen', citizen_id=citizen.citizen_id) }}" class="btn btn-secondary me-2">
+                    <i class="bi bi-pencil"></i> Edit
+                </a>
+                <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                    <i class="bi bi-trash"></i> Delete
+                </button>
+            </div>
+        </div>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('admin.manage_citizens') }}">Manage Citizens</a></li>
+                <li class="breadcrumb-item active" aria-current="page">View Citizen</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4 mb-4">
+        <div class="card">
+            <div class="card-header text-white">
+                <h5 class="mb-0">Personal Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3 d-flex justify-content-center">
+                    <div class="avatar-circle">
+                        <span class="initials">{{ citizen.name[0] }}</span>
+                    </div>
+                </div>
+                <table class="table table-striped">
+                    <tbody>
+                        <tr>
+                            <th scope="row">Citizen ID</th>
+                            <td>{{ citizen.citizen_id }}</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Name</th>
+                            <td>{{ citizen.name }}</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Gender</th>
+                            <td>{{ citizen.gender }}</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Date of Birth</th>
+                            <td>{{ citizen.dob }}</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Education</th>
+                            <td>{{ citizen.education }}</td>
+                        </tr>
+                        {% if citizen.user_id %}
+                        <tr>
+                            <th scope="row">System Account</th>
+                            <td>Yes ({{ citizen.username }})</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Email</th>
+                            <td>{{ citizen.email }}</td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <th scope="row">System Account</th>
+                            <td>No</td>
+                        </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-8 mb-4">
+        <div class="card">
+            <div class="card-header text-white">
+                <h5 class="mb-0">Household Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <table class="table table-striped">
+                            <tbody>
+                                <tr>
+                                    <th scope="row">Household ID</th>
+                                    <td>{{ citizen.household_id }}</td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">Address</th>
+                                    <td>{{ citizen.address }}</td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">Household Income</th>
+                                    <td>₹ {{ citizen.household_income }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Household Members</h6>
+                        {% if household_members %}
+                            <ul class="list-group">
+                                {% for member in household_members %}
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        <span>{{ member.name }}</span>
+                                        <div>
+                                            <span class="badge bg-secondary me-1">{{ member.gender }}</span>
+                                            <a href="{{ url_for('admin.view_citizen', citizen_id=member.citizen_id) }}" class="btn btn-sm btn-outline">View</a>
+                                        </div>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <p>No other household members found.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header text-white">
+                <h5 class="mb-0">Enrolled Welfare Schemes</h5>
+            </div>
+            <div class="card-body">
+                {% if schemes %}
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Scheme Name</th>
+                                    <th>Enrollment Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for scheme in schemes %}
+                                    <tr>
+                                        <td>{{ scheme.name }}</td>
+                                        <td>{{ scheme.enrollment_date }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="alert alert-info">Not enrolled in any welfare schemes.</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header text-white">
+                <h5 class="mb-0">Vaccination Records</h5>
+            </div>
+            <div class="card-body">
+                {% if vaccinations %}
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Vaccine Type</th>
+                                    <th>Date Administered</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for vax in vaccinations %}
+                                    <tr>
+                                        <td>{{ vax.vaccine_type }}</td>
+                                        <td>{{ vax.date }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="alert alert-info">No vaccination records found.</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <div class="card">
+            <div class="card-header text-white">
+                <h5 class="mb-0">Land Records</h5>
+            </div>
+            <div class="card-body">
+                {% if land_records %}
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Land ID</th>
+                                    <th>Area (acres)</th>
+                                    <th>Crop Type</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for record in land_records %}
+                                    <tr>
+                                        <td>{{ record.land_id }}</td>
+                                        <td>{{ record.area }}</td>
+                                        <td>{{ record.crop_type }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="alert alert-info">No land records found.</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="d-flex justify-content-between mb-4">
+    <a href="{{ url_for('admin.manage_citizens') }}" class="btn btn-secondary">Back to Citizens List</a>
+    <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="deleteModalLabel">Confirm Deletion</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete citizen <strong>{{ citizen.name }}</strong> (ID: {{ citizen.citizen_id }})?</p>
+                <div class="alert alert-danger">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i> This will permanently delete:
+                    <ul>
+                        <li>All citizen personal information</li>
+                        <li>Associated welfare scheme enrollments</li>
+                        <li>Vaccination records</li>
+                        <li>Land records</li>
+                        {% if citizen.username %}
+                        <li>User account (username: {{ citizen.username }})</li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form action="{{ url_for('admin.delete_citizen', citizen_id=citizen.citizen_id) }}" method="POST">
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .avatar-circle {
+        width: 100px;
+        height: 100px;
+        background-color: #02830fa8;
+        text-align: center;
+        border-radius: 50%;
+        -webkit-border-radius: 50%;
+        -moz-border-radius: 50%;
+        margin-bottom: 15px;
+    }
+    
+    .initials {
+        position: relative;
+        top: 25px;
+        font-size: 40px;
+        line-height: 50px;
+        color: #fff;
+        font-weight: bold;
+    }
+    
+    .form-section-title {
+        font-weight: 600;
+        color: #02830fa8;
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid #dee2e6;
+    }
+</style>
+{% endblock %}

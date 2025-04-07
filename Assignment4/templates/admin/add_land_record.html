@@ -1,0 +1,149 @@
+{% extends 'base.html' %}
+
+{% block title %}Add Land Record - Gram Panchayat{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <h2>Add New Land Record</h2>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('admin.manage_land_records') }}">Manage Land Records</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Add Land Record</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Land Record Details</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('admin.add_land_record') }}" id="addLandRecordForm">
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h6 class="form-section-title">Owner Information</h6>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="citizen_id" class="form-label">Select Land Owner <span class="text-danger">*</span></label>
+                            <select class="form-select" id="citizen_id" name="citizen_id" required>
+                                <option value="">Select a citizen</option>
+                                {% for citizen in citizens %}
+                                <option value="{{ citizen[0] }}">{{ citizen[1] }} - {{ citizen[2] }}</option>
+                                {% endfor %}
+                            </select>
+                            <small class="form-text text-muted">
+                                If the owner is not listed, <a href="{{ url_for('admin.add_citizen') }}" target="_blank">add them first</a>.
+                            </small>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h6 class="form-section-title">Land Details</h6>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="area_acres" class="form-label">Area (in Acres) <span class="text-danger">*</span></label>
+                            <input type="number" step="0.01" class="form-control" id="area_acres" name="area_acres" required min="0.01">
+                            <small class="form-text text-muted">Enter the size of the land in acres (minimum 0.01).</small>
+                            <div class="invalid-feedback">Please enter a valid land area (minimum 0.01 acres).</div>
+                        </div>
+                        
+                        
+                        <div class="col-md-6">
+                            <label for="crop_type" class="form-label">Crop Type</label>
+                            <select class="form-select" id="crop_type" name="crop_type">
+                                <option value="">Select a crop type</option>
+                                {% for crop in common_crops %}
+                                <option value="{{ crop }}">{{ crop }}</option>
+                                {% endfor %}
+                            </select>
+                            <small class="form-text text-muted">Current or planned crop for this land.</small>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('admin.manage_land_records') }}" class="btn btn-danger">Cancel</a>
+                        <button type="submit" class="btn btn-primary">Add Land Record</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block styles %}
+<style>
+    .form-section-title {
+        font-weight: 600;
+        color: #02830fa8;
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid #dee2e6;
+    }
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const areaInput = document.getElementById('area_acres');
+    
+        areaInput.addEventListener('input', function() {
+            // Allow empty input or valid numbers
+            if (this.value === '' || (parseFloat(this.value) >= 0.01)) {
+                this.setCustomValidity('');
+            } else {
+                this.setCustomValidity('Minimum area is 0.01 acres');
+            }
+        });
+    
+        areaInput.addEventListener('blur', function() {
+            // On losing focus, if the value is less than 0.01, set it to 0.01
+            let value = parseFloat(this.value);
+            if (!isNaN(value) && value < 0.01) {
+                this.value = 0.01;
+                this.setCustomValidity('');
+            }
+        });
+    
+        areaInput.addEventListener('keydown', function(e) {
+            // Prevent 'e' input
+            if (e.key === 'e') {
+                e.preventDefault();
+            }
+        });
+    });
+    
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        // Enhanced select for citizen (you can replace with Select2 or similar library for better UX)
+        const citizenSelect = document.getElementById('citizen_id');
+        
+        // Form validation
+        const form = document.getElementById('addLandRecordForm');
+        form.addEventListener('submit', function(event) {
+            if (!citizenSelect.value) {
+                event.preventDefault();
+                alert('Please select a land owner.');
+                citizenSelect.focus();
+                return;
+            }
+            
+            const areaInput = document.getElementById('area_acres');
+            if (!areaInput.value || parseFloat(areaInput.value) <= 0) {
+                event.preventDefault();
+                alert('Please enter a valid land area greater than zero.');
+                areaInput.focus();
+                return;
+            }
+        });
+    });
+</script>
+{% endblock %}

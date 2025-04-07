@@ -1,0 +1,101 @@
+version: "3.9"
+x-name: LoadBalancer-P1
+
+networks:
+  my_net:
+    name: LB
+    
+services:
+  load_balancer:
+    build: ./load_balancer
+    image: load:v1
+    container_name: load_balancer
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    privileged: true
+    ports:
+      - "5000:5000"
+    networks:
+      my_net:
+        aliases:
+          - load_balancer
+    hostname: load_balancer
+    tty: true
+
+  Server-1:
+    build: ./server
+    image: server:v1
+    container_name: Server-1
+    networks:
+      my_net:
+        aliases:
+          - Server-1
+    hostname: Server-1
+    tty: true
+    environment:
+      SERVER_ID: 1
+
+  Server-2:
+    build: ./server
+    image: server:v1
+    container_name: Server-2
+    networks:
+      my_net:
+        aliases:
+          - Server-2
+    hostname: Server-2
+    tty: true
+    environment:
+      SERVER_ID: 2
+
+  Server-3:
+    build: ./server
+    image: server:v1
+    container_name: Server-3
+    networks:
+      my_net:
+        aliases:
+          - Server-3
+    hostname: Server-3
+    tty: true
+    environment:
+      SERVER_ID: 3
+    
+  # Server-4:
+  #   build: ./server
+  #   image: server:v1
+  #   container_name: Server-4
+  #   networks:
+  #     my_net:
+  #       aliases:
+  #         - Server-4
+  #   hostname: Server-4
+  #   tty: true
+  #   environment:
+  #     SERVER_ID: 4
+
+  # Server-5:
+  #   build: ./server
+  #   image: server:v1
+  #   container_name: Server-5
+  #   networks:
+  #     my_net:
+  #       aliases:
+  #         - Server-5
+  #   hostname: Server-5
+  #   tty: true
+  #   environment:
+  #     SERVER_ID: 5
+
+  # Server-6:
+  #   build: ./server
+  #   image: server:v1
+  #   container_name: Server-6
+  #   networks:
+  #     my_net:
+  #       aliases:
+  #         - Server-6
+  #   hostname: Server-6
+  #   tty: true
+  #   environment:
+  #     SERVER_ID: 6

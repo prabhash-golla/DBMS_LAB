@@ -1,0 +1,6 @@
+quart==0.18.4
+aiodocker==0.22.0
+aiohttp==3.8.5
+colorama==0.4.6
+icecream==2.1.3
+werkzeug==2.2.2

@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block title %}Crop Statistics Report{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-6 offset-md-3">
+        <h2 class="text-center"><i class="fas fa-list"></i> Crop Statistics Report</h2>
+        <div class="table-responsive">
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Crop Type</th>
+                        <th>Land Area (acres)</th>
+                        <th>% of Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for stat in statistics.crop_stats %}
+                        <tr>
+                            <td>{{ stat.crop_type }}</td>
+                            <td>{{ stat.total_area }}</td>
+                            <td>{{ ((stat.total_area / statistics.total_area) * 100)|round(1) }}%</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

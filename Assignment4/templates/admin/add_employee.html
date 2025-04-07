@@ -1,0 +1,174 @@
+{% extends 'base.html' %}
+
+{% block title %}Add Employee - Gram Panchayat{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <h2>Add New Employee</h2>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('admin.manage_employees') }}">Manage Employees</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Add Employee</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Employee Information</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('admin.add_employee') }}" id="addEmployeeForm">
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h6 class="form-section-title">Citizen Selection</h6>
+                        </div>
+                        <div class="col-md-8">
+                            <label for="citizen_id" class="form-label">Select Citizen <span class="text-danger">*</span></label>
+                            <select class="form-select" id="citizen_id" name="citizen_id" required>
+                                <option value="">Select a citizen</option>
+                                {% for citizen in citizens %}
+                                <option value="{{ citizen[0] }}">{{ citizen[1] }} - {{ citizen[2] }}</option>
+                                {% endfor %}
+                            </select>
+                            <small class="form-text text-muted">Only citizens who are not already employees are shown</small>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h6 class="form-section-title">Job Information</h6>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="role" class="form-label">Employee Role <span class="text-danger">*</span></label>
+                            <select class="form-select" id="role" name="role" required>
+                                <option value="">Select a role</option>
+                                {% for role in employee_roles %}
+                                <option value="{{ role }}">{{ role }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="joining_date" class="form-label">Joining Date</label>
+                            <input type="date" class="form-control" id="joining_date" name="joining_date">
+                        </div>
+                    </div>
+                    
+                    <!-- User Account Information -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h6 class="form-section-title">User Account Information</h6>
+                        </div>
+                        <div class="col-md-12 mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="create_account" name="create_account">
+                                <label class="form-check-label" for="create_account">
+                                    Create admin account for this employee (or upgrade existing account)
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- User Account Fields (Hidden by default) -->
+                    <div class="row mb-4" id="accountFields" style="display:none;">
+                        <div class="alert alert-info col-md-12 mb-3">
+                            <i class="bi bi-info-circle-fill me-2"></i> If the selected citizen already has a user account, their account will be upgraded to staff access level. Otherwise, a new account will be created.
+                        </div>
+                        <div class="col-md-4">
+                            <label for="username" class="form-label">Username <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="username" name="username">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="email" class="form-label">Email <span class="text-danger">*</span></label>
+                            <input type="email" class="form-control" id="email" name="email">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="password" class="form-label">Password <span class="text-danger">*</span></label>
+                            <input type="password" class="form-control" id="password" name="password">
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('admin.manage_employees') }}" class="btn btn-danger">Cancel</a>
+                        <button type="submit" class="btn" style="background-color: #02830fa8;color:white;">Add Employee</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Handle user account creation toggle
+        const createAccountCheckbox = document.getElementById('create_account');
+        const accountFields = document.getElementById('accountFields');
+        const usernameInput = document.getElementById('username');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        
+        createAccountCheckbox.addEventListener('change', function() {
+            if (this.checked) {
+                accountFields.style.display = 'flex';
+                usernameInput.required = true;
+                emailInput.required = true;
+                passwordInput.required = true;
+            } else {
+                accountFields.style.display = 'none';
+                usernameInput.required = false;
+                emailInput.required = false;
+                passwordInput.required = false;
+            }
+        });
+        
+        // Form validation
+        const form = document.getElementById('addEmployeeForm');
+        form.addEventListener('submit', function(event) {
+            const citizenId = document.getElementById('citizen_id').value;
+            const role = document.getElementById('role').value;
+            
+            if (!citizenId) {
+                event.preventDefault();
+                alert('Please select a citizen.');
+                return;
+            }
+            
+            if (!role) {
+                event.preventDefault();
+                alert('Please select an employee role.');
+                return;
+            }
+            
+            if (createAccountCheckbox.checked) {
+                if (!usernameInput.value) {
+                    event.preventDefault();
+                    alert('Please provide a username.');
+                    usernameInput.focus();
+                    return;
+                }
+                
+                if (!emailInput.value) {
+                    event.preventDefault();
+                    alert('Please provide an email address.');
+                    emailInput.focus();
+                    return;
+                }
+                
+                if (!passwordInput.value) {
+                    event.preventDefault();
+                    alert('Please provide a password.');
+                    passwordInput.focus();
+                    return;
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,169 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Land Records - Gram Panchayat{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <div class="d-flex justify-content-between align-items-center">
+            <h2>Land Records Management</h2>
+            <a href="{{ url_for('admin.add_land_record') }}" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> Add New Land Record
+            </a>
+        </div>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Manage Land Records</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <div class="row align-items-center">
+            <div class="col">
+                <h5 class="mb-0">Land Records</h5>
+            </div>
+            <div class="col-auto">
+                <div class="input-group">
+                    <input type="text" id="searchInput" class="form-control" placeholder="Search records...">
+                    <button class="btn btn-outline-secondary" type="button" id="clearSearch">
+                        <i class="bi bi-x-circle"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover" id="landRecordsTable">
+                <thead class="table-primary">
+                    <tr>
+                        <th>ID</th>
+                        <th>Owner</th>
+                        <th>Area (Acres)</th>
+                        <th>Crop Type</th>
+                        <th>Location</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for record in land_records %}
+                    <tr>
+                        <td>{{ record.land_id }}</td>
+                        <td>
+                            <a href="{{ url_for('admin.view_citizen', citizen_id=record.citizen_id) }}" style="color:black">
+                                {{ record.owner_name }}
+                            </a>
+                        </td>
+                        <td>{{ record.area_acres }}</td>
+                        <td>{{ record.crop_type or 'Not specified' }}</td>
+                        <td>{{ record.location }}</td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <a href="{{ url_for('admin.view_land_record', land_id=record.land_id) }}" class="btn btn-info" title="View Details">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                <a href="{{ url_for('admin.edit_land_record', land_id=record.land_id) }}" class="btn btn-primary" title="Edit">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <button type="button" class="btn btn-danger delete-btn" 
+                                        data-bs-toggle="modal" 
+                                        data-bs-target="#deleteConfirmModal" 
+                                        data-record-id="{{ record.land_id }}" 
+                                        data-owner-name="{{ record.owner_name }}"
+                                        title="Delete">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="card-footer">
+        <div class="d-flex justify-content-between align-items-center">
+            <span>Total Records: <strong>{{ land_records|length }}</strong></span>
+            <a href="{{ url_for('dashboard') }}" class="btn btn-secondary btn-sm">Back to Dashboard</a>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="deleteConfirmModalLabel">Confirm Deletion</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete land record <strong id="recordIdSpan"></strong> owned by <span id="ownerNameSpan"></span>?</p>
+                <div class="alert alert-danger">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i> This action cannot be undone.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form id="deleteForm" method="POST">
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Search functionality
+        const searchInput = document.getElementById('searchInput');
+        const clearSearchBtn = document.getElementById('clearSearch');
+        const table = document.getElementById('landRecordsTable');
+        const rows = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+        
+        searchInput.addEventListener('keyup', function() {
+            const searchTerm = searchInput.value.toLowerCase();
+            
+            for (let i = 0; i < rows.length; i++) {
+                const rowData = rows[i].textContent.toLowerCase();
+                if (rowData.includes(searchTerm)) {
+                    rows[i].style.display = '';
+                } else {
+                    rows[i].style.display = 'none';
+                }
+            }
+        });
+        
+        clearSearchBtn.addEventListener('click', function() {
+            searchInput.value = '';
+            for (let i = 0; i < rows.length; i++) {
+                rows[i].style.display = '';
+            }
+        });
+        
+        // Delete modal functionality
+        const deleteModal = document.getElementById('deleteConfirmModal');
+        const deleteButtons = document.querySelectorAll('.delete-btn');
+        const deleteForm = document.getElementById('deleteForm');
+        const recordIdSpan = document.getElementById('recordIdSpan');
+        const ownerNameSpan = document.getElementById('ownerNameSpan');
+        
+        deleteButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const recordId = this.getAttribute('data-record-id');
+                const ownerName = this.getAttribute('data-owner-name');
+                
+                recordIdSpan.textContent = recordId;
+                ownerNameSpan.textContent = ownerName;
+                deleteForm.action = "{{ url_for('admin.delete_land_record', land_id=0) }}".replace('0', recordId);
+            });
+        });
+    });
+</script>
+{% endblock %}

@@ -141,3 +141,16 @@ Hash functions can be modified in `ConsistentHashMap`. Assign different implemen
 - Ensure port `5000` is free.
 - Use `make stop` & `make clean` to resolve Docker issues.
 - `Makefile` is Written for a UNIX based System.
+
+## Output
+
+### For 3 Servers
+
+#### Given Hash
+
+![](./plots/Given-Hash/Servers-3.png)
+
+#### MD5 Hash
+
+![](./plots/MD5-Hash/Servers-3.png)
+

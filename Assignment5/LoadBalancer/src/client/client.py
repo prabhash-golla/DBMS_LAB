@@ -130,24 +130,44 @@ async def tester(server_count=3):
     pp(counts)
     
     # Calculate the success rate
-    success_count = sum(counts[k] for k in range(1, N+1))
-    total_count = success_count + counts[0]
-    
+    success_count = sum(counts.get(k, 0) for k in range(1, N+1))
+    total_count = success_count + counts.get(0, 0)
+
     print(f"Success rate: {success_count/total_count*100:.2f}% ({success_count}/{total_count})")
-    
-    # Generate and save a bar chart of the results
+
+    # Make sure we have bars for all IDs from 0..N, even if some are zero
+    for k in range(N+1):
+        counts.setdefault(k, 0)
+
+    x_values = sorted(counts.keys())      # Sort keys so bars appear in order
+    y_values = [counts[k] for k in x_values]
+
     plt.figure(figsize=(10, 6))
-    plt.bar(list(counts.keys()), list(counts.values()))
+
+    # Create the bar chart
+    plt.bar(x_values, y_values, edgecolor='black')
+
+    # Set x-axis labels to the server IDs (0 = errors)
+    plt.xticks(x_values)
+
+    # Labeling
     plt.xlabel('Server ID (0 = errors)')
     plt.ylabel('Number of requests')
     plt.title(f'Load Test Results: 10,000 Requests to {server_count} Servers')
-    
-    for i, v in counts.items():
-        plt.text(i, v + 5, str(v), ha='center')  # Display counts above each bar
-    
-    # Save the plot as a PNG file
+
+    # Annotate each bar with its value
+    for x, val in zip(x_values, y_values):
+        plt.text(x, val + max(y_values) * 0.01, str(val), 
+                ha='center', va='bottom', fontsize=11)
+
+    # Tight layout to avoid clipping labels
+    plt.tight_layout()
+
+    # Save and show the plot
     filename = f'../../plots/plot-{server_count}-{int(time())}.png'
-    plt.savefig(filename)
+    plt.savefig(filename, dpi=300)
+    plt.show()
+
     print(f"Plot saved as {filename}")
     
     return counts

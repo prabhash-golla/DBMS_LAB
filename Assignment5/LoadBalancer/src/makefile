@@ -11,10 +11,10 @@ up: build-images
 	docker-compose up --build -d
 
 test:
-	cd client && python3 client.py 5001 TEST
+	cd client && python3 client.py 5000 TEST 
 
 test_ic:
-	cd client && python3 client.py 5001
+	cd client && python3 client.py 
 
 clean:
 	docker-compose down --timeout 100 --volumes --remove-orphans

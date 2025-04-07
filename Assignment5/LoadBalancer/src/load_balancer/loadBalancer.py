@@ -15,7 +15,6 @@ app = Quart(__name__)
 mutexLock = Lock()  # Mutex for thread-safe operations on shared data
 
 # Configuration parameters
-HASH_NUM = int(os.environ.get('HASH_NUM', 0))
 DEBUG = False
 ic.configureOutput(prefix='[LB] | ')  # Configure icecream debugging output
 ic.disable()  # Disable icecream debugging by default

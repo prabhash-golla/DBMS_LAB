@@ -154,3 +154,6 @@ Hash functions can be modified in `ConsistentHashMap`. Assign different implemen
 
 ![](./plots/MD5-Hash/Servers-3.png)
 
+## Client Options
+
+![](./Client-Request-Response/HELP.png)

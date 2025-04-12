@@ -34,6 +34,13 @@ shard_map: dict[str, ConsistentHashMap] = {}
 
 app = Quart(__name__)
 
+def err_payload(err: Exception):
+    """Create standardized error response payload"""
+    return {
+        'message': f'<Error> {err}',
+        'status': 'failure'
+    }
+
 async def create_db_pool():
     try:
         # Corrected DSN with the proper username "postgres" and your password.
@@ -216,6 +223,7 @@ async def add():
     """Add new server instances to the cluster"""
     global Servers, heartbeat_fail_count, serv_ids,shard_map
     await asyncio.sleep(0)  # Yield to event loop
+
     try:
         # Parse request payload
         payload: dict = await request.get_json()
@@ -224,22 +232,26 @@ async def add():
             raise Exception('Payload is empty')
             
         # Extract parameters
-        n = int(payload.get('n', -1))  # Number of servers to add
-        hostnames: list[str] = list(payload.get('hostnames', []))  # Optional predefined hostnames
-        
+        n = int(payload.get("n",-1))
+
+        new_shards: list[dict[str, any]] = list(payload.get('new_shards', []))
+
+        servers: dict[str, list[str]] = dict(payload.get('servers', {}))
+        hostnames = list(servers.keys())
+
         # Validate parameters
         if n <= 0:
             raise Exception('Number of servers to add must be greater than 0')
-        if len(hostnames) > n:
+        if len(hostnames) != n:
             raise Exception('Length of hostname list is more than instances to add')
         if len(hostnames) != len(set(hostnames)):
             raise Exception('Hostname list contains duplicates')
             
-        # Generate random hostnames if needed
-        new_hostnames = set()
-        while len(new_hostnames) < n - len(hostnames):
-            new_hostnames.add(f'Server-{random.randrange(0, 1000):03}-{int(time.time()*1e3) % 1000:03}')
-        hostnames.extend(new_hostnames)
+        for shard in new_shards:
+            if not all(k in shard.keys()
+                       for k in
+                       ('stud_id_low', 'shard_id', 'shard_size')):
+                raise Exception('Invalid shard description')
         
         async with mutexLock:  # Ensure thread-safe access to shared data
             # Check if we have enough capacity
@@ -248,10 +260,13 @@ async def add():
             # Check for hostname collisions
             if not set(hostnames).isdisjoint(set(Servers.getServerList())):
                 raise Exception(f'Hostnames {set(hostnames) & set(Servers.getServerList())} are already in Servers')
-                
-            ic("To add: ", hostnames)
-            semaphore = asyncio.Semaphore(DOCKER_TASK_BATCH_SIZE)  # Limit concurrent Docker operations
             
+            if not set(new_shards).isdisjoint(set(shard_map.keys())):
+                raise Exception(f'Shards {set(new_shards) & set(shard_map.keys())} are already in Shards')
+            
+            ic("To add: ", hostnames)        
+            semaphore = asyncio.Semaphore(DOCKER_TASK_BATCH_SIZE)  # Limit concurrent Docker operations
+    
             async def spawn_container(docker: Docker, serv_id: int, hostname: str):
                 """Create and start a new Docker container for a server instance"""
                 await asyncio.sleep(0)  # Yield to event loop
@@ -261,7 +276,14 @@ async def add():
                         container_config = {
                             'image': 'server:v1',  # Docker image to use
                             'detach': True,  # Run in background
-                            'env': [f'SERVER_ID={serv_id}', 'DEBUG=true'],  # Environment variables
+                            'env': [f'SERVER_ID={serv_id}', 
+                                    'DEBUG=true',
+                                    'POSTGRES_HOST=localhost',
+                                    'POSTGRES_PORT= 5432',
+                                    'POSTGRES_USER=postgres',
+                                    'POSTGRES_PASSWORD=5243y6!J',
+                                    'POSTGRES_DB_NAME=postgres'  
+                                ],  # Environment variables
                             'hostname': hostname,  # Container hostname
                             'tty': True,  # Allocate a terminal
                         }

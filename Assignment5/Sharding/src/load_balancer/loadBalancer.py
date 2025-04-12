@@ -34,6 +34,12 @@ shard_map: dict[str, ConsistentHashMap] = {}
 
 app = Quart(__name__)
 
+from routes import blueprints
+
+# Register blueprints
+for bp in blueprints:
+    app.register_blueprint(bp)
+
 def err_payload(err: Exception):
     """Create standardized error response payload"""
     return {

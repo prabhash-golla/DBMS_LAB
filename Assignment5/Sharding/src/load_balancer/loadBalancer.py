@@ -33,9 +33,9 @@ MAX_CONFIG_FAIL_COUNT = 15
 Servers = ConsistentHashMap()  # Consistent hash map for server selection
 heartbeat_fail_count: dict[str, int] = {}  # Track failed heartbeats for each server
 serv_ids: dict[str,int] = {}
+serv_id = 0
 shard_map: dict[str, ConsistentHashMap] = {}
 
-app = Quart(__name__)
 
 def err_payload(err: Exception):
     """Create standardized error response payload"""
@@ -44,30 +44,22 @@ def err_payload(err: Exception):
         'status': 'failure'
     }
 
-async def create_db_pool():
-    try:
-        # Corrected DSN with the proper username "postgres" and your password.
-        pool = await asyncpg.create_pool(dsn="postgresql://postgres:5243y6!J@localhost:5432/postgres")
-        return pool
-    except Exception as e:
-        logging.error("Failed to create db pool: %s", e)
-        return None
+SERVER_ID = os.environ.get('SERVER_ID', '0')
+HOSTNAME = os.environ.get('HOSTNAME', 'localhost')
+DB_HOST = os.environ.get('POSTGRES_HOST', 'localhost')
+DB_PORT = int(os.environ.get('POSTGRES_PORT', 5432))
+DB_USER = os.environ.get('POSTGRES_USER', 'postgres')
+DB_PASSWORD = os.environ.get('POSTGRES_PASSWORD', 'postgres')
+DB_NAME = os.environ.get('POSTGRES_DB_NAME', 'postgres')
+
+pool: asyncpg.Pool
 
 async def gather_with_concurrency(
     session: aiohttp.ClientSession,
     batch: int,
     *urls: str
 ):
-    """Execute HTTP requests with limited concurrency
     
-    Args:
-        session: aiohttp session to use for requests
-        batch: maximum number of concurrent requests
-        urls: list of URLs to request
-        
-    Returns:
-        List of responses or None for failed requests
-    """
     await asyncio.sleep(0)  # Yield to event loop
     semaphore = asyncio.Semaphore(batch)
     
@@ -185,37 +177,88 @@ async def handle_flatline(serv_id: int, hostname: str):
         if DEBUG:
             print(f'{Fore.RED}ERROR | {e}{Style.RESET_ALL}', file=sys.stderr)
 
+app = Quart(__name__)
 @app.after_serving
 async def shutdown_db():
-    if hasattr(app, 'db_pool') and app.db_pool:
-        await app.db_pool.close()
+    if hasattr(app, 'db_pool') and pool:
+        await pool.close()
         logging.info("Database connection pool closed.")
     else:
         logging.info("No database connection pool to close.")
 
 @app.before_serving
 async def startup():
-
+    global pool
     try:
-        app.db_pool = await create_db_pool()
-        if app.db_pool:
-            app.add_background_task(get_heartbeats)
-            logging.info("Database connection pool created.")
-        else:
-            logging.warning("Database connection pool was not created.")
-
+        pool = await asyncpg.create_pool( 
+            user=DB_USER,
+            password=DB_PASSWORD,
+            database=DB_NAME,
+            host=DB_HOST,
+            port=DB_PORT
+        )
+        print(f'{Fore.GREEN}INFO | Database connection created.{Style.RESET_ALL}')
     except Exception as e:
-        print("Error")
+        print(f'{Fore.RED}ERROR | Startup failed: '
+              f'{e}'
+              f'{Style.RESET_ALL}',
+              file=sys.stderr)
+        sys.exit(1)
 
-@app.route('/init',method=['POST'])
+@app.route('/',methods=['GET'])
+@app.route('/help',methods=['GET'])
+async def help():
+    async with mutexLock:
+        return jsonify({
+                    'message': {
+                        'help' : '/help - Methods : GET',
+                        'init': '/init - Methods : GET,POST',
+                        'status': '/status - Methods : GET',
+                        'add': '/add - Methods : GET,POST',
+                        'rm': '/rm - Methods : DELETE',
+                        'read': '/read - Methods : GET,POST',
+                        'write': '/write - Methods : GET,POST',
+                        'update': '/update - Methods : PUT',
+                        'del': '/del - Methods : DELETE',
+                    },
+                    'status': 'successful',
+                }), 200
+
+@app.route('/init',methods=['GET'])
+async def init_get():
+    example_schema = {
+            "N": 3,
+            "schema": {
+                "columns": ["Stud_id", "Stud_name", "Stud_marks"],
+                "dtypes": ["Number", "String", "String"]
+            },
+            "shards": [
+                {"Stud_id_low": 0, "Shard_id": "sh1", "Shard_size": 4096},
+                {"Stud_id_low": 4096, "Shard_id": "sh2", "Shard_size": 4096},
+                {"Stud_id_low": 8192, "Shard_id": "sh3", "Shard_size": 4096}
+            ],
+            "servers": {
+                "Server0": ["sh1", "sh2"],
+                "Server1": ["sh2", "sh3"],
+                "Server2": ["sh1", "sh3"]
+            }
+        }
+
+    return jsonify({
+        "message": "Expected schema for /init POST request",
+        "payload_structure": example_schema,
+        "status": "success"
+    }), 200
+
+@app.route('/init',methods=['POST'])
 async def init():
-    global Servers, heartbeat_fail_count, serv_ids,shard_map,schema
+    global Servers, heartbeat_fail_count, serv_ids,shard_map,schema,serv_id,pool
 
     await asyncio.sleep(0)
 
     try:
         payload = await request.get_json()
-        
+        print('Servers : ',Servers.getServerList())
         if payload is None:
             raise Exception("No Payload")
         
@@ -238,8 +281,8 @@ async def init():
         if len(server_name)!=N:
             raise Exception("Number of Servers not same")
 
-        print(f"Schema columns: {schema['columns']}")
-        print(f"Schema dtypes: {schema['dtypes']}")
+        # print(f"Schema columns: {schema['columns']}")
+        # print(f"Schema dtypes: {schema['dtypes']}")
         
         for shard in shards:
             if not all(k in shard.keys()
@@ -247,7 +290,6 @@ async def init():
                 raise Exception('Invalid shard description')
         
         async with mutexLock:
-            Servers.clear()
             heartbeat_fail_count.clear()
             serv_ids.clear()
             shard_map.clear()
@@ -261,9 +303,6 @@ async def init():
             if(len(miss_shards)):
                 raise Exception(f"Missing Shard Definations : `{miss_shards}` ")
 
-            for server in servers:
-                Servers.add(server)
-                heartbeat_fail_count[server] = 0
 
             for shard in shards:
                 shard_id = shard['shard_id']
@@ -271,7 +310,7 @@ async def init():
             
             docker_semaphore = asyncio.Semaphore(DOCKER_TASK_BATCH_SIZE)
 
-            async def spawn_container(docker: Docker, serv_id: int, hostname: str):
+            async def spawn_container(docker: Docker, serv_id: int, server: str):
                 """Create and start a new Docker container for a server instance"""
                 await asyncio.sleep(0)  # Yield to event loop
                 async with docker_semaphore:  # Limit concurrent Docker operations
@@ -281,26 +320,26 @@ async def init():
                             'image': 'server:v1',  # Docker image to use
                             'detach': True,  # Run in background
                             'env': [f'SERVER_ID={serv_id}', 'DEBUG=true'],  # Environment variables
-                            'hostname': hostname,  # Container hostname
+                            'hostname': server,  # Container hostname
                             'tty': True,  # Allocate a terminal
                         }
                         # Create or replace container
                         container = await docker.containers.create_or_replace(
-                            name=hostname,
+                            name=server,
                             config=container_config,
                         )
                         # Connect to network
                         LB = await docker.networks.get('LB')
-                        await LB.connect({'Container': container.id, 'EndpointConfig': {'Aliases': [hostname]}})
+                        await LB.connect({'Container': container.id, 'EndpointConfig': {'Aliases': [server]}})
                         
                         if DEBUG:
-                            print(f'{Fore.LIGHTGREEN_EX}CREATE | Created container for {hostname}{Style.RESET_ALL}', file=sys.stderr)
+                            print(f'{Fore.LIGHTGREEN_EX}CREATE | Created container for {server}{Style.RESET_ALL}', file=sys.stderr)
                         
                         # Start container
                         await container.start()
                         
                         if DEBUG:
-                            print(f'{Fore.MAGENTA}SPAWN | Started container for {hostname}{Style.RESET_ALL}', file=sys.stderr)
+                            print(f'{Fore.MAGENTA}SPAWN | Started container for {server}{Style.RESET_ALL}', file=sys.stderr)
                     except Exception as e:
                         if DEBUG:
                             print(f'{Fore.RED}ERROR | {e}{Style.RESET_ALL}', file=sys.stderr)
@@ -309,9 +348,11 @@ async def init():
                 await asyncio.sleep(0)
 
                 async with semaphore:
+                    print("helo")
                     for _ in range(MAX_CONFIG_FAIL_COUNT):
                         try:
                             async with session.get(f'http://{server}:5000/heartbeat') as response:
+                                print(response)
                                 if response.status == 200:
                                     break
                         except Exception:
@@ -319,10 +360,11 @@ async def init():
                         await asyncio.sleep(2)
                     else:
                         raise Exception()
+                    print("helo")
 
                     async with session.post(f'http://{server}:5000/config',json=payload) as response:
                         await response.read()
-
+                    print(response)
                     return response
 
             async with Docker() as docker:
@@ -335,7 +377,7 @@ async def init():
                     
                     for shards in servers[server]:
                         shard_map[shards].add(server)
-
+                    serv_id += 1
                     new_tasks.append(spawn_container(docker, serv_id, server))
 
                 res = await asyncio.gather(*new_tasks, return_exceptions=True)
@@ -351,7 +393,7 @@ async def init():
 
             async with aiohttp.ClientSession(timeout=timeout) as session:
                 # Define tasks
-                new_tasks = [asyncio.create_task(post_config_wrapper(semaphore=req_semaphore,session=session,server=server,payload={"shards": servers[hostname]})) for server in server_name]
+                new_tasks = [asyncio.create_task(post_config_wrapper(semaphore=req_semaphore,session=session,server=server,payload={"shards": servers[server]})) for server in server_name]
 
                 # Wait for all tasks to complete
                 config_responses = await asyncio.gather(*new_tasks, return_exceptions=True)
@@ -359,13 +401,13 @@ async def init():
                                     else response
                                     for response in config_responses]
 
-                for (hostname, response) in zip(server_name, config_responses):
+                for (server, response) in zip(server_name, config_responses):
                     if response is None or response.status != 200:
-                        raise Exception(f'Failed to add shards to {hostname}')
+                        raise Exception(f'Failed to add shards to {server}')
 
-            async with app.db_pool.acquire() as conn:
-                async with conn.transaction():
-                    stmt = await conn.prepare(
+            async with pool.acquire() as con:
+                async with con.transaction():
+                    stmt = await con.prepare(
                         '''--sql
                         INSERT INTO shardT (
                             stud_id_low,
@@ -393,9 +435,9 @@ async def init():
             print(f'{Fore.RED}ERROR | {e}{Style.RESET_ALL}', file=sys.stderr)
         return jsonify(err_payload(e)), 400
 
-@app.route('/status',method=["GET"])
+@app.route('/status',methods=["GET"])
 async def status():
-    global Servers, heartbeat_fail_count, serv_ids,shard_map,schema
+    global Servers, heartbeat_fail_count, serv_ids,shard_map,schema,pool
 
     await asyncio.sleep(0)
 
@@ -403,7 +445,7 @@ async def status():
         async with mutexLock:
             shards: List[Dict[str, Any]] = []
 
-            async with app.db_pool.acquire() as conn:
+            async with pool.acquire() as conn:
                 async with conn.transaction(readonly=True):
                     stmt = await conn.prepare(
                         '''--sql
@@ -447,10 +489,24 @@ async def status():
     except Exception as err:
         return jsonify(err_payload(err)), 400
 
-@app.route('/add',method=['POST'])
+@app.route('/add',methods =['GET'])
+async def add_get():
+    example_payload = {
+        "n": 2,
+        "new_shards" : [{"Stud_id_low":12288,"Shard_id":"sh5","Shard_size":4096}],
+        "servers" : {"Server4":["sh3","sh5"],"Server[5]":["sh2","sh5"]}
+    }
+
+    return jsonify({
+        "N" : 5,
+        "payload": example_payload,
+        "status": "success"
+    }), 200
+
+@app.route('/add',methods=['POST'])
 async def add():
     """Add new server instances to the cluster"""
-    global Servers, heartbeat_fail_count, serv_ids,shard_map
+    global Servers, heartbeat_fail_count, serv_ids,shard_map,pool
     await asyncio.sleep(0)  # Yield to event loop
 
     try:
@@ -504,7 +560,7 @@ async def add():
                 
             semaphore = asyncio.Semaphore(DOCKER_TASK_BATCH_SIZE)  # Limit concurrent Docker operations
     
-            async def spawn_container(docker: Docker, serv_id: int, hostname: str):
+            async def spawn_container(docker: Docker, serv_id: int, server: str):
                 """Create and start a new Docker container for a server instance"""
                 await asyncio.sleep(0)  # Yield to event loop
                 async with semaphore:  # Limit concurrent Docker operations
@@ -518,48 +574,48 @@ async def add():
                                     'POSTGRES_HOST=localhost',
                                     'POSTGRES_PORT= 5432',
                                     'POSTGRES_USER=postgres',
-                                    'POSTGRES_PASSWORD=5243y6!J',
+                                    'POSTGRES_PASSWORD=postgres',
                                     'POSTGRES_DB_NAME=postgres'  
                                 ],  # Environment variables
-                            'hostname': hostname,  # Container hostname
+                            'hostname': server,  # Container hostname
                             'tty': True,  # Allocate a terminal
                         }
                         # Create or replace container
                         container = await docker.containers.create_or_replace(
-                            name=hostname,
+                            name=server,
                             config=container_config,
                         )
                         # Connect to network
                         LB = await docker.networks.get('LB')
-                        await LB.connect({'Container': container.id, 'EndpointConfig': {'Aliases': [hostname]}})
+                        await LB.connect({'Container': container.id, 'EndpointConfig': {'Aliases': [server]}})
                         
                         if DEBUG:
-                            print(f'{Fore.LIGHTGREEN_EX}CREATE | Created container for {hostname}{Style.RESET_ALL}', file=sys.stderr)
+                            print(f'{Fore.LIGHTGREEN_EX}CREATE | Created container for {server}{Style.RESET_ALL}', file=sys.stderr)
                         
                         # Start container
                         await container.start()
                         
                         if DEBUG:
-                            print(f'{Fore.MAGENTA}SPAWN | Started container for {hostname}{Style.RESET_ALL}', file=sys.stderr)
+                            print(f'{Fore.MAGENTA}SPAWN | Started container for {server}{Style.RESET_ALL}', file=sys.stderr)
                     except Exception as e:
                         if DEBUG:
                             print(f'{Fore.RED}ERROR | {e}{Style.RESET_ALL}', file=sys.stderr)
                             
             async with Docker() as docker:
                 new_tasks = []
-                for hostname in server_names:
-                    Servers.add(hostname)
-                    heartbeat_fail_count[hostname] = 0
+                for server in server_names:
+                    Servers.add(server)
+                    heartbeat_fail_count[server] = 0
                     serv_id += 1
-                    new_tasks.append(spawn_container(docker, serv_id, hostname))
-                    print(f"Added {hostname} to hash map. Current servers: {Servers.getServerList()}")
-                    print(f"Server slots for {hostname}: {Servers.server_slots[hostname]}")
+                    new_tasks.append(spawn_container(docker, serv_id, server))
+                    print(f"Added {server} to hash map. Current servers: {Servers.getServerList()}")
+                    print(f"Server slots for {server}: {Servers.server_slots[server]}")
 
                 await asyncio.gather(*new_tasks, return_exceptions=True)
 
 
             async def copy_shards_to_container(
-                hostname: str,
+                server: str,
                 shards: List[str],
                 semaphore: asyncio.Semaphore,
                 servers_flatlined: Optional[List[str]]=None
@@ -574,7 +630,7 @@ async def add():
 
                 async def post_config_wrapper(
                     session: aiohttp.ClientSession,
-                    hostname: str,
+                    server: str,
                     payload: dict,
                 ):
                     await asyncio.sleep(0)
@@ -582,7 +638,7 @@ async def add():
                     async with semaphore:
                         for _ in range(50):
                             try:
-                                async with session.get(f'http://{hostname}:5000/heartbeat') as response:
+                                async with session.get(f'http://{server}:5000/heartbeat') as response:
                                     if response.status == 200:
                                         break
                             except Exception:
@@ -591,20 +647,20 @@ async def add():
                         else:
                             raise Exception()
 
-                        async with session.post(f'http://{hostname}:5000/config',json=payload) as response:
+                        async with session.post(f'http://{server}:5000/config',json=payload) as response:
                             await response.read()
 
                         return response
     
                 async def get_copy_wrapper(
                     session: aiohttp.ClientSession,
-                    hostname: str,
+                    server: str,
                     payload: dict,
                 ):
                     await asyncio.sleep(0)
 
                     async with semaphore:
-                        async with session.get(f'http://{hostname}:5000/copy',
+                        async with session.get(f'http://{server}:5000/copy',
                                             json=payload) as response:
                             await response.read()
 
@@ -612,14 +668,14 @@ async def add():
 
                 async def post_write_wrapper(
                     session: aiohttp.ClientSession,
-                    hostname: str,
+                    server: str,
                     payload: dict,
                 ):
                     # Allow other tasks to run
                     await asyncio.sleep(0)
 
                     async with semaphore:
-                        async with session.post(f'http://{hostname}:5000/write',json=payload) as response:
+                        async with session.post(f'http://{server}:5000/write',json=payload) as response:
                             await response.read()
 
                         return response
@@ -627,7 +683,7 @@ async def add():
                 call_server_shards: dict[str, list[tuple[str, int]]] = {}
 
                 # For each shard K in `shards`:
-                async with app.db_pool.acquire() as conn:
+                async with pool.acquire() as conn:
                     async with conn.transaction():
                         stmt = await conn.prepare(
                             '''--sql
@@ -660,11 +716,11 @@ async def add():
 
                 timeout = aiohttp.ClientTimeout(connect=REQUEST_TIMEOUT)
                 async with aiohttp.ClientSession(timeout=timeout) as session:
-                    # Call /config endpoint on the server S with the hostname
+                    # Call /config endpoint on the server S with the server
                     config_task = asyncio.create_task(
                         post_config_wrapper(
                             session,
-                            hostname,
+                            server,
                             payload={
                                 "shards": shards
                             }
@@ -675,7 +731,7 @@ async def add():
                                     else config_response[0])
 
                     if config_response is None or config_response.status != 200:
-                        raise Exception(f'Failed to add shards to {hostname}')
+                        raise Exception(f'Failed to add shards to {server}')
 
                     # Call /copy on server A to copy the shard K
                     # Define tasks
@@ -702,7 +758,7 @@ async def add():
                     for (response, server_shards) in zip(copy_responses,
                                                         call_server_shards.values()):
                         if response is None or response.status != 200:
-                            raise Exception(f'Failed to copy shards to {hostname}')
+                            raise Exception(f'Failed to copy shards to {server}')
 
                         data: dict = await response.json()
 
@@ -714,7 +770,7 @@ async def add():
                     tasks = [asyncio.create_task(
                         post_write_wrapper(
                             session,
-                            hostname,
+                            server,
                             payload={
                                 'shard': shard,
                                 'data': data,
@@ -732,7 +788,7 @@ async def add():
 
                     if any(response is None or response.status != 200
                             for response in write_responses):
-                        raise Exception(f'Failed to write shards to {hostname}')
+                        raise Exception(f'Failed to write shards to {server}')
 
             await asyncio.sleep(0)
             
@@ -751,7 +807,7 @@ async def add():
                     shard_map[shard].add(ser, serv_ids[ser])
 
             if len(new_shards) > 0:
-                async with common.pool.acquire() as conn:
+                async with pool.acquire() as conn:
                     async with conn.transaction():
                         stmt = await conn.prepare(
                             '''--sql
@@ -786,7 +842,567 @@ async def add():
             print(f'{Fore.RED}ERROR | {e}{Style.RESET_ALL}', file=sys.stderr)
         return jsonify(err_payload(e)), 400
 
+@app.route('/rm',methods=['GET'])
+async def rm_get():
+    example_payload = {
+        "n" : 2,
+        "servers" : ["Server 4"]
+    }
 
+    return jsonify({
+        "message": "Remove Shard",
+        "payload_structure": example_payload,
+        "status": "success"
+    }), 200
+
+@app.route('/rm',methods=['DELETE'])
+async def delete():
+    global Servers,heartbeat_fail_count,pool
+    
+    await asyncio.sleep(0)
+    
+    try:
+        payload: dict = await request.get_json()
+        
+        if payload is None:
+            raise Exception('Payload is empty')
+        
+        n = int(payload.get('n', -1))
+        servers: list[str] = list(payload.get('servers', []))
+
+        if n <= 0:
+            raise Exception('Number of servers to delete must be greater than 0')
+        if n > len(Servers):
+            raise Exception('Number of servers to delete must be less than or equal to number of Servers')
+        if len(servers) > n:
+            raise Exception('Length of hostname list is more than instances to delete')
+
+        async with mutexLock:
+            
+            choices = set(Servers.getServerList())
+            if not set(servers).issubset(choices):
+                raise Exception(f'Hostnames {set(servers) - choices} are not in Servers')
+
+            choices = list(choices - set(servers))
+            random_hostnames = random.sample(choices, k=n - len(servers))
+            servers.extend(random_hostnames)
+            
+            semaphore = asyncio.Semaphore(DOCKER_TASK_BATCH_SIZE)  
+            
+            async def remove_container(docker: Docker, hostname: str):
+                """Stop and remove a Docker container"""
+                await asyncio.sleep(0) 
+                async with semaphore:  
+                    try:
+                        container = await docker.containers.get(hostname)
+                        await container.stop(timeout=STOP_TIMEOUT)
+                        await container.delete(force=True)
+                        
+                        if DEBUG:
+                            print(f'{Fore.LIGHTYELLOW_EX}REMOVE | Deleted container for {hostname}{Style.RESET_ALL}', file=sys.stderr)
+                    except Exception as e:
+                        if DEBUG:
+                            print(f'{Fore.RED}ERROR | {e}{Style.RESET_ALL}', file=sys.stderr)
+                            
+            async with Docker() as docker:  
+                tasks = []
+                for hostname in servers:
+                    Servers.remove(hostname)
+                    heartbeat_fail_count.pop(hostname, None)
+                    tasks.append(remove_container(docker, hostname))
+
+                await asyncio.gather(*tasks, return_exceptions=True)
+
+            final_hostnames = Servers.getServerList()
+        
+        return jsonify({
+        'message': {
+            'N': len(Servers),
+            'Servers': final_hostnames
+        },
+        'status': 'success'
+        }), 200
+    except Exception as e:
+        print(e)   
+
+@app.route('/read',methods=['GET'])
+async def read_get():
+    example_payload = {
+        "stud_id" : { "low" : 1000 , "high" : 8889 },
+    }
+
+    return jsonify({
+        "message": "Read Student Records",
+        "payload_structure": example_payload,
+        "status": "success"
+    }), 200
+
+@app.route('/read',methods=['POST'])
+async def read():
+    global pool
+    await asyncio.sleep(0)
+    try:
+        payload: dict = await request.get_json()
+
+        if payload is None:
+            raise Exception('Payload in empty Use Get to find payload formate')
+        
+        stud_id = dict(payload.get('stud_id',{}))
+
+        if not len(stud_id):
+            raise Exception('Payload dont contain stud_id')
+        
+        low = int(stud_id.get('low',-1))
+        high = int(stud_id.get('high',-1))
+
+        if low ==-1 or high == -1 :
+            raise Exception('stud_id dont contain low or high')
+            
+        if high < low :
+            raise Exception('low is more than high which is practically impossible')
+        
+        shard_ids: list[str] = []
+        shard_valid_ats: list[int] = []
+
+        async with mutexLock:
+            async with pool.acquire() as con:
+                async with con.transaction():
+                    async for record in con.cursor(
+                        '''--sql
+                        SELECT
+                            shard_id,
+                            valid_at
+                        FROM
+                            ShardT
+                        WHERE
+                            (stud_id_low <= ($2::INTEGER)) AND
+                            (($1::INTEGER) < stud_id_low + shard_size)
+                        FOR SHARE;
+                        ''',
+                            low, high):
+
+                        shard_ids.append(record["shard_id"])
+                        shard_valid_ats.append(record["valid_at"])  
+
+                    if not len(shard_ids):
+                        return jsonify({
+                            'message':"No Entry Found",
+                            'status' : "success"
+                            }),200
+
+                    data = []
+                    new_tasks = []
+
+
+                    async def read_get_wrapper(
+                        session: aiohttp.ClientSession,
+                        server_name: str,
+                        json_payload: Dict
+                    ):
+                        
+                        await asyncio.sleep(0)
+
+                        async with session.get(f'http://{server_name}:5000/read',json=json_payload) as response:
+                            await response.read()
+
+                        return response
+    
+                    timeout = aiohttp.ClientTimeout(connect=REQUEST_TIMEOUT)
+                    async with aiohttp.ClientSession(timeout=timeout) as session:
+                        for shard_id, shard_valid_at in zip(shard_ids, shard_valid_ats):
+                            if len(shard_map[shard_id]) == 0:
+                                continue
+
+                            server_name = shard_map[shard_id].find(random.randint(100000,999999))
+
+                            new_tasks.append(asyncio.create_task(
+                                read_get_wrapper(
+                                    session=session,
+                                    server_name=server_name,
+                                    json_payload={
+                                        "shard": shard_id,
+                                        "stud_id": stud_id,
+                                        "valid_at": shard_valid_at
+                                    }
+                                )
+                            ))
+                        
+                        serv_response = await asyncio.gather(*new_tasks, return_exceptions=True)
+                        serv_response = [None if isinstance(r, BaseException) else r for r in serv_response]
+                        
+                    for r in serv_response:
+                        if r is None or r.status != 200:
+                            raise Exception('Failed to read data entry')
+                            
+                        _r = dict(await r.json())
+                        data.extend(_r["data"])
+                
+        return jsonify({
+            'shards_queried': shard_ids,
+            'data': data,
+            'status': 'success'
+        }), 200
+    except Exception as e:
+        return jsonify(err_payload(e)), 400
+
+@app.route('/write',methods=['GET'])
+async def write_get():
+    example_payload = {
+        "data" : [
+            { "Stud_id":2255, "Stud_name":"GHI" , "Stud_marks":27},
+            {"Stud_id":3524,"Stud_name":"JKBFSFS","Stud_marks":56}
+        ],
+    }
+
+    return jsonify({
+        "message": "Write Student Records",
+        "payload_structure": example_payload,
+        "status": "success"
+    }), 200
+
+@app.route('/write',methods=['POST'])
+async def write():
+    global pool
+    await asyncio.sleep(0)
+    try:
+        payload: dict = await request.get_json()
+
+        if payload is None:
+            raise Exception('Payload in empty Use Get to find payload formate')
+        
+        data : List[Dict] = list(payload.get("data",[]))
+
+        if not len(data):
+            raise Exception('Payload dont contain stud_id')
+
+        for d in data:
+            if not all(k in d.keys()
+                       for k in
+                       ["Stud_id", "Stud_name", "Stud_marks"]):
+                raise Exception('Data is invalid')
+            
+        shard_data: Dict[str, Tuple[List[Dict[str, Any]], int]] = {}
+        
+        async with mutexLock:
+            async with pool.acquire() as con:
+                async with con.transaction():
+                    get_shard_id_stmt = await con.prepare(
+                        '''--sql
+                        SELECT
+                            shard_id
+                        FROM
+                            ShardT
+                        WHERE
+                            (stud_id_low <= ($1::INTEGER)) AND
+                            (($1::INTEGER) < stud_id_low + shard_size);
+                        ''')
+
+                    get_valid_at_stmt = await con.prepare(
+                        '''--sql
+                        SELECT
+                            valid_at
+                        FROM
+                            ShardT
+                        WHERE
+                            shard_id = $1::TEXT
+                        FOR UPDATE;
+                        ''')
+
+                    update_shard_info_stmt = await con.prepare(
+                        '''--sql
+                        UPDATE
+                            ShardT
+                        SET
+                            valid_at = ($1::INTEGER)
+                        WHERE
+                            shard_id = ($2::TEXT);
+                        ''')
+
+                    for entry in data:
+                        stud_id = int(entry["stud_id"])
+                        record = await get_shard_id_stmt.fetchrow(stud_id)
+
+                        if record is None:
+                            raise Exception(f'Shard for {stud_id = } does not exist')
+
+                        shard_id: str = record["shard_id"]
+
+                        if shard_id not in shard_data:
+                            shard_data[shard_id] = ([], 0)
+
+                        shard_data[shard_id][0].append(entry)
+
+                    for shard_id in sorted(shard_data.keys()):
+                        shard_valid_at: int = await get_valid_at_stmt.fetchval(shard_id)
+                        shard_data[shard_id] = (shard_data[shard_id][0],shard_valid_at)
+
+                    async def write_wrapper(
+                        session: aiohttp.ClientSession,
+                        server_name: str,
+                        json_payload: Dict
+                    ):
+                        await asyncio.sleep(0)
+
+                        async with session.post(f'http://{server_name}:5000/write',json=json_payload) as response:
+                            await response.read()
+
+                        return response
+
+                    for shard_id in shard_data:
+                        server_names = shard_map[shard_id].getServerList()
+                        timeout = aiohttp.ClientTimeout(
+                            connect=REQUEST_TIMEOUT)
+                        async with aiohttp.ClientSession(timeout=timeout) as session:
+                            tasks = [asyncio.create_task(
+                                write_wrapper(
+                                    session=session,
+                                    server_name=server_name,
+                                    json_payload={
+                                        "shard": shard_id,
+                                        "data": shard_data[shard_id][0],
+                                        "valid_at": shard_data[shard_id][1]
+                                    }
+                                )
+                            ) for server_name in server_names]
+
+                            serv_response = await asyncio.gather(*tasks, return_exceptions=True)
+                            serv_response = [None if isinstance(r, BaseException)
+                                             else r for r in serv_response]
+
+                        max_valid_at = shard_data[shard_id][1]
+                        for r in serv_response:
+                            if r is None or r.status != 200:
+                                raise Exception(
+                                    'Failed to write all data entries')
+
+                            resp = dict(await r.json())
+                            cur_valid_at = int(resp["valid_at"])
+                            max_valid_at = max(max_valid_at, cur_valid_at)
+
+                        await update_shard_info_stmt.executemany([(max_valid_at, shard_id)]) 
+                    
+    except Exception as e:
+        return jsonify(err_payload(e)),400
+
+@app.route('/update',methods=['GET'])
+async def update_get():
+    example_payload = {
+        "Stud_id" : "2255",
+        "data" : {
+            "Stud_id" : 2255,
+            "Stud_name" : "GHI",
+            "Stud_marks" : 30
+        }
+    }
+
+    return jsonify({
+        "message": "Update Student Records",
+        "payload_structure": example_payload,
+        "status": "success"
+    }), 200
+
+@app.route('/update',methods=['POST'])
+async def update():
+    global pool
+    await asyncio.sleep(0)
+
+    try:
+        payload: dict = await request.get_json()
+        
+        if payload is None: 
+            raise Exception('Payload Not Present')
+
+        stud_id = int(payload.get('Stud_id', -1))
+
+        if stud_id == -1:
+            raise Exception("Stud_id not in Payload")
+
+        data = dict(payload.get('data',{}))
+
+        if not len(data):
+            raise Exception('data not found')
+
+        if not all(k in data.keys()
+                   for k in
+                   ["Stud_id", "Stud_name", "Stud_marks"]):
+            raise Exception('Data formate mismatch')
+        
+        if stud_id != data["Stud_id"]:
+            raise Exception("Cannot change stud_id field")
+
+        async with mutexLock:
+            async with pool.acquire() as con:
+                async with con.transaction():
+                    response = await con.fetchrow(
+                        '''--sql
+                        SELECT
+                            shard_id,
+                            valid_at
+                        FROM
+                            ShardT
+                        WHERE
+                            (stud_id_low <= ($1::INTEGER)) AND
+                            (($1::INTEGER) < stud_id_low + shard_size)
+                        FOR UPDATE;
+                        ''',
+                        stud_id
+                    )
+
+                    if response is None:
+                        raise Exception('No Entry with Stud id : `{stud_id}')
+
+                    shard_id: str = response["shard_id"]
+                    shard_valid_at: int = response["valid_at"]
+
+                    server_names = shard_map[shard_id].getServerList()
+                    valid_at = shard_valid_at
+
+                    async def update_wrapper(
+                        session: aiohttp.ClientSession,
+                        server_name: str,
+                        json_payload: dict
+                    ):
+                        await asyncio.sleep(0)
+
+                        async with session.post(f'http://{server_name}:5000/update',json=json_payload) as response:
+                            await response.read()
+
+                        return response
+
+                    timeout = aiohttp.ClientTimeout(connect=REQUEST_TIMEOUT)
+                    async with aiohttp.ClientSession(timeout=timeout) as session:
+                        tasks = [asyncio.create_task(
+                            update_wrapper(
+                                session=session,
+                                server_name=server_name,
+                                json_payload={
+                                    "shard": shard_id,
+                                    "stud_id": stud_id,
+                                    "data": data,
+                                    "valid_at": shard_valid_at
+                                }
+                            )
+                        ) for server_name in server_names]
+
+                        serv_response = await asyncio.gather(*tasks, return_exceptions=True)
+                        serv_response = [None if isinstance(r, BaseException)
+                                            else r for r in serv_response]
+
+                    valid_at = shard_valid_at
+
+                    for r in serv_response:
+                        if r is None or r.status != 200:
+                            raise Exception('Failed to update data entry')
+
+                        resp = dict(await r.json())
+                        cur_valid_at = int(resp["valid_at"])
+                        valid_at = max(valid_at, cur_valid_at)
+
+
+                    await con.execute(
+                        '''--sql
+                        UPDATE
+                            ShardT
+                        SET
+                            valid_at = ($1::INTEGER)
+                        WHERE
+                            shard_id = ($2::TEXT)
+                        ''',
+                        valid_at,
+                        shard_id,
+                    )
+                    
+        return jsonify({
+            'message': f"Data entry for stud_id: {stud_id} updated",
+            'status': 'success'
+        }), 200
+
+    except Exception as e:
+        return jsonify(err_payload(e)),200
+        
+@app.route('/del',methods=['GET'])
+async def del_get():
+    example_payload = {
+        "Stud_id" : 2255,
+    }
+
+    return jsonify({
+        "message": "Delete Student Records",
+        "payload_structure": example_payload,
+        "status": "success"
+    }), 200
+
+@app.route('/del',methods=['DELETE'])
+async def dele():
+    global pool
+    await asyncio.sleep(0)
+    try:
+        payload: dict = await request.get_json()
+
+        if payload is None:
+            raise Exception('Payload in empty Use Get to find payload formate')
+        
+        stud_id = int(payload.get('Stud_id',-1))
+
+        if stud_id == -1:
+            raise Exception('Payload dont contain stud_id')
+
+        async with mutexLock:
+            async with pool.acquire() as con:
+                async with con.transaction():
+                    record = await con.fetchrow(
+                        '''--sql
+                        SELECT
+                            shard_id,
+                            valid_at
+                        FROM
+                            ShardT
+                        WHERE
+                            (stud_id_low <= ($1::INTEGER)) AND
+                            (($1::INTEGER) < stud_id_low + shard_size)
+                        FOR UPDATE;
+                        ''',
+                        stud_id)
+
+                    if record is None:
+                        raise Exception(f'stud_id {stud_id} does not exist')
+
+                    shard_id: str = record["shard_id"]
+                    shard_valid_at: int = record["valid_at"]
+
+                    server_names = shard_map[shard_id].getServerList()
+                    
+                    async def del_wrapper(
+                        session: aiohttp.ClientSession,
+                        server_name: str,
+                        json_payload: Dict
+                    ):
+                        await asyncio.sleep(0)
+
+                        async with session.delete(f'http://{server_name}:5000/del',json=json_payload) as response:
+                            await response.read()
+
+                        return response
+    
+                    timeout = aiohttp.ClientTimeout(connect=REQUEST_TIMEOUT)
+                    async with aiohttp.ClientSession(timeout=timeout) as session:
+                        tasks = [asyncio.create_task(
+                            del_wrapper(
+                                session=session,
+                                server_name=server_name,
+                                json_payload={
+                                    "shard": shard_id,
+                                    "stud_id": stud_id,
+                                    "valid_at": shard_valid_at
+                                }
+                            )
+                        ) for server_name in server_names]
+
+                        serv_response = await asyncio.gather(*tasks, return_exceptions=True)
+                        serv_response = [None if isinstance(r, BaseException)
+                                            else r for r in serv_response]
+    except Exception as e:
+        return jsonify(err_payload(e)),400
 
 
 if __name__ == "__main__":

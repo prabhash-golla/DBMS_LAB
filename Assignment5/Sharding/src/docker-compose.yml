@@ -1,0 +1,31 @@
+version: "3.9"
+x-name: distributed_systems_2
+
+services:
+  Load-Balancer:
+    build: ./load_balancer
+    image: load:v2
+    container_name: Load-Balancer
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    privileged: true
+    ports:
+      - "5000:5000"
+    networks:
+      my_net:
+        aliases:
+          - Load-Balancer
+    hostname: Load-Balancer
+    tty: true
+    environment:
+      HASH_NUM: 1
+      DEBUG: "true"
+      POSTGRES_HOST: "localhost"
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "postgres"
+      POSTGRES_DB_NAME: "postgres"
+
+networks:
+  my_net:
+    name: LB

@@ -4,7 +4,7 @@ set -e
 
 postgres &
 while ! pg_isready ; do sleep 1; done
-python load_balancer.py &
+python loadBalancer.py &
 
 jobs_array=$(jobs -p | tr '\n' ' ')
 

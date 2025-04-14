@@ -73,10 +73,8 @@ class ConsistentHashMap:
         # Set up logging
         self.logger = logging.getLogger(__name__)
         
-        # Add initial servers if provided
         if hostnames is None:
-            # Default hostnames
-            hostnames = ["Server-1", "Server-2","Server-3"]
+            hostnames = []
         
         for hostname in hostnames:
             try:
@@ -186,6 +184,8 @@ class ConsistentHashMap:
             raise IndexError(f"Insufficient slots to add new server {hostname}. Need {self.n_virtual} empty slots.")
         
         # Check if the hostname already exists
+
+        # print(self.servers)
         if hostname in self.servers:
             raise KeyError(f"Hostname '{hostname}' already present in the hash map")
         

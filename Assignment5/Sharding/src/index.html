@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>API Tester</title>
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.21.4/babel.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" />
+    <style>
+      :root {
+        --primary: #4f46e5;
+        --primary-hover: #4338ca;
+        --secondary: #1e293b;
+        --success: #22c55e;
+        --error: #ef4444;
+        --light-bg: #f8fafc;
+        --dark-bg: #0f172a;
+        --border: #e2e8f0;
+      }
+      
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+        line-height: 1.5;
+        color: #334155;
+        background-color: #f1f5f9;
+        transition: background-color 0.3s, color 0.3s;
+      }
+      
+      body.dark-mode {
+        color: #e2e8f0;
+        background-color: var(--dark-bg);
+      }
+      
+      .container {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 1rem;
+      }
+      
+      .card {
+        background-color: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        transition: all 0.3s ease;
+      }
+      
+      .dark-mode .card {
+        background-color: #1e293b;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+      }
+      
+      .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+      }
+      
+      .form-group {
+        margin-bottom: 1rem;
+      }
+      
+      label {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: #475569;
+      }
+      
+      .dark-mode label {
+        color: #cbd5e1;
+      }
+      
+      input, select, textarea {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        font-size: 16px;
+        transition: border 0.3s;
+        background-color: white;
+        color: #334155;
+      }
+      
+      .dark-mode input, 
+      .dark-mode select, 
+      .dark-mode textarea {
+        background-color: #334155;
+        border-color: #475569;
+        color: #f1f5f9;
+      }
+      
+      input:focus, select:focus, textarea:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+      }
+      
+      .url-input-container {
+        display: flex;
+        gap: 0.5rem;
+      }
+      
+      .method-select {
+        width: 120px;
+        flex-shrink: 0;
+      }
+      
+      .button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        background-color: var(--primary);
+        color: white;
+        border: none;
+        border-radius: 6px;
+        padding: 0.75rem 1.5rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background-color 0.3s;
+      }
+      
+      .button:hover {
+        background-color: var(--primary-hover);
+      }
+      
+      .button:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+      }
+      
+      .button-secondary {
+        background-color: #94a3b8;
+      }
+      
+      .button-secondary:hover {
+        background-color: #64748b;
+      }
+      
+      .dark-mode .button-secondary {
+        background-color: #475569;
+      }
+      
+      .dark-mode .button-secondary:hover {
+        background-color: #334155;
+      }
+      
+      .response-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+      }
+      
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        border-radius: 9999px;
+        padding: 0.25rem 0.75rem;
+        font-size: 0.875rem;
+        font-weight: 600;
+      }
+      
+      .badge-success {
+        background-color: rgba(34, 197, 94, 0.2);
+        color: #16a34a;
+      }
+      
+      .dark-mode .badge-success {
+        background-color: rgba(34, 197, 94, 0.15);
+        color: #4ade80;
+      }
+      
+      .badge-error {
+        background-color: rgba(239, 68, 68, 0.2);
+        color: #dc2626;
+      }
+      
+      .dark-mode .badge-error {
+        background-color: rgba(239, 68, 68, 0.15);
+        color: #f87171;
+      }
+      
+      .response-area {
+        background-color: #f8fafc;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 1rem;
+        overflow: auto;
+        max-height: 300px;
+        font-family: monospace;
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+      
+      .dark-mode .response-area {
+        background-color: #0f172a;
+        border-color: #334155;
+      }
+      
+      .theme-toggle {
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: #64748b;
+        font-size: 1.25rem;
+      }
+      
+      .dark-mode .theme-toggle {
+        color: #e2e8f0;
+      }
+      
+      .tabs {
+        display: flex;
+        border-bottom: 1px solid var(--border);
+        margin-bottom: 1rem;
+      }
+      
+      .tab {
+        padding: 0.75rem 1rem;
+        cursor: pointer;
+        border-bottom: 2px solid transparent;
+        transition: all 0.3s;
+      }
+      
+      .tab.active {
+        border-bottom-color: var(--primary);
+        color: var(--primary);
+        font-weight: 500;
+      }
+      
+      .dark-mode .tab.active {
+        color: #818cf8;
+        border-bottom-color: #818cf8;
+      }
+      
+      .history-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem;
+        border-radius: 6px;
+        margin-bottom: 0.5rem;
+        cursor: pointer;
+        transition: background-color 0.3s;
+      }
+      
+      .history-item:hover {
+        background-color: #f1f5f9;
+      }
+      
+      .dark-mode .history-item:hover {
+        background-color: #334155;
+      }
+      
+      .method-badge {
+        font-size: 0.75rem;
+        font-weight: 600;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+      }
+      
+      .method-get {
+        background-color: rgba(59, 130, 246, 0.2);
+        color: #2563eb;
+      }
+      
+      .method-post {
+        background-color: rgba(16, 185, 129, 0.2);
+        color: #059669;
+      }
+      
+      .method-put {
+        background-color: rgba(245, 158, 11, 0.2);
+        color: #d97706;
+      }
+      
+      .method-delete {
+        background-color: rgba(239, 68, 68, 0.2);
+        color: #dc2626;
+      }
+      
+      .dark-mode .method-get {
+        background-color: rgba(59, 130, 246, 0.15);
+        color: #60a5fa;
+      }
+      
+      .dark-mode .method-post {
+        background-color: rgba(16, 185, 129, 0.15);
+        color: #34d399;
+      }
+      
+      .dark-mode .method-put {
+        background-color: rgba(245, 158, 11, 0.15);
+        color: #fbbf24;
+      }
+      
+      .dark-mode .method-delete {
+        background-color: rgba(239, 68, 68, 0.15);
+        color: #f87171;
+      }
+
+      .spinner {
+        animation: spin 1s linear infinite;
+        display: inline-block;
+      }
+      
+      @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+      }
+
+      .clearfix::after {
+        content: "";
+        clear: both;
+        display: table;
+      }
+
+      .button-group {
+        display: flex;
+        gap: 0.75rem;
+      }
+
+      @media (max-width: 640px) {
+        .url-input-container {
+          flex-direction: column;
+        }
+        
+        .method-select {
+          width: 100%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="text/babel">
+      const { useState, useEffect } = React;
+
+      function App() {
+        const [darkMode, setDarkMode] = useState(
+          window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        );
+        const [url, setUrl] = useState("http://localhost:5000/");
+        const [method, setMethod] = useState("GET");
+        const [body, setBody] = useState(null);
+        const [response, setResponse] = useState("");
+        const [status, setStatus] = useState(null);
+        const [loading, setLoading] = useState(false);
+        const [activeTab, setActiveTab] = useState("request");
+        const [history, setHistory] = useState([]);
+        const [selectedHistoryItem, setSelectedHistoryItem] = useState(null);
+
+        // Apply dark mode class to body
+        useEffect(() => {
+          if (darkMode) {
+            document.body.classList.add('dark-mode');
+          } else {
+            document.body.classList.remove('dark-mode');
+          }
+        }, [darkMode]);
+
+        // Load history from localStorage
+        useEffect(() => {
+          const savedHistory = localStorage.getItem('apiTesterHistory');
+          if (savedHistory) {
+            try {
+              setHistory(JSON.parse(savedHistory));
+            } catch (e) {
+              console.error("Failed to parse history", e);
+            }
+          }
+        }, []);
+
+        const saveToHistory = (requestData) => {
+          const newHistory = [requestData, ...history.slice(0, 9)];
+          setHistory(newHistory);
+          localStorage.setItem('apiTesterHistory', JSON.stringify(newHistory));
+        };
+
+        const formatResponseBody = (text) => {
+          try {
+            const json = JSON.parse(text);
+            return JSON.stringify(json, null, 2);
+          } catch (e) {
+            return text;
+          }
+        };
+
+        const loadFromHistory = (item) => {
+          setUrl(item.url);
+          setMethod(item.method);
+          setBody(item.body);
+          setSelectedHistoryItem(item);
+          setActiveTab("request");
+        };
+
+        const toggleTheme = () => {
+          setDarkMode(!darkMode);
+        };
+
+        const clearForm = () => {
+          setUrl("");
+          setBody("");
+          setResponse("");
+          setStatus(null);
+        };
+
+        const handleSubmit = async (e) => {
+          e.preventDefault();
+          setLoading(true);
+          setResponse("");
+          setStatus(null);
+          
+          try {
+            const options = {
+              method,
+              headers: {
+                "Content-Type": "application/json",
+              },
+            };
+            
+            if (method !== "GET" && body.trim()) {
+              options.body = body;
+            }
+            
+            const startTime = Date.now();
+            const res = await fetch(url, options);
+            const endTime = Date.now();
+            const responseTime = endTime - startTime;
+            
+            const text = await res.text();
+            const formattedResponse = formatResponseBody(text);
+            
+            setResponse(formattedResponse);
+            setStatus({
+              code: res.status,
+              text: res.statusText,
+              time: responseTime
+            });
+            
+            saveToHistory({
+              url,
+              method,
+              body,
+              timestamp: new Date().toISOString(),
+              status: res.status
+            });
+            
+          } catch (err) {
+            setResponse("Error: " + err.message);
+            setStatus({
+              code: 0,
+              text: "Error",
+              error: true
+            });
+          }
+          
+          setLoading(false);
+          setActiveTab("response");
+        };
+
+        const getStatusBadgeClass = () => {
+          if (!status) return "";
+          return status.code >= 200 && status.code < 400 ? "badge-success" : "badge-error";
+        };
+
+        const getMethodClass = (reqMethod) => {
+          switch(reqMethod) {
+            case "GET": return "method-get";
+            case "POST": return "method-post";
+            case "PUT": return "method-put";
+            case "DELETE": return "method-delete";
+            default: return "method-get";
+          }
+        };
+
+        const prettyDate = (timestamp) => {
+          const date = new Date(timestamp);
+          return date.toLocaleString();
+        };
+
+        return (
+          <div className="container">
+            <div className="header">
+              <h1>API Tester</h1>
+              <button className="theme-toggle" onClick={toggleTheme}>
+                {darkMode ? <i className="fas fa-sun"></i> : <i className="fas fa-moon"></i>}
+              </button>
+            </div>
+            
+            <div className="tabs">
+              <div 
+                className={`tab ${activeTab === "request" ? "active" : ""}`}
+                onClick={() => setActiveTab("request")}
+              >
+                Request
+              </div>
+              <div 
+                className={`tab ${activeTab === "response" ? "active" : ""}`}
+                onClick={() => setActiveTab("response")}
+              >
+                Response
+              </div>
+              <div 
+                className={`tab ${activeTab === "history" ? "active" : ""}`}
+                onClick={() => setActiveTab("history")}
+              >
+                History
+              </div>
+            </div>
+            
+            {activeTab === "request" && (
+              <div className="card">
+                <form onSubmit={handleSubmit}>
+                  <div className="form-group">
+                    <label>Endpoint URL</label>
+                    <div className="url-input-container">
+                      <select 
+                        className="method-select"
+                        value={method}
+                        onChange={(e) => setMethod(e.target.value)}
+                      >
+                        <option value="GET">GET</option>
+                        <option value="POST">POST</option>
+                        <option value="PUT">PUT</option>
+                        <option value="DELETE">DELETE</option>
+                        <option value="PATCH">PATCH</option>
+                      </select>
+                      <input
+                        type="text"
+                        value={url}
+                        onChange={(e) => setUrl(e.target.value)}
+                        placeholder="http://localhost:5000/"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="form-group">
+                    <label>Request Body (JSON)</label>
+                    <textarea
+                      value={body}
+                      onChange={(e) => setBody(e.target.value)}
+                      rows="12"
+                      placeholder={method !== "GET" ? '{\n  "key": "value"\n}' : "Body not used for GET requests"}
+                      disabled={method === "GET"}
+                    ></textarea>
+                  </div>
+                  
+                  <div className="button-group">
+                    <button type="submit" className="button" disabled={loading || !url}>
+                      {loading ? (
+                        <>
+                          <i className="fas fa-circle-notch spinner"></i>
+                          Sending...
+                        </>
+                      ) : (
+                        <>
+                          <i className="fas fa-paper-plane"></i>
+                          Send Request
+                        </>
+                      )}
+                    </button>
+                    <button type="button" className="button button-secondary" onClick={clearForm}>
+                      <i className="fas fa-trash"></i>
+                      Clear
+                    </button>
+                  </div>
+                </form>
+              </div>
+            )}
+            
+            {activeTab === "response" && (
+              <div className="card">
+                <div className="response-header">
+                  <h2>Response</h2>
+                  {status && (
+                    <div className={`badge ${getStatusBadgeClass()}`}>
+                      {status.code} {status.text}
+                      {status.time && ` (${status.time}ms)`}
+                    </div>
+                  )}
+                </div>
+                
+                <div className="response-area">
+                  {loading ? (
+                    <div style={{ textAlign: "center", padding: "2rem" }}>
+                      <i className="fas fa-circle-notch fa-spin fa-2x"></i>
+                      <p style={{ marginTop: "1rem" }}>Loading response...</p>
+                    </div>
+                  ) : response ? (
+                    response
+                  ) : (
+                    <div style={{ color: "#94a3b8", textAlign: "center", padding: "2rem" }}>
+                      <i className="fas fa-inbox fa-2x"></i>
+                      <p style={{ marginTop: "1rem" }}>No response yet. Send a request to see results.</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+            
+            {activeTab === "history" && (
+              <div className="card">
+                <h2>Request History</h2>
+                {history.length === 0 ? (
+                  <div style={{ textAlign: "center", padding: "2rem", color: "#94a3b8" }}>
+                    <i className="fas fa-history fa-2x"></i>
+                    <p style={{ marginTop: "1rem" }}>No request history yet.</p>
+                  </div>
+                ) : (
+                  <div>
+                    {history.map((item, index) => (
+                      <div 
+                        key={index} 
+                        className="history-item"
+                        onClick={() => loadFromHistory(item)}
+                      >
+                        <div>
+                          <span className={`method-badge ${getMethodClass(item.method)}`}>
+                            {item.method}
+                          </span>
+                          <span style={{ marginLeft: "0.75rem", fontWeight: "500" }}>
+                            {item.url.length > 40 ? item.url.substring(0, 40) + "..." : item.url}
+                          </span>
+                        </div>
+                        <div>
+                          <span style={{ fontSize: "0.875rem", color: "#64748b" }}>
+                            {prettyDate(item.timestamp)}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                    <div className="clearfix" style={{ marginTop: "1rem" }}>
+                      <button 
+                        className="button button-secondary" 
+                        style={{ float: "right" }}
+                        onClick={() => {
+                          setHistory([]);
+                          localStorage.removeItem('apiTesterHistory');
+                        }}
+                      >
+                        <i className="fas fa-trash"></i>
+                        Clear History
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        );
+      }
+
+      ReactDOM.createRoot(document.getElementById("app")).render(<App />);
+    </script>
+  </body>
+</html>

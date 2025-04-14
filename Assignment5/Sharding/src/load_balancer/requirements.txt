@@ -4,3 +4,4 @@ asyncpg
 aiodocker
 colorama
 werkzeug
+quart_cors

@@ -7,6 +7,7 @@ import sys
 import time
 from aiodocker import Docker
 from quart import Quart, request, jsonify
+from quart_cors import cors
 from colorama import Fore, Style
 from ConsistentHashing import ConsistentHashMap
 from asyncio import Lock
@@ -177,7 +178,7 @@ async def handle_flatline(serv_id: int, hostname: str):
         if DEBUG:
             print(f'{Fore.RED}ERROR | {e}{Style.RESET_ALL}', file=sys.stderr)
 
-app = Quart(__name__)
+app = cors(Quart(__name__), allow_origin="*")
 
 @app.after_serving
 async def shutdown_db():
@@ -1200,7 +1201,7 @@ async def update_get():
         "status": "success"
     }), 200
 
-@app.route('/update',methods=['POST'])
+@app.route('/update',methods=['PUT'])
 async def update():
     global pool
     await asyncio.sleep(0)

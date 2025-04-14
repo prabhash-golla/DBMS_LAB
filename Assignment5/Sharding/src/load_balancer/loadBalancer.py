@@ -186,7 +186,7 @@ async def handle_flatline(serv_id: int, hostname: str):
             print(f'{Fore.RED}ERROR | {e}{Style.RESET_ALL}', file=sys.stderr)
 
 @app.after_serving
-async def shutdown_db(exception):
+async def shutdown_db():
     if hasattr(app, 'db_pool') and app.db_pool:
         await app.db_pool.close()
         logging.info("Database connection pool closed.")
@@ -751,7 +751,7 @@ async def add():
                     shard_map[shard].add(ser, serv_ids[ser])
 
             if len(new_shards) > 0:
-                async with app.db_pool.acquire() as conn:
+                async with common.pool.acquire() as conn:
                     async with conn.transaction():
                         stmt = await conn.prepare(
                             '''--sql

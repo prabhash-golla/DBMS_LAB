@@ -1,0 +1,5 @@
+asyncpg
+asyncpg-stubs
+colorama
+icecream
+Quart

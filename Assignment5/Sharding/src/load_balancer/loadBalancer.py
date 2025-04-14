@@ -148,7 +148,7 @@ async def handle_flatline(serv_id: int, hostname: str):
         async with Docker() as docker:  # Docker client context
             # Configure container
             container_config = {
-                'image': 'server:v1',
+                'image': 'server:v2',
                 'detach': True,
                 'env': [f'SERVER_ID={serv_id}', 'DEBUG=true'],
                 'hostname': hostname,
@@ -233,9 +233,9 @@ async def init_get():
                 "dtypes": ["Number", "String", "String"]
             },
             "shards": [
-                {"Stud_id_low": 0, "Shard_id": "sh1", "Shard_size": 4096},
-                {"Stud_id_low": 4096, "Shard_id": "sh2", "Shard_size": 4096},
-                {"Stud_id_low": 8192, "Shard_id": "sh3", "Shard_size": 4096}
+                {"stud_id_low": 0, "shard_id": "sh1", "shard_size": 4096},
+                {"stud_id_low": 4096, "shard_id": "sh2", "shard_size": 4096},
+                {"stud_id_low": 8192, "shard_id": "sh3", "shard_size": 4096}
             ],
             "servers": {
                 "Server0": ["sh1", "sh2"],
@@ -315,13 +315,18 @@ async def init():
                 await asyncio.sleep(0)  # Yield to event loop
                 async with docker_semaphore:  # Limit concurrent Docker operations
                     try:
-                        # Configure container
                         container_config = {
-                            'image': 'server:v1',  # Docker image to use
-                            'detach': True,  # Run in background
-                            'env': [f'SERVER_ID={serv_id}', 'DEBUG=true'],  # Environment variables
-                            'hostname': server,  # Container hostname
-                            'tty': True,  # Allocate a terminal
+                            'image': 'server:v2',
+                            'detach': True,
+                            'env': [
+                                f'SERVER_ID={serv_id}', 
+                                'DEBUG=true',
+                                'POSTGRES_PASSWORD=postgres',
+                                'POSTGRES_USER=postgres',
+                                'POSTGRES_DB=postgres'    
+                            ],
+                            'hostname': server,
+                            'tty': True,
                         }
                         # Create or replace container
                         container = await docker.containers.create_or_replace(
@@ -375,8 +380,8 @@ async def init():
                     Servers.add(server)  
                     heartbeat_fail_count[server] = 0
                     
-                    for shards in servers[server]:
-                        shard_map[shards].add(server)
+                    for shards_ in servers[server]:
+                        shard_map[shards_].add(server)
                     serv_id += 1
                     new_tasks.append(spawn_container(docker, serv_id, server))
 
@@ -400,10 +405,9 @@ async def init():
                 config_responses = [None if isinstance(response, BaseException)
                                     else response
                                     for response in config_responses]
-
                 for (server, response) in zip(server_name, config_responses):
                     if response is None or response.status != 200:
-                        raise Exception(f'Failed to add shards to {server}')
+                        raise Exception(f'Failed to add shards to {server}')     
 
             async with pool.acquire() as con:
                 async with con.transaction():
@@ -493,7 +497,7 @@ async def status():
 async def add_get():
     example_payload = {
         "n": 2,
-        "new_shards" : [{"Stud_id_low":12288,"Shard_id":"sh5","Shard_size":4096}],
+        "new_shards" : [{"stud_id_low":12288,"shard_id":"sh5","shard_size":4096}],
         "servers" : {"Server4":["sh3","sh5"],"Server[5]":["sh2","sh5"]}
     }
 
@@ -502,6 +506,7 @@ async def add_get():
         "payload": example_payload,
         "status": "success"
     }), 200
+
 
 @app.route('/add',methods=['POST'])
 async def add():
@@ -567,12 +572,12 @@ async def add():
                     try:
                         # Configure container
                         container_config = {
-                            'image': 'server:v1',  # Docker image to use
+                            'image': 'server:v2',  # Docker image to use
                             'detach': True,  # Run in background
                             'env': [f'SERVER_ID={serv_id}', 
                                     'DEBUG=true',
                                     'POSTGRES_HOST=localhost',
-                                    'POSTGRES_PORT= 5432',
+                                    'POSTGRES_PORT=5432',
                                     'POSTGRES_USER=postgres',
                                     'POSTGRES_PASSWORD=postgres',
                                     'POSTGRES_DB_NAME=postgres'  
@@ -580,6 +585,7 @@ async def add():
                             'hostname': server,  # Container hostname
                             'tty': True,  # Allocate a terminal
                         }
+
                         # Create or replace container
                         container = await docker.containers.create_or_replace(
                             name=server,

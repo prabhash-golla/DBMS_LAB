@@ -1,9 +1,14 @@
 start:
-	sudo docker compose up --build
+	sudo docker compose up --build --detach
+	sudo docker compose kill --signal SIGKILL Dummy-Server
+	sudo docker compose rm Dummy-Server --force --stop
+	sudo docker compose logs --follow
 
 stop:
-	sudo docker compose down --timeout 100
-
+	sudo docker compose kill --signal SIGTERM Load-Balancer
+	sudo docker compose wait Load-Balancer
+	sudo docker compose down --remove-orphans
+	
 build-images:
 	cd server && docker build -t server:v1 .
 

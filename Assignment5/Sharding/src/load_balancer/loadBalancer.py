@@ -141,25 +141,40 @@ async def get_heartbeats():
             print(f'{Fore.CYAN}HEARTBEAT | Heartbeat background task stopped{Style.RESET_ALL}', file=sys.stderr)
 
 async def handle_flatline(serv_id: int, hostname: str):
-    """Recreate and restart a failed server container"""
-    await asyncio.sleep(0)  # Yield to event loop
+    """Recreate and restart a failed server container with its previous shards"""
+    global shard_map, serv_ids
+    
+    await asyncio.sleep(0)  
+    
     if DEBUG:
         print(f'{Fore.LIGHTRED_EX}FLATLINE | Flatline of server replica {hostname} detected{Style.RESET_ALL}', file=sys.stderr)
+    
+    # Store the shards that the flatlined server had
+    server_shards = []
+    for shard_id, servers in shard_map.items():
+        if hostname in servers.getServerList():
+            server_shards.append(shard_id)
+    
     try:
-        async with Docker() as docker:  # Docker client context
-            # Configure container
+        async with Docker() as docker:
             container_config = {
                 'image': 'server:v2',
                 'detach': True,
-                'env': [f'SERVER_ID={serv_id}', 'DEBUG=true'],
+                'env': [
+                    f'SERVER_ID={serv_id}', 
+                    'DEBUG=true',
+                    'POSTGRES_HOST=localhost',
+                    'POSTGRES_PORT=5432',
+                    'POSTGRES_USER=postgres',
+                    'POSTGRES_PASSWORD=postgres',
+                    'POSTGRES_DB_NAME=postgres'
+                ],
                 'hostname': hostname,
                 'tty': True,
             }
             
-            # Create or replace container
             container = await docker.containers.create_or_replace(name=hostname, config=container_config)
             
-            # Connect to network
             LB = await docker.networks.get('LB')
             connect_config = {
                 'Container': container.id, 
@@ -174,9 +189,111 @@ async def handle_flatline(serv_id: int, hostname: str):
             
             if DEBUG:
                 print(f'{Fore.MAGENTA}RESPAWN | Started container for {hostname}{Style.RESET_ALL}', file=sys.stderr)
+            
+            # Restore the shards configuration once the container is running
+            if server_shards:
+                # Wait for the server to be ready
+                semaphore = asyncio.Semaphore(REQUEST_BATCH_SIZE)
+                timeout = aiohttp.ClientTimeout(connect=REQUEST_TIMEOUT)
+                
+                async with aiohttp.ClientSession(timeout=timeout) as session:
+                    # Configure the server with its previous shards
+                    async def post_config_wrapper():
+                        for _ in range(MAX_CONFIG_FAIL_COUNT):
+                            try:
+                                async with session.get(f'http://{hostname}:5000/heartbeat') as response:
+                                    if response.status == 200:
+                                        break
+                            except Exception:
+                                pass
+                            await asyncio.sleep(2)
+                        else:
+                            if DEBUG:
+                                print(f'{Fore.RED}ERROR | Failed to establish connection to respawned server {hostname}{Style.RESET_ALL}', file=sys.stderr)
+                            return None
+
+                        try:
+                            async with session.post(f'http://{hostname}:5000/config', json={"shards": server_shards}) as response:
+                                await response.read()
+                                return response
+                        except Exception as e:
+                            if DEBUG:
+                                print(f'{Fore.RED}ERROR | Failed to configure shards on respawned server {hostname}: {e}{Style.RESET_ALL}', file=sys.stderr)
+                            return None
+                
+                    # Restore data for each shard
+                    async def restore_shards():
+                        # Process each shard
+                        for shard_id in server_shards:
+                            other_servers = []
+                            # Find other servers that have this shard
+                            for server in shard_map[shard_id].getServerList():
+                                if server != hostname and server in Servers.getServerList():
+                                    other_servers.append(server)
+                            
+                            if not other_servers:
+                                # No other server has this shard - data loss may occur
+                                if DEBUG:
+                                    print(f'{Fore.YELLOW}WARNING | Potential data loss: No other server has shard {shard_id} previously on {hostname}{Style.RESET_ALL}', file=sys.stderr)
+                                continue
+                            
+                            # Get shard data from another server
+                            try:
+                                source_server = random.choice(other_servers)
+                                async with pool.acquire() as conn:
+                                    async with conn.transaction(readonly=True):
+                                        shard_valid_at = await conn.fetchval(
+                                            'SELECT valid_at FROM ShardT WHERE shard_id = $1::TEXT', 
+                                            shard_id
+                                        )
+                                
+                                # Get data from source server
+                                async with session.get(
+                                    f'http://{source_server}:5000/copy',
+                                    json={"shards": [shard_id], "valid_at": [shard_valid_at]}
+                                ) as response:
+                                    if response.status == 200:
+                                        data = await response.json()
+                                        # Write data to respawned server
+                                        async with session.post(
+                                            f'http://{hostname}:5000/write',
+                                            json={
+                                                'shard': shard_id,
+                                                'data': data[shard_id],
+                                                'admin': True,
+                                                'valid_at': shard_valid_at,
+                                            }
+                                        ) as write_response:
+                                            if write_response.status == 200:
+                                                if DEBUG:
+                                                    print(f'{Fore.GREEN}INFO | Successfully restored shard {shard_id} on {hostname}{Style.RESET_ALL}', file=sys.stderr)
+                                            else:
+                                                if DEBUG:
+                                                    print(f'{Fore.YELLOW}WARNING | Failed to write data to shard {shard_id} on {hostname}{Style.RESET_ALL}', file=sys.stderr)
+                                    else:
+                                        if DEBUG:
+                                            print(f'{Fore.YELLOW}WARNING | Failed to copy data for shard {shard_id} from {source_server}{Style.RESET_ALL}', file=sys.stderr)
+                            except Exception as e:
+                                if DEBUG:
+                                    print(f'{Fore.YELLOW}WARNING | Failed to restore shard {shard_id} on {hostname}: {e}{Style.RESET_ALL}', file=sys.stderr)
+                
+                    # Execute both operations
+                    config_response = await post_config_wrapper()
+                    if config_response and config_response.status == 200:
+                        await restore_shards()
+                        if DEBUG:
+                            print(f'{Fore.GREEN}INFO | Successfully configured respawned server {hostname} with its previous shards{Style.RESET_ALL}', file=sys.stderr)
+                    else:
+                        if DEBUG:
+                            print(f'{Fore.YELLOW}WARNING | Could not configure respawned server {hostname} with its previous shards{Style.RESET_ALL}', file=sys.stderr)
+            
+            # Reset the heartbeat fail counter for this server
+            heartbeat_fail_count[hostname] = 0
+            serv_ids[hostname] = serv_id
+            
     except Exception as e:
         if DEBUG:
-            print(f'{Fore.RED}ERROR | {e}{Style.RESET_ALL}', file=sys.stderr)
+            print(f'{Fore.RED}ERROR | Failed to handle flatline for {hostname}: {e}{Style.RESET_ALL}', file=sys.stderr)
 
 app = cors(Quart(__name__), allow_origin="*")
 

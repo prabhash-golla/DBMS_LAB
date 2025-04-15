@@ -3,23 +3,48 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>API Tester</title>
+    <title>API Tester Pro</title>
     <!-- React and ReactDOM from CDN -->
     <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
     <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
     <!-- Babel for JSX transformation -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.21.4/babel.min.js"></script>
+    <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" />
+    <!-- Highlight.js for syntax highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/atom-one-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/languages/json.min.js"></script>
     <style>
       :root {
-        --primary: #4f46e5;
-        --primary-hover: #4338ca;
-        --secondary: #1e293b;
+        /* Light theme */
+        --primary: #6366f1;
+        --primary-hover: #4f46e5;
+        --secondary: #475569;
         --success: #22c55e;
+        --warning: #f59e0b;
         --error: #ef4444;
         --light-bg: #f8fafc;
+        --card-bg: #ffffff;
         --dark-bg: #0f172a;
         --border: #e2e8f0;
+        --text: #334155;
+        --text-light: #64748b;
+        --shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.05);
+        --radius: 8px;
+      }
+      
+      /* Dark theme variables */
+      .dark-mode {
+        --primary: #818cf8;
+        --primary-hover: #6366f1;
+        --secondary: #94a3b8;
+        --light-bg: #1e293b;
+        --card-bg: #1e293b;
+        --border: #334155;
+        --text: #e2e8f0;
+        --text-light: #94a3b8;
+        --shadow: 0 4px 6px rgba(0, 0, 0, 0.3), 0 1px 3px rgba(0, 0, 0, 0.2);
       }
       
       * {
@@ -31,81 +56,120 @@
       body {
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
         line-height: 1.5;
-        color: #334155;
-        background-color: #f1f5f9;
+        color: var(--text);
+        background-color: var(--light-bg);
         transition: background-color 0.3s, color 0.3s;
-      }
-      
-      body.dark-mode {
-        color: #e2e8f0;
-        background-color: var(--dark-bg);
+        min-height: 100vh;
       }
       
       .container {
-        max-width: 900px;
+        max-width: 1100px;
         margin: 0 auto;
-        padding: 1rem;
-      }
-      
-      .card {
-        background-color: white;
-        border-radius: 8px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         padding: 1.5rem;
-        margin-bottom: 1.5rem;
-        transition: all 0.3s ease;
       }
       
-      .dark-mode .card {
-        background-color: #1e293b;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-      }
-      
-      .header {
+      .app-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
+        margin-bottom: 2rem;
+      }
+      
+      .app-title {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        font-weight: 700;
+        font-size: 1.75rem;
+        color: var(--primary);
+      }
+      
+      .app-title i {
+        background-color: var(--primary);
+        color: white;
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .app-subtitle {
+        font-size: 0.95rem;
+        color: var(--text-light);
+        margin-top: 0.25rem;
+      }
+      
+      .card {
+        background-color: var(--card-bg);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        padding: 1.5rem;
         margin-bottom: 1.5rem;
+        transition: all 0.3s ease;
+        border: 1px solid var(--border);
+      }
+      
+      .tabs {
+        display: flex;
+        border-bottom: 1px solid var(--border);
+        margin-bottom: 1.5rem;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+      }
+      
+      .tab {
+        padding: 0.75rem 1.25rem;
+        cursor: pointer;
+        border-bottom: 2px solid transparent;
+        transition: all 0.2s;
+        color: var(--text-light);
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        border-radius: var(--radius) var(--radius) 0 0;
+      }
+      
+      .tab:hover {
+        color: var(--primary);
+        background-color: rgba(99, 102, 241, 0.05);
+      }
+      
+      .tab.active {
+        color: var(--primary);
+        border-bottom-color: var(--primary);
+        background-color: rgba(99, 102, 241, 0.1);
       }
       
       .form-group {
-        margin-bottom: 1rem;
+        margin-bottom: 1.25rem;
       }
       
       label {
         display: block;
         font-weight: 600;
         margin-bottom: 0.5rem;
-        color: #475569;
-      }
-      
-      .dark-mode label {
-        color: #cbd5e1;
+        color: var(--text);
+        font-size: 0.925rem;
       }
       
       input, select, textarea {
         width: 100%;
         padding: 0.75rem;
         border: 1px solid var(--border);
-        border-radius: 6px;
-        font-size: 16px;
-        transition: border 0.3s;
-        background-color: white;
-        color: #334155;
-      }
-      
-      .dark-mode input, 
-      .dark-mode select, 
-      .dark-mode textarea {
-        background-color: #334155;
-        border-color: #475569;
-        color: #f1f5f9;
+        border-radius: var(--radius);
+        font-size: 0.95rem;
+        transition: all 0.2s;
+        background-color: var(--card-bg);
+        color: var(--text);
       }
       
       input:focus, select:focus, textarea:focus {
         outline: none;
         border-color: var(--primary);
-        box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
       }
       
       .url-input-container {
@@ -116,6 +180,7 @@
       .method-select {
         width: 120px;
         flex-shrink: 0;
+        font-weight: 600;
       }
       
       .button {
@@ -126,36 +191,41 @@
         background-color: var(--primary);
         color: white;
         border: none;
-        border-radius: 6px;
+        border-radius: var(--radius);
         padding: 0.75rem 1.5rem;
         font-weight: 600;
         cursor: pointer;
-        transition: background-color 0.3s;
+        transition: all 0.2s;
+        font-size: 0.95rem;
       }
       
       .button:hover {
         background-color: var(--primary-hover);
+        transform: translateY(-1px);
+      }
+      
+      .button:active {
+        transform: translateY(0);
       }
       
       .button:disabled {
         opacity: 0.7;
         cursor: not-allowed;
+        transform: none;
       }
       
       .button-secondary {
-        background-color: #94a3b8;
+        background-color: var(--secondary);
       }
       
       .button-secondary:hover {
         background-color: #64748b;
       }
       
-      .dark-mode .button-secondary {
-        background-color: #475569;
-      }
-      
-      .dark-mode .button-secondary:hover {
-        background-color: #334155;
+      .button-group {
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
       }
       
       .response-header {
@@ -169,101 +239,99 @@
         display: inline-flex;
         align-items: center;
         border-radius: 9999px;
-        padding: 0.25rem 0.75rem;
+        padding: 0.35rem 0.85rem;
         font-size: 0.875rem;
         font-weight: 600;
       }
       
       .badge-success {
-        background-color: rgba(34, 197, 94, 0.2);
-        color: #16a34a;
+        background-color: rgba(34, 197, 94, 0.15);
+        color: var(--success);
       }
       
-      .dark-mode .badge-success {
-        background-color: rgba(34, 197, 94, 0.15);
-        color: #4ade80;
+      .badge-warning {
+        background-color: rgba(245, 158, 11, 0.15);
+        color: var(--warning);
       }
       
       .badge-error {
-        background-color: rgba(239, 68, 68, 0.2);
-        color: #dc2626;
-      }
-      
-      .dark-mode .badge-error {
         background-color: rgba(239, 68, 68, 0.15);
-        color: #f87171;
+        color: var(--error);
       }
       
       .response-area {
-        background-color: #f8fafc;
-        border: 1px solid var(--border);
-        border-radius: 6px;
-        padding: 1rem;
+        background-color: #282c34;
+        border-radius: var(--radius);
         overflow: auto;
-        max-height: 300px;
-        font-family: monospace;
-        white-space: pre-wrap;
-        word-break: break-word;
+        max-height: 500px;
+        font-family: "Fira Code", "Consolas", monospace;
+        position: relative;
       }
       
-      .dark-mode .response-area {
-        background-color: #0f172a;
-        border-color: #334155;
+      .response-area pre {
+        margin: 0;
+        padding: 1rem;
+      }
+      
+      .copy-button {
+        position: absolute;
+        top: 0.5rem;
+        right: 0.5rem;
+        background: rgba(255, 255, 255, 0.1);
+        border: none;
+        border-radius: 4px;
+        color: #cbd5e1;
+        padding: 0.25rem 0.5rem;
+        font-size: 0.75rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        transition: all 0.2s;
+        opacity: 0.7;
+      }
+      
+      .copy-button:hover {
+        background: rgba(255, 255, 255, 0.2);
+        opacity: 1;
       }
       
       .theme-toggle {
         background: none;
         border: none;
         cursor: pointer;
-        color: #64748b;
+        color: var(--text-light);
         font-size: 1.25rem;
-      }
-      
-      .dark-mode .theme-toggle {
-        color: #e2e8f0;
-      }
-      
-      .tabs {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
         display: flex;
-        border-bottom: 1px solid var(--border);
-        margin-bottom: 1rem;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
       }
       
-      .tab {
-        padding: 0.75rem 1rem;
-        cursor: pointer;
-        border-bottom: 2px solid transparent;
-        transition: all 0.3s;
-      }
-      
-      .tab.active {
-        border-bottom-color: var(--primary);
+      .theme-toggle:hover {
+        background-color: rgba(99, 102, 241, 0.1);
         color: var(--primary);
-        font-weight: 500;
-      }
-      
-      .dark-mode .tab.active {
-        color: #818cf8;
-        border-bottom-color: #818cf8;
       }
       
       .history-item {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 0.75rem;
-        border-radius: 6px;
-        margin-bottom: 0.5rem;
+        padding: 1rem;
+        border-radius: var(--radius);
+        margin-bottom: 0.75rem;
         cursor: pointer;
-        transition: background-color 0.3s;
+        transition: all 0.2s;
+        border: 1px solid var(--border);
       }
       
       .history-item:hover {
-        background-color: #f1f5f9;
-      }
-      
-      .dark-mode .history-item:hover {
-        background-color: #334155;
+        background-color: rgba(99, 102, 241, 0.05);
+        transform: translateY(-1px);
+        border-color: var(--primary);
       }
       
       .method-badge {
@@ -274,43 +342,28 @@
       }
       
       .method-get {
-        background-color: rgba(59, 130, 246, 0.2);
-        color: #2563eb;
+        background-color: rgba(59, 130, 246, 0.15);
+        color: #3b82f6;
       }
       
       .method-post {
-        background-color: rgba(16, 185, 129, 0.2);
-        color: #059669;
+        background-color: rgba(16, 185, 129, 0.15);
+        color: #10b981;
       }
       
       .method-put {
-        background-color: rgba(245, 158, 11, 0.2);
-        color: #d97706;
+        background-color: rgba(245, 158, 11, 0.15);
+        color: #f59e0b;
       }
       
       .method-delete {
-        background-color: rgba(239, 68, 68, 0.2);
-        color: #dc2626;
-      }
-      
-      .dark-mode .method-get {
-        background-color: rgba(59, 130, 246, 0.15);
-        color: #60a5fa;
-      }
-      
-      .dark-mode .method-post {
-        background-color: rgba(16, 185, 129, 0.15);
-        color: #34d399;
-      }
-      
-      .dark-mode .method-put {
-        background-color: rgba(245, 158, 11, 0.15);
-        color: #fbbf24;
-      }
-      
-      .dark-mode .method-delete {
         background-color: rgba(239, 68, 68, 0.15);
-        color: #f87171;
+        color: #ef4444;
+      }
+      
+      .method-patch {
+        background-color: rgba(168, 85, 247, 0.15);
+        color: #a855f7;
       }
 
       .spinner {
@@ -329,12 +382,8 @@
         display: table;
       }
 
-      .button-group {
-        display: flex;
-        gap: 0.75rem;
-      }
-
-      @media (max-width: 640px) {
+      /* Responsive styles */
+      @media (max-width: 768px) {
         .url-input-container {
           flex-direction: column;
         }
@@ -342,19 +391,402 @@
         .method-select {
           width: 100%;
         }
+        
+        .button-group {
+          flex-direction: column;
+        }
+        
+        .button {
+          width: 100%;
+        }
+        
+        .history-item {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+        
+        .history-item > div:last-child {
+          margin-top: 0.5rem;
+          align-self: flex-end;
+        }
+      }
+
+      /* Enhanced UI Components */
+      .section-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        color: var(--text);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .input-group {
+        display: flex;
+        gap: 0.75rem;
+      }
+
+      .input-group .form-group {
+        flex: 1;
+      }
+
+      .code-editor {
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        overflow: hidden;
+      }
+
+      .code-editor-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.5rem 1rem;
+        background-color: #21252b;
+        border-bottom: 1px solid #181a1f;
+      }
+
+      .code-editor-title {
+        color: #abb2bf;
+        font-size: 0.85rem;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .code-editor-actions {
+        display: flex;
+        gap: 0.5rem;
+      }
+
+      .code-editor-btn {
+        background: none;
+        border: none;
+        color: #abb2bf;
+        cursor: pointer;
+        padding: 0.25rem;
+        border-radius: 4px;
+      }
+
+      .code-editor-btn:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+      }
+
+      .empty-state {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 3rem 1rem;
+        color: var(--text-light);
+        text-align: center;
+      }
+
+      .empty-state i {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+      }
+
+      .empty-state p {
+        font-size: 1rem;
+        max-width: 300px;
+        margin: 0 auto;
+      }
+
+      .endpoint-presets {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 0.75rem;
+        margin-bottom: 1.5rem;
+      }
+
+      .endpoint-preset {
+        background-color: rgba(99, 102, 241, 0.05);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 0.75rem;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+
+      .endpoint-preset:hover {
+        border-color: var(--primary);
+        background-color: rgba(99, 102, 241, 0.1);
+      }
+
+      .endpoint-preset.active {
+        border-color: var(--primary);
+        background-color: rgba(99, 102, 241, 0.15);
+      }
+
+      .endpoint-preset-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.5rem;
+      }
+
+      .endpoint-preset-name {
+        font-weight: 600;
+        font-size: 0.925rem;
+      }
+
+      .endpoint-preset-url {
+        font-size: 0.8rem;
+        color: var(--text-light);
+        word-break: break-all;
+      }
+
+      .response-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem 1rem;
+        background-color: rgba(99, 102, 241, 0.05);
+        border-radius: var(--radius);
+        margin-bottom: 1rem;
+      }
+
+      .response-time {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.875rem;
+        color: var(--text-light);
+      }
+
+      .response-size {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.875rem;
+        color: var(--text-light);
+      }
+
+      .tooltip {
+        position: relative;
+        display: inline-block;
+      }
+
+      .tooltip:hover::after {
+        content: attr(data-tooltip);
+        position: absolute;
+        bottom: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: rgba(0, 0, 0, 0.8);
+        color: white;
+        padding: 0.5rem;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        white-space: nowrap;
+        z-index: 100;
+        margin-bottom: 0.5rem;
+      }
+
+      /* Animations */
+      @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+
+      .fade-in {
+        animation: fadeIn 0.3s ease;
+      }
+
+      /* Notification styles */
+      .notification {
+        position: fixed;
+        bottom: 1.5rem;
+        right: 1.5rem;
+        background-color: var(--card-bg);
+        border-left: 4px solid var(--primary);
+        padding: 1rem;
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        max-width: 350px;
+        z-index: 1000;
+        animation: slideIn 0.3s ease, fadeOut 0.3s ease 2.7s forwards;
+      }
+
+      @keyframes slideIn {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+      }
+
+      @keyframes fadeOut {
+        from { opacity: 1; }
+        to { opacity: 0; }
+      }
+
+      .notification-icon {
+        color: var(--primary);
+        font-size: 1.25rem;
+      }
+
+      .notification-content {
+        flex: 1;
+      }
+
+      .notification-title {
+        font-weight: 600;
+        font-size: 0.95rem;
+        margin-bottom: 0.25rem;
+      }
+
+      .notification-message {
+        font-size: 0.85rem;
+        color: var(--text-light);
+      }
+
+      /* Headers and parameters section */
+      .collapsible {
+        margin-bottom: 1.25rem;
+      }
+
+      .collapsible-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem 1rem;
+        background-color: rgba(99, 102, 241, 0.05);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+
+      .collapsible-header:hover {
+        background-color: rgba(99, 102, 241, 0.1);
+      }
+
+      .collapsible-title {
+        font-weight: 600;
+        font-size: 0.95rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .collapsible-content {
+        padding: 1rem;
+        border: 1px solid var(--border);
+        border-top: none;
+        border-radius: 0 0 var(--radius) var(--radius);
+        background-color: var(--card-bg);
+        animation: slideDown 0.3s ease;
+      }
+
+      @keyframes slideDown {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+
+      .key-value-pair {
+        display: flex;
+        gap: 0.75rem;
+        margin-bottom: 0.75rem;
+      }
+
+      .key-value-pair input {
+        flex: 1;
+      }
+
+      .key-value-pair button {
+        background: none;
+        border: none;
+        color: var(--text-light);
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+
+      .key-value-pair button:hover {
+        color: var(--error);
+      }
+
+      .add-pair-btn {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: none;
+        border: 1px dashed var(--border);
+        color: var(--primary);
+        padding: 0.5rem 1rem;
+        border-radius: var(--radius);
+        width: 100%;
+        cursor: pointer;
+        transition: all 0.2s;
+        justify-content: center;
+        font-size: 0.9rem;
+      }
+
+      .add-pair-btn:hover {
+        background-color: rgba(99, 102, 241, 0.05);
+      }
+
+      /* Active requests indicator */
+      .active-indicator {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.875rem;
+        color: var(--text-light);
+        margin-bottom: 1rem;
+      }
+
+      .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background-color: var(--success);
+      }
+
+      .dot.pulse {
+        animation: pulse 1.5s infinite;
+      }
+
+      @keyframes pulse {
+        0% { transform: scale(1); opacity: 1; }
+        50% { transform: scale(1.5); opacity: 0.5; }
+        100% { transform: scale(1); opacity: 1; }
+      }
+
+      /* Footer styles */
+      .footer {
+        margin-top: 3rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid var(--border);
+        text-align: center;
+        color: var(--text-light);
+        font-size: 0.875rem;
+      }
+
+      .footer a {
+        color: var(--primary);
+        text-decoration: none;
+      }
+
+      .footer a:hover {
+        text-decoration: underline;
       }
     </style>
   </head>
   <body>
     <div id="app"></div>
     <script type="text/babel">
-      const { useState, useEffect } = React;
+      const { useState, useEffect, useRef } = React;
 
-      // Preset endpoints with defaults for custom APIs.
+      // Preset endpoints with defaults for custom APIs
       const customEndpoints = [
         {
           name: "/init",
           method: "POST",
+          description: "Initialize the API with schema and shards",
           body: JSON.stringify({
             N: 3,
             schema: {
@@ -376,11 +808,13 @@
         {
           name: "/status",
           method: "GET",
+          description: "Get current API status",
           body: ""
         },
         {
           name: "/add",
           method: "POST",
+          description: "Add new shards and servers",
           body: JSON.stringify({
             n: 2,
             new_shards: [{ stud_id_low: 12288, shard_id: "sh5", shard_size: 4096 }],
@@ -390,6 +824,7 @@
         {
           name: "/rm",
           method: "DELETE",
+          description: "Remove servers",
           body: JSON.stringify({
             n: 2,
             servers: ["Server4"]
@@ -398,6 +833,7 @@
         {
           name: "/read",
           method: "POST",
+          description: "Read data by student ID range",
           body: JSON.stringify({
             stud_id: { low: 1000, high: 8889 }
           }, null, 2)
@@ -405,6 +841,7 @@
         {
           name: "/write",
           method: "POST",
+          description: "Write new student data",
           body: JSON.stringify({
             data: [
               { stud_id: 2255, stud_name: "GHI", stud_marks: 27 },
@@ -415,6 +852,7 @@
         {
           name: "/update",
           method: "PUT",
+          description: "Update student data",
           body: JSON.stringify({
             stud_id: 2255,
             data: { stud_id: 2255, stud_name: "GHI", stud_marks: 30 }
@@ -423,37 +861,194 @@
         {
           name: "/del",
           method: "DELETE",
+          description: "Delete student data",
           body: JSON.stringify({
             stud_id: 2255
           }, null, 2)
         },
         {
           name: "/help",
-          method:"GET",
-          body : ""
+          method: "GET",
+          description: "Get API documentation and help",
+          body: ""
         }
       ];
 
+      // Helper functions
+      const formatBytes = (bytes, decimals = 2) => {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const dm = decimals < 0 ? 0 : decimals;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+      };
+
+      const formatResponseBody = (text) => {
+        try {
+          const json = JSON.parse(text);
+          return JSON.stringify(json, null, 2);
+        } catch (e) {
+          return text;
+        }
+      };
+
+      const getStatusBadgeClass = (status) => {
+        if (!status) return "";
+        if (status.code >= 200 && status.code < 300) return "badge-success";
+        if (status.code >= 300 && status.code < 400) return "badge-warning";
+        return "badge-error";
+      };
+
+      const getMethodClass = (reqMethod) => {
+        switch(reqMethod.toUpperCase()) {
+          case "GET": return "method-get";
+          case "POST": return "method-post";
+          case "PUT": return "method-put";
+          case "DELETE": return "method-delete";
+          case "PATCH": return "method-patch";
+          default: return "method-get";
+        }
+      };
+
+      const prettyDate = (timestamp) => {
+        const date = new Date(timestamp);
+        return date.toLocaleString();
+      };
+
+      // Toast Notification Component
+      const Notification = ({ title, message, type, onClose }) => {
+        useEffect(() => {
+          const timer = setTimeout(() => {
+            onClose();
+          }, 3000);
+          
+          return () => clearTimeout(timer);
+        }, [onClose]);
+
+        return (
+          <div className="notification">
+            <div className="notification-icon">
+              <i className={`fas fa-${type === 'success' ? 'check-circle' : 'info-circle'}`}></i>
+            </div>
+            <div className="notification-content">
+              <div className="notification-title">{title}</div>
+              <div className="notification-message">{message}</div>
+            </div>
+          </div>
+        );
+      };
+
+      // Collapsible Component
+      const Collapsible = ({ title, icon, children, defaultOpen = false }) => {
+        const [isOpen, setIsOpen] = useState(defaultOpen);
+        
+        return (
+          <div className="collapsible">
+            <div 
+              className="collapsible-header" 
+              onClick={() => setIsOpen(!isOpen)}
+            >
+              <div className="collapsible-title">
+                <i className={`fas fa-${icon}`}></i>
+                {title}
+              </div>
+              <i className={`fas fa-chevron-${isOpen ? 'up' : 'down'}`}></i>
+            </div>
+            {isOpen && (
+              <div className="collapsible-content">
+                {children}
+              </div>
+            )}
+          </div>
+        );
+      };
+
+      // Key-Value Pairs Component
+      const KeyValuePairs = ({ pairs, onChange, label }) => {
+        const addPair = () => {
+          onChange([...pairs, { key: '', value: '' }]);
+        };
+
+        const updatePair = (index, field, value) => {
+          const newPairs = [...pairs];
+          newPairs[index][field] = value;
+          onChange(newPairs);
+        };
+
+        const removePair = (index) => {
+          const newPairs = [...pairs];
+          newPairs.splice(index, 1);
+          onChange(newPairs);
+        };
+
+        return (
+          <div>
+            {pairs.map((pair, index) => (
+              <div key={index} className="key-value-pair">
+                <input
+                  placeholder="Key"
+                  value={pair.key}
+                  onChange={(e) => updatePair(index, 'key', e.target.value)}
+                />
+                <input
+                  placeholder="Value"
+                  value={pair.value}
+                  onChange={(e) => updatePair(index, 'value', e.target.value)}
+                />
+                <button 
+                  type="button" 
+                  onClick={() => removePair(index)}
+                  title="Remove"
+                >
+                  <i className="fas fa-times"></i>
+                </button>
+              </div>
+            ))}
+            
+            <button type="button" className="add-pair-btn" onClick={addPair}>
+              <i className="fas fa-plus"></i>
+              Add {label}
+            </button>
+          </div>
+        );
+      };
+
+      // Main App Component
       function App() {
+        // Theme state
         const [darkMode, setDarkMode] = useState(
           window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
         );
-        // State for generic request tab
+        
+        // Generic request state
         const [url, setUrl] = useState("http://localhost:5000/");
-        const [customBaseUrl, setCustomBaseUrl] = useState("http://localhost:5000");
         const [method, setMethod] = useState("GET");
         const [body, setBody] = useState("");
-        // State for custom API tab
+        const [headers, setHeaders] = useState([]);
+        const [params, setParams] = useState([]);
+        
+        // Custom API state
+        const [customBaseUrl, setCustomBaseUrl] = useState("http://localhost:5000");
         const [customEndpoint, setCustomEndpoint] = useState(customEndpoints[0].name);
         const [customMethod, setCustomMethod] = useState(customEndpoints[0].method);
         const [customBody, setCustomBody] = useState(customEndpoints[0].body);
+        const [customHeaders, setCustomHeaders] = useState([]);
+        
+        // Response state
         const [response, setResponse] = useState("");
         const [status, setStatus] = useState(null);
         const [loading, setLoading] = useState(false);
         const [activeTab, setActiveTab] = useState("request");
         const [history, setHistory] = useState([]);
         const [selectedHistoryItem, setSelectedHistoryItem] = useState(null);
+        const [notification, setNotification] = useState(null);
+        const [activeRequests, setActiveRequests] = useState(0);
+        
+        // Refs
+        const responseAreaRef = useRef(null);
 
+        // Apply theme
         useEffect(() => {
           if (darkMode) {
             document.body.classList.add('dark-mode');
@@ -462,6 +1057,7 @@
           }
         }, [darkMode]);
 
+        // Load history from localStorage
         useEffect(() => {
           const savedHistory = localStorage.getItem('apiTesterHistory');
           if (savedHistory) {
@@ -473,52 +1069,111 @@
           }
         }, []);
 
+        // Apply syntax highlighting when response changes
+        useEffect(() => {
+          if (responseAreaRef.current && response) {
+            hljs.highlightElement(responseAreaRef.current);
+          }
+        }, [response]);
+
+        // Save request to history
         const saveToHistory = (requestData) => {
-          const newHistory = [requestData, ...history.slice(0, 9)];
+          const newHistory = [requestData, ...history.slice(0, 19)]; // Keep up to 20 items
           setHistory(newHistory);
           localStorage.setItem('apiTesterHistory', JSON.stringify(newHistory));
         };
 
-        const formatResponseBody = (text) => {
-          try {
-            const json = JSON.parse(text);
-            return JSON.stringify(json, null, 2);
-          } catch (e) {
-            return text;
-          }
+        // Show notification
+        const showNotification = (title, message, type = 'success') => {
+          setNotification({ title, message, type });
         };
 
+        // Copy response to clipboard
+        const copyResponseToClipboard = () => {
+          navigator.clipboard.writeText(response).then(() => {
+            showNotification('Copied!', 'Response copied to clipboard');
+          });
+        };
+
+        // Load from history
         const loadFromHistory = (item) => {
-          setUrl(item.url);
-          setMethod(item.method);
-          setBody(item.body);
+          if (item.customApi) {
+            setCustomBaseUrl(item.customBaseUrl || "http://localhost:5000");
+            setCustomEndpoint(item.endpoint);
+            setCustomMethod(item.method);
+            setCustomBody(item.body);
+            setActiveTab("custom");
+          } else {
+            setUrl(item.url);
+            setMethod(item.method);
+            setBody(item.body);
+            setActiveTab("request");
+          }
           setSelectedHistoryItem(item);
-          setActiveTab("request");
+          
+          showNotification('Request loaded', 'Previous request loaded from history');
         };
 
+        // Toggle theme
         const toggleTheme = () => {
           setDarkMode(!darkMode);
         };
 
+        // Clear request form
         const clearForm = () => {
-          setUrl("");
+          setUrl("http://localhost:5000/");
           setBody("");
+          setHeaders([]);
+          setParams([]);
           setResponse("");
           setStatus(null);
+          
+          showNotification('Form cleared', 'Request form has been reset');
         };
 
+        // Build URL with query parameters
+        const buildUrlWithParams = (baseUrl, params) => {
+          if (!params.length) return baseUrl;
+          
+          const url = new URL(baseUrl);
+          params.forEach(param => {
+            if (param.key && param.value) {
+              url.searchParams.append(param.key, param.value);
+            }
+          });
+          
+          return url.toString();
+        };
+
+        // Build headers object
+        const buildHeadersObject = (headersArray) => {
+          const headers = {
+            "Content-Type": "application/json",
+          };
+          
+          headersArray.forEach(header => {
+            if (header.key && header.value) {
+              headers[header.key] = header.value;
+            }
+          });
+          
+          return headers;
+        };
+
+        // Handle generic request submission
         const handleGenericSubmit = async (e) => {
           e.preventDefault();
           setLoading(true);
           setResponse("");
           setStatus(null);
+          setActiveRequests(prev => prev + 1);
           
           try {
+            const requestUrl = buildUrlWithParams(url, params);
+            
             const options = {
               method,
-              headers: {
-                "Content-Type": "application/json",
-              },
+              headers: buildHeadersObject(headers),
             };
             
             if (method !== "GET" && body.trim()) {
@@ -526,28 +1181,37 @@
             }
             
             const startTime = Date.now();
-            const res = await fetch(url, options);
+            const res = await fetch(requestUrl, options);
             const endTime = Date.now();
             const responseTime = endTime - startTime;
             
             const text = await res.text();
             const formattedResponse = formatResponseBody(text);
+            const responseSize = text.length;
             
             setResponse(formattedResponse);
             setStatus({
               code: res.status,
               text: res.statusText,
-              time: responseTime
+              time: responseTime,
+              size: responseSize
             });
             
             saveToHistory({
-              url,
+              url: requestUrl,
               method,
               body,
+              headers,
+              params,
               timestamp: new Date().toISOString(),
-              status: res.status
+              status: res.status,
+              customApi: false
             });
             
+            showNotification(
+              'Request completed', 
+              `${method} request to ${requestUrl.split('/').pop() || 'endpoint'} completed in ${responseTime}ms`
+            );
           } catch (err) {
             setResponse("Error: " + err.message);
             setStatus({
@@ -555,17 +1219,26 @@
               text: "Error",
               error: true
             });
+            
+            showNotification(
+              'Request failed', 
+              err.message,
+              'error'
+            );
           }
           
           setLoading(false);
+          setActiveRequests(prev => prev - 1);
           setActiveTab("response");
         };
 
+        // Handle custom API request submission
         const handleCustomSubmit = async (e) => {
           e.preventDefault();
           setLoading(true);
           setResponse("");
           setStatus(null);
+          setActiveRequests(prev => prev + 1);
 
           // Build the URL from the selected custom endpoint
           const fullUrl = `${customBaseUrl}${customEndpoint}`;
@@ -573,9 +1246,7 @@
           try {
             const options = {
               method: customMethod,
-              headers: {
-                "Content-Type": "application/json",
-              },
+              headers: buildHeadersObject(customHeaders),
             };
             
             if (customMethod !== "GET" && customBody.trim()) {
@@ -589,22 +1260,32 @@
             
             const text = await res.text();
             const formattedResponse = formatResponseBody(text);
+            const responseSize = text.length;
             
             setResponse(formattedResponse);
             setStatus({
               code: res.status,
               text: res.statusText,
-              time: responseTime
+              time: responseTime,
+              size: responseSize
             });
             
             saveToHistory({
               url: fullUrl,
               method: customMethod,
               body: customBody,
+              headers: customHeaders,
+              endpoint: customEndpoint,
+              customBaseUrl,
               timestamp: new Date().toISOString(),
-              status: res.status
+              status: res.status,
+              customApi: true
             });
             
+            showNotification(
+              'Request completed', 
+              `${customMethod} request to ${customEndpoint} completed in ${responseTime}ms`
+            );
           } catch (err) {
             setResponse("Error: " + err.message);
             setStatus({
@@ -612,13 +1293,20 @@
               text: "Error",
               error: true
             });
+            
+            showNotification(
+              'Request failed', 
+              err.message,
+              'error'
+            );
           }
           
           setLoading(false);
+          setActiveRequests(prev => prev - 1);
           setActiveTab("response");
         };
 
-        // Update custom fields when selecting a new preset endpoint.
+        // Update custom fields when selecting a new preset endpoint
         const handleEndpointSelect = (epName) => {
           setCustomEndpoint(epName);
           const preset = customEndpoints.find((ep) => ep.name === epName);
@@ -628,66 +1316,107 @@
           }
         };
 
-        const getStatusBadgeClass = () => {
-          if (!status) return "";
-          return status.code >= 200 && status.code < 400 ? "badge-success" : "badge-error";
-        };
-
-        const getMethodClass = (reqMethod) => {
-          switch(reqMethod) {
-            case "GET": return "method-get";
-            case "POST": return "method-post";
-            case "PUT": return "method-put";
-            case "DELETE": return "method-delete";
-            case "PATCH": return "method-post"; // fallback
-            default: return "method-get";
+        // Format sample code for cURL
+        const generateCurlCommand = () => {
+          const isCustom = activeTab === "custom";
+          const requestUrl = isCustom 
+            ? `${customBaseUrl}${customEndpoint}`
+            : buildUrlWithParams(url, params);
+          const requestMethod = isCustom ? customMethod : method;
+          const requestBody = isCustom ? customBody : body;
+          const requestHeaders = isCustom ? customHeaders : headers;
+          
+          let curl = `curl -X ${requestMethod} "${requestUrl}"`;
+          
+          // Add headers
+          requestHeaders.forEach(header => {
+            if (header.key && header.value) {
+              curl += ` \\\n  -H "${header.key}: ${header.value}"`;
+            }
+          });
+          
+          // Add body for non-GET requests
+          if (requestMethod !== "GET" && requestBody.trim()) {
+            curl += ` \\\n  -d '${requestBody.replace(/'/g, "\\'")}'`;
           }
-        };
-
-        const prettyDate = (timestamp) => {
-          const date = new Date(timestamp);
-          return date.toLocaleString();
+          
+          return curl;
         };
 
         return (
           <div className="container">
-            <div className="header">
-              <h1>API Tester</h1>
-              <button className="theme-toggle" onClick={toggleTheme}>
+            {/* Header */}
+            <div className="app-header">
+              <div>
+                <div className="app-title">
+                  <i className="fas fa-bolt"></i>
+                  API Tester Pro
+                </div>
+                <div className="app-subtitle">
+                  Test and debug your API endpoints with ease
+                </div>
+              </div>
+              <button className="theme-toggle" onClick={toggleTheme} title="Toggle theme">
                 {darkMode ? <i className="fas fa-sun"></i> : <i className="fas fa-moon"></i>}
               </button>
             </div>
             
+            {/* Active requests indicator */}
+            {activeRequests > 0 && (
+              <div className="active-indicator fade-in">
+                <div className="dot pulse"></div>
+                <span>Request in progress...</span>
+              </div>
+            )}
+            
+            {/* Tabs */}
             <div className="tabs">
               <div 
                 className={`tab ${activeTab === "request" ? "active" : ""}`}
                 onClick={() => setActiveTab("request")}
               >
-                Generic Request
+                <i className="fas fa-globe"></i>
+                Request
               </div>
               <div 
                 className={`tab ${activeTab === "custom" ? "active" : ""}`}
                 onClick={() => setActiveTab("custom")}
               >
+                <i className="fas fa-server"></i>
                 Custom API
               </div>
               <div 
                 className={`tab ${activeTab === "response" ? "active" : ""}`}
                 onClick={() => setActiveTab("response")}
               >
+                <i className="fas fa-reply"></i>
                 Response
               </div>
               <div 
                 className={`tab ${activeTab === "history" ? "active" : ""}`}
                 onClick={() => setActiveTab("history")}
               >
+                <i className="fas fa-history"></i>
                 History
+              </div>
+              <div 
+                className={`tab ${activeTab === "code" ? "active" : ""}`}
+                onClick={() => setActiveTab("code")}
+              >
+                <i className="fas fa-code"></i>
+                Code Gen
               </div>
             </div>
             
+            {/* Generic Request Tab */}
             {activeTab === "request" && (
-              <div className="card">
+              <div className="card fade-in">
                 <form onSubmit={handleGenericSubmit}>
+                  <div className="section-title">
+                    <i className="fas fa-link"></i>
+                    Request Details
+                  </div>
+                  
                   <div className="form-group">
                     <label>Endpoint URL</label>
                     <div className="url-input-container">
@@ -711,17 +1440,78 @@
                     </div>
                   </div>
                   
+                  {/* Headers Collapsible */}
+                  <Collapsible title="Headers" icon="exchange-alt">
+                    <KeyValuePairs 
+                      pairs={headers}
+                      onChange={setHeaders}
+                      label="Header"
+                    />
+                  </Collapsible>
+                  
+                  {/* Parameters Collapsible */}
+                  <Collapsible title="Query Parameters" icon="question-circle">
+                    <KeyValuePairs 
+                      pairs={params}
+                      onChange={setParams}
+                      label="Parameter"
+                    />
+                  </Collapsible>
+                  
+                  {/* Request Body */}
                   <div className="form-group">
-                    <label>Request Body (JSON)</label>
-                    <textarea
-                      value={body}
-                      onChange={(e) => setBody(e.target.value)}
-                      rows="10"
-                      placeholder={method !== "GET" ? '{\n  "key": "value"\n}' : "Body not used for GET requests"}
-                      disabled={method === "GET"}
-                    ></textarea>
+                    <label>Request Body {method === "GET" && "(Not used for GET requests)"}</label>
+                    <div className="code-editor">
+                      <div className="code-editor-header">
+                        <div className="code-editor-title">
+                          <i className="fas fa-code"></i>
+                          JSON
+                        </div>
+                        <div className="code-editor-actions">
+                          <button 
+                            type="button" 
+                            className="code-editor-btn"
+                            onClick={() => {
+                              try {
+                                const formatted = JSON.stringify(JSON.parse(body), null, 2);
+                                setBody(formatted);
+                              } catch (e) {
+                                showNotification('Format error', 'Invalid JSON', 'error');
+                              }
+                            }}
+                            title="Format JSON"
+                          >
+                            <i className="fas fa-align-left"></i>
+                          </button>
+                          <button 
+                            type="button" 
+                            className="code-editor-btn"
+                            onClick={() => setBody("")}
+                            title="Clear"
+                          >
+                            <i className="fas fa-trash-alt"></i>
+                          </button>
+                        </div>
+                      </div>
+                      <textarea
+                        value={body}
+                        onChange={(e) => setBody(e.target.value)}
+                        rows="10"
+                        placeholder={method !== "GET" ? '{\n  "key": "value"\n}' : "Body not used for GET requests"}
+                        disabled={method === "GET"}
+                        style={{
+                          border: "none",
+                          borderRadius: 0,
+                          padding: "1rem",
+                          fontFamily: "monospace",
+                          backgroundColor: "#282c34",
+                          color: "#abb2bf"
+                        }}
+                      ></textarea>
+                    </div>
                   </div>
                   
+                  {/* Action Buttons */}
                   <div className="button-group">
                     <button type="submit" className="button" disabled={loading || !url}>
                       {loading ? (
@@ -736,7 +1526,11 @@
                         </>
                       )}
                     </button>
-                    <button type="button" className="button button-secondary" onClick={clearForm}>
+                    <button 
+                      type="button" 
+                      className="button button-secondary" 
+                      onClick={clearForm}
+                    >
                       <i className="fas fa-trash"></i>
                       Clear
                     </button>
@@ -745,10 +1539,14 @@
               </div>
             )}
             
+            {/* Custom API Tab */}
             {activeTab === "custom" && (
-              <div className="card">
-                <h2>Custom API Request</h2>
-                <div style={{ display: "flex", gap: "1rem" }}>
+              <div className="card fade-in">
+                <div className="section-title">
+                  <i className="fas fa-server"></i>
+                  Custom API Request
+                </div>
+                
                 <div className="form-group">
                   <label>Base URL</label>
                   <input
@@ -758,50 +1556,105 @@
                     placeholder="http://localhost:5000"
                   />
                 </div>
+                
+                <div className="section-title">
+                  <i className="fas fa-bookmark"></i>
+                  Endpoint Presets
+                </div>
+                
+                <div className="endpoint-presets">
+                  {customEndpoints.map((ep) => (
+                    <div 
+                      key={ep.name} 
+                      className={`endpoint-preset ${customEndpoint === ep.name ? 'active' : ''}`}
+                      onClick={() => handleEndpointSelect(ep.name)}
+                    >
+                      <div className="endpoint-preset-header">
+                        <div className="endpoint-preset-name">{ep.name}</div>
+                        <span className={`method-badge ${getMethodClass(ep.method)}`}>
+                          {ep.method}
+                        </span>
+                      </div>
+                      <div className="endpoint-preset-url">{ep.description}</div>
+                    </div>
+                  ))}
+                </div>
+                
+                {/* Headers Collapsible */}
+                <Collapsible title="Headers" icon="exchange-alt">
+                  <KeyValuePairs 
+                    pairs={customHeaders}
+                    onChange={setCustomHeaders}
+                    label="Header"
+                  />
+                </Collapsible>
+                
+                {/* Request Body */}
                 <div className="form-group">
-                  <label>Select Endpoint Preset</label>
-                  <select 
-                    value={customEndpoint}
-                    onChange={(e) => handleEndpointSelect(e.target.value)}
-                  >
-                    {customEndpoints.map((ep) => (
-                      <option key={ep.name} value={ep.name}>{ep.name}</option>
-                    ))}
-                  </select>
-                </div>
-                </div>
-                <div style={{ display: "flex", gap: "1rem" }}>
-                  <div className="form-group">
-                    <label>Method</label>
-                    <input
-                      type="text"
-                      value={customMethod}
-                      className="method-select"
-                      readOnly
-                    />
+                  <label>Request Body {customMethod === "GET" && "(Not used for GET requests)"}</label>
+                  <div className="code-editor">
+                    <div className="code-editor-header">
+                      <div className="code-editor-title">
+                        <i className="fas fa-code"></i>
+                        JSON
+                      </div>
+                      <div className="code-editor-actions">
+                        <button 
+                          type="button" 
+                          className="code-editor-btn"
+                          onClick={() => {
+                            try {
+                              const formatted = JSON.stringify(JSON.parse(customBody), null, 2);
+                              setCustomBody(formatted);
+                            } catch (e) {
+                              showNotification('Format error', 'Invalid JSON', 'error');
+                            }
+                          }}
+                          title="Format JSON"
+                        >
+                          <i className="fas fa-align-left"></i>
+                        </button>
+                        <button 
+                          type="button" 
+                          className="code-editor-btn"
+                          onClick={() => {
+                            const preset = customEndpoints.find((ep) => ep.name === customEndpoint);
+                            if (preset) {
+                              setCustomBody(preset.body);
+                            }
+                          }}
+                          title="Reset to preset"
+                        >
+                          <i className="fas fa-undo"></i>
+                        </button>
+                      </div>
+                    </div>
+                    <textarea
+                      value={customBody}
+                      onChange={(e) => setCustomBody(e.target.value)}
+                      rows="10"
+                      placeholder={customMethod !== "GET" ? '{\n  "key": "value"\n}' : "Body not used for GET requests"}
+                      disabled={customMethod === "GET"}
+                      style={{
+                        border: "none",
+                        borderRadius: 0,
+                        padding: "1rem",
+                        fontFamily: "monospace",
+                        backgroundColor: "#282c34",
+                        color: "#abb2bf"
+                      }}
+                    ></textarea>
                   </div>
-                  <div className="form-group">
-                    <label>Endpoint URL</label>
-                    <input
-                      type="text"
-                      value={`${customBaseUrl}${customEndpoint}`}
-                      readOnly
-                    />
-                  </div>
                 </div>
-
-                <div className="form-group">
-                  <label>Request Body (JSON)</label>
-                  <textarea
-                    value={customBody}
-                    onChange={(e) => setCustomBody(e.target.value)}
-                    rows="10"
-                    placeholder={customMethod !== "GET" ? '{\n  "key": "value"\n}' : "Body not used for GET requests"}
-                    disabled={customMethod === "GET"}
-                  ></textarea>
-                </div>
+                
+                {/* Action Buttons */}
                 <div className="button-group">
-                  <button type="button" className="button" onClick={handleCustomSubmit} disabled={loading}>
+                  <button 
+                    type="button" 
+                    className="button" 
+                    onClick={handleCustomSubmit} 
+                    disabled={loading}
+                  >
                     {loading ? (
                       <>
                         <i className="fas fa-circle-notch spinner"></i>
@@ -818,43 +1671,75 @@
               </div>
             )}
             
+            {/* Response Tab */}
             {activeTab === "response" && (
-              <div className="card">
+              <div className="card fade-in">
                 <div className="response-header">
-                  <h2>Response</h2>
+                  <div className="section-title" style={{ margin: 0 }}>
+                    <i className="fas fa-reply"></i>
+                    Response
+                  </div>
                   {status && (
-                    <div className={`badge ${getStatusBadgeClass()}`}>
+                    <div className={`badge ${getStatusBadgeClass(status)}`}>
                       {status.code} {status.text}
-                      {status.time && ` (${status.time}ms)`}
                     </div>
                   )}
                 </div>
                 
+                {status && status.time && (
+                  <div className="response-meta">
+                    <div className="response-time">
+                      <i className="fas fa-clock"></i>
+                      {status.time} ms
+                    </div>
+                    {status.size && (
+                      <div className="response-size">
+                        <i className="fas fa-file-alt"></i>
+                        {formatBytes(status.size)}
+                      </div>
+                    )}
+                  </div>
+                )}
+                
                 <div className="response-area">
                   {loading ? (
-                    <div style={{ textAlign: "center", padding: "2rem" }}>
-                      <i className="fas fa-circle-notch fa-spin fa-2x"></i>
-                      <p style={{ marginTop: "1rem" }}>Loading response...</p>
+                    <div className="empty-state">
+                      <i className="fas fa-circle-notch spinner"></i>
+                      <p>Loading response...</p>
                     </div>
                   ) : response ? (
-                    response
+                    <>
+                      <button 
+                        className="copy-button" 
+                        onClick={copyResponseToClipboard}
+                      >
+                        <i className="fas fa-copy"></i>
+                        Copy
+                      </button>
+                      <pre><code ref={responseAreaRef} className="language-json">{response}</code></pre>
+                    </>
                   ) : (
-                    <div style={{ color: "#94a3b8", textAlign: "center", padding: "2rem" }}>
-                      <i className="fas fa-inbox fa-2x"></i>
-                      <p style={{ marginTop: "1rem" }}>No response yet. Send a request to see results.</p>
+                    <div className="empty-state">
+                      <i className="fas fa-inbox"></i>
+                      <p>No response yet. Send a request to see results.</p>
                     </div>
                   )}
                 </div>
               </div>
             )}
             
+            {/* History Tab */}
             {activeTab === "history" && (
-              <div className="card">
-                <h2>Request History</h2>
+              <div className="card fade-in">
+                <div className="section-title">
+                  <i className="fas fa-history"></i>
+                  Request History
+                </div>
+                
                 {history.length === 0 ? (
-                  <div style={{ textAlign: "center", padding: "2rem", color: "#94a3b8" }}>
-                    <i className="fas fa-history fa-2x"></i>
-                    <p style={{ marginTop: "1rem" }}>No request history yet.</p>
+                  <div className="empty-state">
+                    <i className="fas fa-history"></i>
+                    <p>No request history yet. Send requests to build your history.</p>
                   </div>
                 ) : (
                   <div>
@@ -869,23 +1754,30 @@
                             {item.method}
                           </span>
                           <span style={{ marginLeft: "0.75rem", fontWeight: "500" }}>
-                            {item.url.length > 40 ? item.url.substring(0, 40) + "..." : item.url}
+                            {item.customApi ? item.endpoint : (item.url.split('/').pop() || 'endpoint')}
                           </span>
+                          <div style={{ fontSize: "0.85rem", color: "var(--text-light)", marginTop: "0.25rem" }}>
+                            {item.url.length > 50 ? item.url.substring(0, 50) + "..." : item.url}
+                          </div>
                         </div>
                         <div>
-                          <span style={{ fontSize: "0.875rem", color: "#64748b" }}>
-                            {prettyDate(item.timestamp)}
+                          <span className={`badge ${getStatusBadgeClass({ code: item.status })}`} style={{ marginBottom: "0.5rem" }}>
+                            {item.status}
                           </span>
+                          <div style={{ fontSize: "0.85rem", color: "var(--text-light)", textAlign: "right" }}>
+                            {prettyDate(item.timestamp)}
+                          </div>
                         </div>
                       </div>
                     ))}
-                    <div className="clearfix" style={{ marginTop: "1rem" }}>
+                    
+                    <div className="clearfix" style={{ marginTop: "1.5rem" }}>
                       <button 
                         className="button button-secondary" 
-                        style={{ float: "right" }}
                         onClick={() => {
                           setHistory([]);
                           localStorage.removeItem('apiTesterHistory');
+                          showNotification('History cleared', 'Request history has been cleared');
                         }}
                       >
                         <i className="fas fa-trash"></i>
@@ -896,8 +1788,170 @@
                 )}
               </div>
             )}
+            
+            {/* Code Generation Tab */}
+            {activeTab === "code" && (
+              <div className="card fade-in">
+                <div className="section-title">
+                  <i className="fas fa-code"></i>
+                  Code Generation
+                </div>
+                
+                <p style={{ marginBottom: "1.5rem", color: "var(--text-light)" }}>
+                  Generate code snippets for the current request to use in your projects.
+                </p>
+                
+                <Collapsible title="cURL Command" icon="terminal" defaultOpen={true}>
+                  <div className="code-editor">
+                    <div className="code-editor-header">
+                      <div className="code-editor-title">
+                        <i className="fas fa-terminal"></i>
+                        cURL
+                      </div>
+                      <div className="code-editor-actions">
+                        <button 
+                          type="button" 
+                          className="code-editor-btn"
+                          onClick={() => {
+                            navigator.clipboard.writeText(generateCurlCommand());
+                            showNotification('Copied!', 'cURL command copied to clipboard');
+                          }}
+                          title="Copy to clipboard"
+                        >
+                          <i className="fas fa-copy"></i>
+                        </button>
+                      </div>
+                    </div>
+                    <pre style={{ 
+                      margin: 0, 
+                      padding: "1rem", 
+                      backgroundColor: "#282c34", 
+                      color: "#abb2bf",
+                      overflow: "auto"
+                    }}>
+                      {generateCurlCommand()}
+                    </pre>
+                  </div>
+                </Collapsible>
+                
+                <Collapsible title="JavaScript (Fetch)" icon="js" defaultOpen={true}>
+                  <div className="code-editor">
+                    <div className="code-editor-header">
+                      <div className="code-editor-title">
+                        <i className="fab fa-js"></i>
+                        JavaScript
+                      </div>
+                      <div className="code-editor-actions">
+                        <button 
+                          type="button" 
+                          className="code-editor-btn"
+                          onClick={() => {
+                            const code = generateJavaScriptCode();
+                            navigator.clipboard.writeText(code);
+                            showNotification('Copied!', 'JavaScript code copied to clipboard');
+                          }}
+                          title="Copy to clipboard"
+                        >
+                          <i className="fas fa-copy"></i>
+                        </button>
+                      </div>
+                    </div>
+                    <pre style={{ 
+                      margin: 0, 
+                      padding: "1rem", 
+                      backgroundColor: "#282c34", 
+                      color: "#abb2bf",
+                      overflow: "auto"
+                    }}>
+                      {generateJavaScriptCode()}
+                    </pre>
+                  </div>
+                </Collapsible>
+              </div>
+            )}
+            
+            {/* Footer */}
+            <div className="footer">
+              API Tester Pro &copy; {new Date().getFullYear()} &middot; A powerful tool for API testing and development
+            </div>
+            
+            {/* Notification */}
+            {notification && (
+              <Notification 
+                title={notification.title}
+                message={notification.message}
+                type={notification.type}
+                onClose={() => setNotification(null)}
+              />
+            )}
           </div>
         );
+        
+        // Helper function to generate JavaScript code
+        function generateJavaScriptCode() {
+          const isCustom = activeTab === "custom";
+          const requestUrl = isCustom 
+            ? `${customBaseUrl}${customEndpoint}`
+            : buildUrlWithParams(url, params);
+          const requestMethod = isCustom ? customMethod : method;
+          const requestBody = isCustom ? customBody : body;
+          const requestHeaders = isCustom ? customHeaders : headers;
+          
+          let code = `// API Request using Fetch\n`;
+          code += `const url = "${requestUrl}";\n\n`;
+          
+          // Add options
+          code += `const options = {\n`;
+          code += `  method: "${requestMethod}",\n`;
+          
+          // Add headers
+          if (requestHeaders.length > 0) {
+            code += `  headers: {\n`;
+            code += `    "Content-Type": "application/json",\n`;
+            
+            requestHeaders.forEach((header, index) => {
+              if (header.key && header.value) {
+                code += `    "${header.key}": "${header.value}"${index < requestHeaders.length - 1 ? "," : ""}\n`;
+              }
+            });
+            
+            code += `  },\n`;
+          } else {
+            code += `  headers: {\n    "Content-Type": "application/json"\n  },\n`;
+          }
+          
+          // Add body if not GET
+          if (requestMethod !== "GET" && requestBody.trim()) {
+            // Try to format as actual JSON in the code
+            try {
+              const jsonBody = JSON.parse(requestBody);
+              code += `  body: JSON.stringify(${JSON.stringify(jsonBody, null, 4).replace(/"([^"]+)":/g, '$1:')})\n`;
+            } catch (e) {
+              // Fallback to string if not valid JSON
+              code += `  body: \`${requestBody.replace(/`/g, "\\`")}\`\n`;
+            }
+          }
+          
+          code += `};\n\n`;
+          
+          // Add fetch call with async/await
+          code += `// Using async/await\nasync function makeRequest() {\n  try {\n`;
+          code += `    const response = await fetch(url, options);\n`;
+          code += `    const data = await response.json();\n`;
+          code += `    console.log(data);\n`;
+          code += `    return data;\n`;
+          code += `  } catch (error) {\n`;
+          code += `    console.error("Error:", error);\n`;
+          code += `  }\n}\n\n`;
+          
+          // Add fetch call with promises
+          code += `// Using promises\nfetch(url, options)\n`;
+          code += `  .then(response => response.json())\n`;
+          code += `  .then(data => console.log(data))\n`;
+          code += `  .catch(error => console.error("Error:", error));\n`;
+          
+          return code;
+        }
       }
 
       ReactDOM.createRoot(document.getElementById("app")).render(<App />);

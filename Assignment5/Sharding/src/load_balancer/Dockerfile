@@ -1,5 +1,5 @@
 # Stage 1: Build stage
-FROM python:3.11-alpine3.19 as builder
+FROM python:3.11-alpine3.19 AS builder
 
 ENV PYTHONUNBUFFERED 1
 
@@ -15,7 +15,7 @@ RUN pip install --upgrade pip && \
 	pip install --upgrade --no-cache-dir --requirement /requirements.txt
 
 # Stage 2: Final stage
-FROM postgres:16.2-alpine3.19 as runner
+FROM postgres:16.2-alpine3.19 AS runner
 
 # Add postgres user to the root group
 RUN adduser postgres root

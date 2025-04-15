@@ -1,5 +1,5 @@
 # use python alphine and store the builder
-FROM python:3.11-alpine3.19 as builder
+FROM python:3.11-alpine3.19 AS builder
 
 ENV PYTHONUNBUFFERED 1
 
@@ -12,7 +12,7 @@ RUN pip install --upgrade pip && \
 	pip install --upgrade --no-cache-dir --requirement /requirements.txt
 
 # runner
-FROM postgres:16.2-alpine3.19 as runner
+FROM postgres:16.2-alpine3.19 AS runner
 
 # add to root group(sudo access needed)
 RUN adduser postgres root

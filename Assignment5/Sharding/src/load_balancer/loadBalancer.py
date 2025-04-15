@@ -1127,17 +1127,18 @@ async def read():
 
                             server_name = shard_map[shard_id].find(random.randint(100000,999999))
 
-                            new_tasks.append(asyncio.create_task(
-                                read_get_wrapper(
-                                    session=session,
-                                    server_name=server_name,
-                                    json_payload={
-                                        "shard": shard_id,
-                                        "stud_id": stud_id,
-                                        "valid_at": shard_valid_at
-                                    }
-                                )
-                            ))
+                            if server_name in Servers.getServerList():
+                                new_tasks.append(asyncio.create_task(
+                                    read_get_wrapper(
+                                        session=session,
+                                        server_name=server_name,
+                                        json_payload={
+                                            "shard": shard_id,
+                                            "stud_id": stud_id,
+                                            "valid_at": shard_valid_at
+                                        }
+                                    )
+                                ))
                         
                         serv_response = await asyncio.gather(*new_tasks, return_exceptions=True)
                         serv_response = [None if isinstance(r, BaseException) else r for r in serv_response]
@@ -1518,6 +1519,28 @@ async def dele():
                         serv_response = await asyncio.gather(*tasks, return_exceptions=True)
                         serv_response = [None if isinstance(r, BaseException)
                                             else r for r in serv_response]
+                    
+                    max_valid = shard_valid_at
+                    for r in serv_response:
+                        if r is None or r.status != 200:
+                            raise Exception('Failed to delete data entry')
+
+                        resp = dict(await r.json())
+                        cur_valid_at = int(resp["valid_at"])
+                        max_valid_at = max(max_valid, cur_valid_at)
+
+                    await con.execute(
+                        '''--sql
+                        UPDATE
+                            ShardT
+                        SET
+                            valid_at = ($1::INTEGER)
+                        WHERE
+                            shard_id = ($2::TEXT)
+                        ''',
+                        max_valid_at,
+                        shard_id,
+                    )
                         
         return jsonify({
             'message': f"Data entry with stud_id: {stud_id} removed",

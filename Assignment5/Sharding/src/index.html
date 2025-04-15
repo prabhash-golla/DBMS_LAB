@@ -4,8 +4,10 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>API Tester</title>
+    <!-- React and ReactDOM from CDN -->
     <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
     <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+    <!-- Babel for JSX transformation -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.21.4/babel.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" />
     <style>
@@ -348,13 +350,103 @@
     <script type="text/babel">
       const { useState, useEffect } = React;
 
+      // Preset endpoints with defaults for custom APIs.
+      const customEndpoints = [
+        {
+          name: "/init",
+          method: "POST",
+          body: JSON.stringify({
+            N: 3,
+            schema: {
+              columns: ["stud_id", "stud_name", "stud_marks"],
+              dtypes: ["Number", "String", "String"]
+            },
+            shards: [
+              { stud_id_low: 0, shard_id: "sh1", shard_size: 4096 },
+              { stud_id_low: 4096, shard_id: "sh2", shard_size: 4096 },
+              { stud_id_low: 8192, shard_id: "sh3", shard_size: 4096 }
+            ],
+            servers: {
+              Server0: ["sh1", "sh2"],
+              Server1: ["sh2", "sh3"],
+              Server2: ["sh1", "sh3"]
+            }
+          }, null, 2)
+        },
+        {
+          name: "/status",
+          method: "GET",
+          body: ""
+        },
+        {
+          name: "/add",
+          method: "POST",
+          body: JSON.stringify({
+            n: 2,
+            new_shards: [{ stud_id_low: 12288, shard_id: "sh5", shard_size: 4096 }],
+            servers: { Server4: ["sh3", "sh5"], Server5: ["sh2", "sh5"] }
+          }, null, 2)
+        },
+        {
+          name: "/rm",
+          method: "DELETE",
+          body: JSON.stringify({
+            n: 2,
+            servers: ["Server4"]
+          }, null, 2)
+        },
+        {
+          name: "/read",
+          method: "POST",
+          body: JSON.stringify({
+            stud_id: { low: 1000, high: 8889 }
+          }, null, 2)
+        },
+        {
+          name: "/write",
+          method: "POST",
+          body: JSON.stringify({
+            data: [
+              { stud_id: 2255, stud_name: "GHI", stud_marks: 27 },
+              { stud_id: 3524, stud_name: "JKBFSFS", stud_marks: 56 }
+            ]
+          }, null, 2)
+        },
+        {
+          name: "/update",
+          method: "PUT",
+          body: JSON.stringify({
+            stud_id: 2255,
+            data: { stud_id: 2255, stud_name: "GHI", stud_marks: 30 }
+          }, null, 2)
+        },
+        {
+          name: "/del",
+          method: "DELETE",
+          body: JSON.stringify({
+            stud_id: 2255
+          }, null, 2)
+        },
+        {
+          name: "/help",
+          method:"GET",
+          body : ""
+        }
+      ];
+
       function App() {
         const [darkMode, setDarkMode] = useState(
           window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
         );
+        // State for generic request tab
         const [url, setUrl] = useState("http://localhost:5000/");
+        const [customBaseUrl, setCustomBaseUrl] = useState("http://localhost:5000");
         const [method, setMethod] = useState("GET");
-        const [body, setBody] = useState(null);
+        const [body, setBody] = useState("");
+        // State for custom API tab
+        const [customEndpoint, setCustomEndpoint] = useState(customEndpoints[0].name);
+        const [customMethod, setCustomMethod] = useState(customEndpoints[0].method);
+        const [customBody, setCustomBody] = useState(customEndpoints[0].body);
         const [response, setResponse] = useState("");
         const [status, setStatus] = useState(null);
         const [loading, setLoading] = useState(false);
@@ -362,7 +454,6 @@
         const [history, setHistory] = useState([]);
         const [selectedHistoryItem, setSelectedHistoryItem] = useState(null);
 
-        // Apply dark mode class to body
         useEffect(() => {
           if (darkMode) {
             document.body.classList.add('dark-mode');
@@ -371,7 +462,6 @@
           }
         }, [darkMode]);
 
-        // Load history from localStorage
         useEffect(() => {
           const savedHistory = localStorage.getItem('apiTesterHistory');
           if (savedHistory) {
@@ -417,7 +507,7 @@
           setStatus(null);
         };
 
-        const handleSubmit = async (e) => {
+        const handleGenericSubmit = async (e) => {
           e.preventDefault();
           setLoading(true);
           setResponse("");
@@ -471,6 +561,73 @@
           setActiveTab("response");
         };
 
+        const handleCustomSubmit = async (e) => {
+          e.preventDefault();
+          setLoading(true);
+          setResponse("");
+          setStatus(null);
+
+          // Build the URL from the selected custom endpoint
+          const fullUrl = `${customBaseUrl}${customEndpoint}`;
+
+          try {
+            const options = {
+              method: customMethod,
+              headers: {
+                "Content-Type": "application/json",
+              },
+            };
+            
+            if (customMethod !== "GET" && customBody.trim()) {
+              options.body = customBody;
+            }
+            
+            const startTime = Date.now();
+            const res = await fetch(fullUrl, options);
+            const endTime = Date.now();
+            const responseTime = endTime - startTime;
+            
+            const text = await res.text();
+            const formattedResponse = formatResponseBody(text);
+            
+            setResponse(formattedResponse);
+            setStatus({
+              code: res.status,
+              text: res.statusText,
+              time: responseTime
+            });
+            
+            saveToHistory({
+              url: fullUrl,
+              method: customMethod,
+              body: customBody,
+              timestamp: new Date().toISOString(),
+              status: res.status
+            });
+            
+          } catch (err) {
+            setResponse("Error: " + err.message);
+            setStatus({
+              code: 0,
+              text: "Error",
+              error: true
+            });
+          }
+          
+          setLoading(false);
+          setActiveTab("response");
+        };
+
+        // Update custom fields when selecting a new preset endpoint.
+        const handleEndpointSelect = (epName) => {
+          setCustomEndpoint(epName);
+          const preset = customEndpoints.find((ep) => ep.name === epName);
+          if (preset) {
+            setCustomMethod(preset.method);
+            setCustomBody(preset.body);
+          }
+        };
+
         const getStatusBadgeClass = () => {
           if (!status) return "";
           return status.code >= 200 && status.code < 400 ? "badge-success" : "badge-error";
@@ -482,6 +639,7 @@
             case "POST": return "method-post";
             case "PUT": return "method-put";
             case "DELETE": return "method-delete";
+            case "PATCH": return "method-post"; // fallback
             default: return "method-get";
           }
         };
@@ -505,7 +663,13 @@
                 className={`tab ${activeTab === "request" ? "active" : ""}`}
                 onClick={() => setActiveTab("request")}
               >
-                Request
+                Generic Request
+              </div>
+              <div 
+                className={`tab ${activeTab === "custom" ? "active" : ""}`}
+                onClick={() => setActiveTab("custom")}
+              >
+                Custom API
               </div>
               <div 
                 className={`tab ${activeTab === "response" ? "active" : ""}`}
@@ -523,7 +687,7 @@
             
             {activeTab === "request" && (
               <div className="card">
-                <form onSubmit={handleSubmit}>
+                <form onSubmit={handleGenericSubmit}>
                   <div className="form-group">
                     <label>Endpoint URL</label>
                     <div className="url-input-container">
@@ -542,7 +706,7 @@
                         type="text"
                         value={url}
                         onChange={(e) => setUrl(e.target.value)}
-                        placeholder="http://localhost:5000/"
+                        placeholder="http://localhost:5000/..."
                       />
                     </div>
                   </div>
@@ -552,7 +716,7 @@
                     <textarea
                       value={body}
                       onChange={(e) => setBody(e.target.value)}
-                      rows="12"
+                      rows="10"
                       placeholder={method !== "GET" ? '{\n  "key": "value"\n}' : "Body not used for GET requests"}
                       disabled={method === "GET"}
                     ></textarea>
@@ -578,6 +742,79 @@
                     </button>
                   </div>
                 </form>
+              </div>
+            )}
+            
+            {activeTab === "custom" && (
+              <div className="card">
+                <h2>Custom API Request</h2>
+                <div style={{ display: "flex", gap: "1rem" }}>
+                <div className="form-group">
+                  <label>Base URL</label>
+                  <input
+                    type="text"
+                    value={customBaseUrl}
+                    onChange={(e) => setCustomBaseUrl(e.target.value)}
+                    placeholder="http://localhost:5000"
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Select Endpoint Preset</label>
+                  <select 
+                    value={customEndpoint}
+                    onChange={(e) => handleEndpointSelect(e.target.value)}
+                  >
+                    {customEndpoints.map((ep) => (
+                      <option key={ep.name} value={ep.name}>{ep.name}</option>
+                    ))}
+                  </select>
+                </div>
+                </div>
+                <div style={{ display: "flex", gap: "1rem" }}>
+                  <div className="form-group">
+                    <label>Method</label>
+                    <input
+                      type="text"
+                      value={customMethod}
+                      className="method-select"
+                      readOnly
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Endpoint URL</label>
+                    <input
+                      type="text"
+                      value={`${customBaseUrl}${customEndpoint}`}
+                      readOnly
+                    />
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <label>Request Body (JSON)</label>
+                  <textarea
+                    value={customBody}
+                    onChange={(e) => setCustomBody(e.target.value)}
+                    rows="10"
+                    placeholder={customMethod !== "GET" ? '{\n  "key": "value"\n}' : "Body not used for GET requests"}
+                    disabled={customMethod === "GET"}
+                  ></textarea>
+                </div>
+                <div className="button-group">
+                  <button type="button" className="button" onClick={handleCustomSubmit} disabled={loading}>
+                    {loading ? (
+                      <>
+                        <i className="fas fa-circle-notch spinner"></i>
+                        Sending...
+                      </>
+                    ) : (
+                      <>
+                        <i className="fas fa-paper-plane"></i>
+                        Send Request
+                      </>
+                    )}
+                  </button>
+                </div>
               </div>
             )}
             

@@ -10,8 +10,11 @@ stop:
 	sudo docker compose down --remove-orphans
 	
 rm:
-	sudo docker kill $$(sudo docker ps -a -q)
-	sudo docker rm $$(sudo docker ps -a -q)
+	@sudo docker kill $$(sudo docker ps -a -q)
+	@sudo docker rm $$(sudo docker ps -a -q)
+
+analysis :
+	@python3 Analysis/Analysis.py
 
 build-images:
 	cd server && docker build -t server:v1 .

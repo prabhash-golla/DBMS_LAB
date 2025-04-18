@@ -37,8 +37,6 @@ services:
     hostname: Load-Balancer
     tty: true
     environment:
-      HASH_NUM: 1
-      DEBUG: "true"
       POSTGRES_HOST: "localhost"
       POSTGRES_PORT: 5432
       POSTGRES_USER: "postgres"

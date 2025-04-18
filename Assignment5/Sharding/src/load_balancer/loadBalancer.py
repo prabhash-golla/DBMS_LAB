@@ -586,14 +586,14 @@ async def status():
             servers_to_shards: Dict[str, List[str]] = {}
             _shard_map = {k: v.getServerList() for k, v in shard_map.items()}
 
-            # print(_shard_map)
+            print(_shard_map)
             for shard_id, ser in _shard_map.items():
                 for se in ser:
                     if se in Servers.getServerList():
                         if se not in servers_to_shards.keys():
                             servers_to_shards[se] = []
                         servers_to_shards[se].append(shard_id)
-            # print(servers_to_shards)
+            print(servers_to_shards)
 
             return jsonify({
                 'message': {

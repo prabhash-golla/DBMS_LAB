@@ -529,7 +529,7 @@ async def init():
             async with pool.acquire() as con:
                 async with con.transaction():
                     stmt = await con.prepare(
-                        '''--sql
+                        '''
                         INSERT INTO shardT (
                             stud_id_low,
                             shard_id,
@@ -569,7 +569,7 @@ async def status():
             async with pool.acquire() as conn:
                 async with conn.transaction(readonly=True):
                     stmt = await conn.prepare(
-                        '''--sql
+                        '''
                             SELECT
                                 stud_id_low,
                                 shard_id,
@@ -808,7 +808,7 @@ async def add():
                 async with pool.acquire() as conn:
                     async with conn.transaction():
                         stmt = await conn.prepare(
-                            '''--sql
+                            '''
                             SELECT
                                 valid_at
                             FROM
@@ -922,7 +922,7 @@ async def add():
                 async with pool.acquire() as conn:
                     async with conn.transaction():
                         stmt = await conn.prepare(
-                            '''--sql
+                            '''
                             INSERT INTO shardT (
                                 stud_id_low,
                                 shard_id,
@@ -1080,7 +1080,7 @@ async def read():
             async with pool.acquire() as con:
                 async with con.transaction():
                     async for record in con.cursor(
-                        '''--sql
+                        '''
                         SELECT
                             shard_id,
                             valid_at
@@ -1200,7 +1200,7 @@ async def write():
             async with pool.acquire() as con:
                 async with con.transaction():
                     get_shard_id_stmt = await con.prepare(
-                        '''--sql
+                        '''
                         SELECT
                             shard_id
                         FROM
@@ -1211,7 +1211,7 @@ async def write():
                         ''')
 
                     get_valid_at_stmt = await con.prepare(
-                        '''--sql
+                        '''
                         SELECT
                             valid_at
                         FROM
@@ -1222,7 +1222,7 @@ async def write():
                         ''')
 
                     update_shard_info_stmt = await con.prepare(
-                        '''--sql
+                        '''
                         UPDATE
                             ShardT
                         SET
@@ -1352,7 +1352,7 @@ async def update():
             async with pool.acquire() as con:
                 async with con.transaction():
                     response = await con.fetchrow(
-                        '''--sql
+                        '''
                         SELECT
                             shard_id,
                             valid_at
@@ -1418,7 +1418,7 @@ async def update():
 
 
                     await con.execute(
-                        '''--sql
+                        '''
                         UPDATE
                             ShardT
                         SET
@@ -1469,7 +1469,7 @@ async def dele():
             async with pool.acquire() as con:
                 async with con.transaction():
                     record = await con.fetchrow(
-                        '''--sql
+                        '''
                         SELECT
                             shard_id,
                             valid_at
@@ -1530,7 +1530,7 @@ async def dele():
                         max_valid_at = max(max_valid, cur_valid_at)
 
                     await con.execute(
-                        '''--sql
+                        '''
                         UPDATE
                             ShardT
                         SET

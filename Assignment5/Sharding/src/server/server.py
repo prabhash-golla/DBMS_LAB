@@ -25,8 +25,6 @@ def err_payload(err: Exception):
         'status': 'failure'
     }
 
-# Rules applied as per the Cat-Dat-Vat algorithm credit to our TA @PhoenixKing2501
-# Source: https://github.com/PhoenixKing2501/Distributed-Assignment-2
 async def rules(shard_id: str, valid_at: int) -> None:
     """
     Rule 1: Permanently delete records with:
@@ -38,14 +36,14 @@ async def rules(shard_id: str, valid_at: int) -> None:
     try:
         async with pool.acquire() as conn:
             async with conn.transaction():
-                await conn.execute('''--sql
+                await conn.execute('''
                     DELETE FROM StudT
                     WHERE shard_id = $1
                       AND (created_at > $2
                            OR (deleted_at IS NOT NULL AND deleted_at <= $2));
                 ''', shard_id, valid_at)
 
-                await conn.execute('''--sql
+                await conn.execute('''
                     UPDATE StudT
                     SET deleted_at = NULL
                     WHERE shard_id = $1
@@ -112,7 +110,7 @@ async def server_config():
         response_payload = {}
         async with pool.acquire() as conn:
             async with conn.transaction():
-                stmt = await conn.prepare('''--sql
+                stmt = await conn.prepare('''
                     INSERT INTO TermT (shard_id)
                     VALUES ($1::TEXT)
                     ON CONFLICT (shard_id) DO NOTHING;
@@ -200,7 +198,7 @@ async def read():
             async with conn.transaction():
                 await rules(shard_id, valid_at)
 
-                stmt = '''--sql
+                stmt = '''
                     SELECT Stud_id, Stud_name, Stud_marks
                     FROM StudT
                     WHERE shard_id = $1
@@ -245,7 +243,7 @@ async def write():
                 else:
                     await rules(shard_id, valid_at)
 
-                    duplicates = await conn.fetchval('''--sql
+                    duplicates = await conn.fetchval('''
                         SELECT COUNT(*)
                         FROM StudT
                         WHERE stud_id = ANY($1::INTEGER[])
@@ -256,7 +254,7 @@ async def write():
                     if duplicates > 0:
                         raise ValueError(f"Duplicate stud_id(s) found in shard {shard_id}.")
 
-                    current_term = await conn.fetchval('''--sql
+                    current_term = await conn.fetchval('''
                         SELECT term
                         FROM TermT
                         WHERE shard_id = $1::TEXT;
@@ -267,7 +265,7 @@ async def write():
 
                     curr_valid_at = max(current_term, valid_at) + 1
 
-                insert_stmt = await conn.prepare('''--sql
+                insert_stmt = await conn.prepare('''
                     INSERT INTO StudT (stud_id, stud_name, stud_marks, shard_id, created_at)
                     VALUES ($1, $2, $3, $4, $5);
                 ''')
@@ -277,7 +275,7 @@ async def write():
                     for record in data_rows
                 ])
 
-                await conn.execute('''--sql
+                await conn.execute('''
                     UPDATE TermT
                     SET term = $1
                     WHERE shard_id = $2;
@@ -317,7 +315,7 @@ async def update():
             async with conn.transaction():
                 await rules(shard_id, valid_at)
 
-                existing = await conn.fetchrow('''--sql
+                existing = await conn.fetchrow('''
                     SELECT created_at
                     FROM StudT
                     WHERE stud_id = $1
@@ -327,7 +325,7 @@ async def update():
                 if not existing:
                     raise ValueError(f"No record found for stud_id {stud_id} in shard {shard_id}.")
 
-                current_term = await conn.fetchval('''--sql
+                current_term = await conn.fetchval('''
                     SELECT term
                     FROM TermT
                     WHERE shard_id = $1;
@@ -339,7 +337,7 @@ async def update():
                 next_term = max(current_term, valid_at) + 1
 
                 # fake delete old record
-                await conn.execute('''--sql
+                await conn.execute('''
                     UPDATE StudT
                     SET deleted_at = $1
                     WHERE stud_id = $2
@@ -348,12 +346,12 @@ async def update():
                 ''', next_term, stud_id, shard_id, valid_at)
 
                 # insert new record
-                await conn.execute('''--sql
+                await conn.execute('''
                     INSERT INTO StudT (stud_id, stud_name, stud_marks, shard_id, created_at)
                     VALUES ($1, $2, $3, $4, $5);
                 ''', new_data["stud_id"], new_data["stud_name"], new_data["stud_marks"], shard_id, next_term + 1)
 
-                await conn.execute('''--sql
+                await conn.execute('''
                     UPDATE TermT
                     SET term = $1
                     WHERE shard_id = $2;
@@ -388,7 +386,7 @@ async def delete():
             async with conn.transaction():
                 await rules(shard_id, valid_at)
 
-                existing = await conn.fetchrow('''--sql
+                existing = await conn.fetchrow('''
                     SELECT created_at
                     FROM StudT
                     WHERE stud_id = $1
@@ -399,7 +397,7 @@ async def delete():
                 if not existing:
                     raise ValueError(f"Student ID {stud_id} not found or already deleted in shard {shard_id}.")
 
-                current_term = await conn.fetchval('''--sql
+                current_term = await conn.fetchval('''
                     SELECT term
                     FROM TermT
                     WHERE shard_id = $1;
@@ -410,7 +408,7 @@ async def delete():
 
                 next_term = max(current_term, valid_at) + 1
 
-                result = await conn.execute('''--sql
+                result = await conn.execute('''
                     UPDATE StudT
                     SET deleted_at = $1
                     WHERE stud_id = $2
@@ -421,7 +419,7 @@ async def delete():
                 if result == 'UPDATE 0':
                     raise ValueError(f"Failed to delete stud_id {stud_id} at valid_at {valid_at}.")
 
-                await conn.execute('''--sql
+                await conn.execute('''
                     UPDATE TermT
                     SET term = $1
                     WHERE shard_id = $2;

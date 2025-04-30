@@ -1,4 +1,3 @@
-version: "3.9"
 x-name: distributed_systems_2
 
 services:

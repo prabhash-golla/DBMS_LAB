@@ -8,7 +8,10 @@ stop:
 	sudo docker compose kill --signal SIGTERM Load-Balancer
 	sudo docker compose wait Load-Balancer
 	sudo docker compose down --remove-orphans
-	
+
+setup:
+	@sudo chmod 777 /var/run/docker.sock	
+
 rm:
 	@sudo docker kill $$(sudo docker ps -a -q)
 	@sudo docker rm $$(sudo docker ps -a -q)
